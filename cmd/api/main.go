@@ -4,8 +4,9 @@ import "log"
 
 func main() {
 	config := &config{
-		address: ":8080",
+		address: ":8080", // TODO: load from env file
 	}
+
 	app := &application{
 		config: config,
 	}

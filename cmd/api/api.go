@@ -1,6 +1,13 @@
 package main
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+)
 
 type application struct {
 	config *config
@@ -12,25 +19,29 @@ type config struct {
 
 func (app *application) run() error {
 	server := &http.Server{
-		Addr:    app.config.address,
-		Handler: app.routes(),
+		Addr:         app.config.address,
+		Handler:      app.routes(),
+		WriteTimeout: time.Second * 30,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Minute,
 	}
 
+	fmt.Printf("Starting server on %s\n", app.config.address)
 	return server.ListenAndServe()
 }
 
-func (app *application) routes() http.Handler {
-	mux := http.NewServeMux()
+func (app *application) routes() *chi.Mux {
+	r := chi.NewRouter()
 
-	mux.HandleFunc("GET /v1/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
+	r.Use(middleware.Logger)
+
+	r.Route("/v1", func(r chi.Router) {
+		r.Get("/health", app.healthCheckHandler)
 	})
 
-	// posts
+	return r
+}
 
-	// users
-
-	// auth
-
-	return mux
+func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("welcome"))
 }
