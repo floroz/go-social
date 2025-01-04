@@ -19,7 +19,7 @@ type config struct {
 
 func (app *application) run() error {
 	server := &http.Server{
-		Addr:         app.config.port,
+		Addr:         fmt.Sprintf(":%s", app.config.port),
 		Handler:      app.routes(),
 		WriteTimeout: time.Second * 30,
 		ReadTimeout:  time.Second * 15,
@@ -40,6 +40,10 @@ func (app *application) routes() http.Handler {
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
+
+		r.Route("/users", func(r chi.Router) {
+			r.Post("/", app.createUserHandler)
+		})
 	})
 
 	return r
@@ -47,4 +51,8 @@ func (app *application) routes() http.Handler {
 
 func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("welcome"))
+}
+
+func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("user created"))
 }
