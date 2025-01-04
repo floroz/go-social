@@ -7,16 +7,17 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func GetEnvValue(key, fallback string) string {
+func GetEnvValue(key string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
-		return fallback
+		log.Printf("Key %s not found in ENV", key)
+		return ""
 	}
 	return value
 }
 
-func MustLoadEnv() {
-	err := godotenv.Load()
+func MustLoadEnv(filenames ...string) {
+	err := godotenv.Load(filenames...)
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 		panic(err)
