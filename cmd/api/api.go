@@ -30,7 +30,7 @@ func (app *application) run() error {
 	return server.ListenAndServe()
 }
 
-func (app *application) routes() *chi.Mux {
+func (app *application) routes() http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
