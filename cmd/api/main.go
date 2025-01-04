@@ -1,10 +1,16 @@
 package main
 
-import "log"
+import (
+	"log"
+
+	"github.com/floroz/go-social/internal/env"
+)
 
 func main() {
+	env.MustLoadEnv()
+
 	config := &config{
-		address: ":8080", // TODO: load from env file
+		port: env.GetEnvValue("ADDRESS", ":8080"),
 	}
 
 	app := &application{

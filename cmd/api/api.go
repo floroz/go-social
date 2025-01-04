@@ -14,19 +14,19 @@ type application struct {
 }
 
 type config struct {
-	address string
+	port string
 }
 
 func (app *application) run() error {
 	server := &http.Server{
-		Addr:         app.config.address,
+		Addr:         app.config.port,
 		Handler:      app.routes(),
 		WriteTimeout: time.Second * 30,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Minute,
 	}
 
-	fmt.Printf("Starting server on %s\n", app.config.address)
+	fmt.Printf("Starting server on %s\n", app.config.port)
 	return server.ListenAndServe()
 }
 
