@@ -33,6 +33,9 @@ func (app *application) run() error {
 func (app *application) routes() http.Handler {
 	r := chi.NewRouter()
 
+	// A good base middleware stack
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
