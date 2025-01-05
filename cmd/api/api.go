@@ -83,7 +83,17 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	writeJSON(w, http.StatusCreated, user)
+	// exclude the password before returning to client
+	userResponse := map[string]interface{}{
+		"id":         user.ID,
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
+		"email":      user.Email,
+		"created_at": user.CreatedAt,
+		"updated_at": user.UpdatedAt,
+	}
+
+	writeJSON(w, http.StatusCreated, userResponse)
 
 }
 
