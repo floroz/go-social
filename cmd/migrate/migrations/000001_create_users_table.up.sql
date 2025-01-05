@@ -12,8 +12,7 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login_at TIMESTAMP WITH TIME ZONE,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    deleted_at TIMESTAMP WITH TIME ZONE,
-    CONSTRAINT users_email_unique UNIQUE (LOWER(email))
+    deleted_at TIMESTAMP WITH TIME ZONE
 );
 
 -- Index for email lookups (case insensitive)
