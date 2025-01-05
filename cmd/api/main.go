@@ -12,11 +12,19 @@ import (
 )
 
 func connectDb() (*sql.DB, error) {
-	db, err := sql.Open("postgres", fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", env.GetEnvValue("DB_USER"), env.GetEnvValue("DB_PASSWORD"), env.GetEnvValue("DB_HOST"), env.GetEnvValue("DB_NAME")))
+	postgresConnection := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
+		env.GetEnvValue("DB_USER"),
+		env.GetEnvValue("DB_PASSWORD"),
+		env.GetEnvValue("DB_HOST"),
+		env.GetEnvValue("DB_NAME"),
+	)
+
+	db, err := sql.Open("postgres", postgresConnection)
 	if err != nil {
 		return nil, err
 	}
 
+	log.Println("connected to database")
 	return db, nil
 }
 
@@ -26,6 +34,7 @@ func main() {
 	db, err := connectDb()
 	if err != nil {
 		log.Fatal(err)
+		panic("failed to connect to database")
 	}
 	defer db.Close()
 
