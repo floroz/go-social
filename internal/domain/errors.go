@@ -1,6 +1,27 @@
 package domain
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var (
+	ErrNotFound = errors.New("not found")
+)
+
+type BadRequestError struct {
+	Message string
+}
+
+func (e *BadRequestError) Error() string {
+	return e.Message
+}
+
+func NewBadRequestError(message string) error {
+	return &BadRequestError{
+		Message: message,
+	}
+}
 
 type ValidationError struct {
 	Field   string
