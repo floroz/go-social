@@ -6,6 +6,8 @@ type User struct {
 	LastName  string
 	Email     string
 	Password  string
+	CreatedAt string
+	UpdatedAt string
 }
 
 type CreateUserDTO struct {
