@@ -58,7 +58,7 @@ func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request) {
-	createUserDto := &domain.UserDTO{}
+	createUserDto := &domain.CreateUserDTO{}
 
 	err := json.NewDecoder(r.Body).Decode(createUserDto)
 	if err != nil {
@@ -83,17 +83,7 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	// exclude the password before returning to client
-	userResponse := map[string]interface{}{
-		"id":         user.ID,
-		"first_name": user.FirstName,
-		"last_name":  user.LastName,
-		"email":      user.Email,
-		"created_at": user.CreatedAt,
-		"updated_at": user.UpdatedAt,
-	}
-
-	writeJSON(w, http.StatusCreated, userResponse)
+	writeJSON(w, http.StatusCreated, user)
 
 }
 

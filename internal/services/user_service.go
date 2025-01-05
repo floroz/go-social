@@ -20,7 +20,7 @@ func NewUserService(userRepo interfaces.UserRepository) interfaces.UserService {
 	}
 }
 
-func (s *userService) Create(ctx context.Context, user *domain.UserDTO) (*domain.User, error) {
+func (s *userService) Create(ctx context.Context, user *domain.CreateUserDTO) (*domain.User, error) {
 	err := validation.ValidateUserDTO(user)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (s *userService) GetByID(ctx context.Context, id int) (*domain.User, error)
 	return s.userRepo.GetByID(ctx, id)
 }
 
-func (s *userService) Update(ctx context.Context, user *domain.UserDTO) (*domain.User, error) {
+func (s *userService) Update(ctx context.Context, user *domain.UpdateUserDTO) (*domain.User, error) {
 	updatedUser, err := s.userRepo.Update(ctx, user)
 	return updatedUser, err
 }

@@ -18,14 +18,14 @@ func NewUserRepository(db *sql.DB) interfaces.UserRepository {
 	return &UserRepositoryImpl{db: db}
 }
 
-func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.UserDTO) (*domain.User, error) {
+func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.CreateUserDTO) (*domain.User, error) {
 
 	user := domain.User{}
 
 	query := `
         INSERT INTO users (first_name, last_name, email, username, password)
         VALUES ($1, $2, $3, $4)
-        RETURNING id, first_name, last_name, email, username, password`
+        RETURNING id, first_name, last_name, email, username`
 
 	err := r.db.QueryRowContext(
 		ctx,
@@ -41,7 +41,6 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.User
 		&user.LastName,
 		&user.Email,
 		&user.Username,
-		&user.Password,
 	)
 
 	if err != nil {
@@ -80,7 +79,7 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.User,
 
 func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
-		SELECT id, first_name, last_name, email, username, password
+		SELECT id, first_name, last_name, email, username
 		FROM users
 		WHERE email = $1`
 
@@ -91,7 +90,6 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 		&user.LastName,
 		&user.Email,
 		&user.Username,
-		&user.Password,
 	)
 
 	if err != nil {
@@ -107,7 +105,7 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 
 func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string) (*domain.User, error) {
 	query := `
-		SELECT id, first_name, last_name, email, username, password
+		SELECT id, first_name, last_name, email, username
 		FROM users
 		WHERE username = $1`
 
@@ -118,7 +116,6 @@ func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string)
 		&user.LastName,
 		&user.Email,
 		&user.Username,
-		&user.Password,
 	)
 
 	if err != nil {
@@ -132,7 +129,7 @@ func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string)
 	return user, nil
 }
 
-func (r *UserRepositoryImpl) Update(ctx context.Context, updateUser *domain.UserDTO) (*domain.User, error) {
+func (r *UserRepositoryImpl) Update(ctx context.Context, updateUser *domain.UpdateUserDTO) (*domain.User, error) {
 	return nil, nil
 	// 	query := `
 	// 		UPDATE users

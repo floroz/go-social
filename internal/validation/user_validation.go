@@ -8,7 +8,7 @@ import (
 
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
-func ValidateUserDTO(user *domain.UserDTO) error {
+func ValidateUserDTO(user *domain.CreateUserDTO) error {
 	switch {
 	case user.FirstName == "":
 		return domain.NewValidationError("first_name", "first name is required")

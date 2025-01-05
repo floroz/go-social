@@ -3,20 +3,26 @@ package domain
 import "time"
 
 type User struct {
-	ID        int
-	FirstName string
-	LastName  string
-	Username  string
-	Email     string
-	Password  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        int       `json:"id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type UserDTO struct {
+type CreateUserDTO struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
 	Username  string `json:"username"`
 	Password  string `json:"password"`
+}
+
+type UpdateUserDTO struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Username  string `json:"username"`
 }
