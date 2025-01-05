@@ -4,16 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
+	"log"
 
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/interfaces"
-)
-
-var (
-	ErrNotFound     = errors.New("user not found")
-	ErrDuplicate    = errors.New("user already exists")
-	ErrInvalidInput = errors.New("invalid input")
 )
 
 type UserRepositoryImpl struct {
@@ -48,7 +42,8 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("create user: %w", err)
+		log.Printf("error while creating user: %v", err)
+		return nil, domain.NewInternalServerError("failed to create user")
 	}
 
 	return &user, nil
@@ -79,30 +74,31 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 // 	return user, nil
 // }
 
-// func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
-// 	query := `
-// 		SELECT id, first_name, last_name, email, password
-// 		FROM users
-// 		WHERE email = $1`
+func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
+	query := `
+		SELECT id, first_name, last_name, email, password
+		FROM users
+		WHERE email = $1`
 
-// 	user := &domain.User{}
-// 	err := r.db.QueryRowContext(ctx, query, email).Scan(
-// 		&user.ID,
-// 		&user.FirstName,
-// 		&user.LastName,
-// 		&user.Email,
-// 		&user.Password,
-// 	)
+	user := &domain.User{}
+	err := r.db.QueryRowContext(ctx, query, email).Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.Password,
+	)
 
-// 	if err != nil {
-// 		if errors.Is(err, sql.ErrNoRows) {
-// 			return nil, ErrNotFound
-// 		}
-// 		return nil, fmt.Errorf("get user by email: %w", err)
-// 	}
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		log.Printf("error while getting user by email: %v", err)
+		return nil, domain.NewInternalServerError("failed to get user by email")
+	}
 
-// 	return user, nil
-// }
+	return user, nil
+}
 
 // func (r *UserRepositoryImpl) Update(ctx context.Context, updateUser *domain.UpdateUserDTO) (*domain.User, error) {
 // 	query := `
