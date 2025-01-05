@@ -14,3 +14,11 @@ type UserRepository interface {
 	// Delete(ctx context.Context, id int) error
 	// List(ctx context.Context, limit, offset int) ([]domain.User, error)
 }
+
+type UserService interface {
+	CreateUser(ctx context.Context, createUser *domain.CreateUserDTO) (*domain.User, error)
+	// GetUserByID(ctx context.Context, id int) (*domain.User, error)
+	// UpdateUser(ctx context.Context, updateUser *domain.UpdateUserDTO) (*domain.User, error)
+	// DeleteUser(ctx context.Context, id int) error
+	// ListUsers(ctx context.Context, limit, offset int) ([]domain.User, error)
+}
