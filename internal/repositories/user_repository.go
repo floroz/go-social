@@ -24,7 +24,7 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 
 	query := `
         INSERT INTO users (first_name, last_name, email, username, password)
-        VALUES ($1, $2, $3, $4)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING id, first_name, last_name, email, username`
 
 	err := r.db.QueryRowContext(
