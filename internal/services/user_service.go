@@ -21,7 +21,7 @@ func NewUserService(userRepo interfaces.UserRepository) interfaces.UserService {
 }
 
 func (s *userService) Create(ctx context.Context, user *domain.CreateUserDTO) (*domain.User, error) {
-	err := validation.ValidateUserDTO(user)
+	err := validation.ValidateCreateUserDTO(user)
 	if err != nil {
 		return nil, err
 	}

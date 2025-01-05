@@ -52,7 +52,7 @@ func (app *application) routes() http.Handler {
 			// all other routes should be protected
 			r.Post("/", app.createUserHandler)
 			r.Delete("/{id}", app.deleteUserHandler)
-			// r.Put("/{id}", app.updateUserHandler)
+			r.Put("/{id}", app.updateUserHandler)
 		})
 	})
 
@@ -74,18 +74,7 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 
 	user, err := app.userService.Create(r.Context(), createUserDto)
 	if err != nil {
-		switch e := err.(type) {
-		case *domain.ValidationError:
-			errorResponse(w, http.StatusBadRequest, e.Error())
-		case *domain.ConflictError:
-			errorResponse(w, http.StatusConflict, e.Error())
-		case *domain.InternalServerError:
-			errorResponse(w, http.StatusInternalServerError, e.Error())
-		case *domain.BadRequestError:
-			errorResponse(w, http.StatusBadRequest, e.Error())
-		default:
-			errorResponse(w, http.StatusInternalServerError, "internal server error")
-		}
+		handleServiceError(w, err)
 		return
 	}
 
@@ -141,6 +130,33 @@ func (app *application) deleteUserHandler(w http.ResponseWriter, r *http.Request
 	writeJSON(w, http.StatusNoContent, nil)
 }
 
+func (app *application) updateUserHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid id")
+		return
+	}
+
+	updateUserDto := &domain.UpdateUserDTO{}
+
+	err = json.NewDecoder(r.Body).Decode(updateUserDto)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	updateUserDto.ID = id
+
+	user, err := app.userService.Update(r.Context(), updateUserDto)
+	if err != nil {
+		handleServiceError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, user)
+}
+
 func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -150,4 +166,19 @@ func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 func errorResponse(w http.ResponseWriter, status int, message string) {
 	data := map[string]string{"error": message}
 	writeJSON(w, status, data)
+}
+
+func handleServiceError(w http.ResponseWriter, err error) {
+	switch e := err.(type) {
+	case *domain.ValidationError:
+		errorResponse(w, http.StatusBadRequest, e.Error())
+	case *domain.ConflictError:
+		errorResponse(w, http.StatusConflict, e.Error())
+	case *domain.InternalServerError:
+		errorResponse(w, http.StatusInternalServerError, e.Error())
+	case *domain.BadRequestError:
+		errorResponse(w, http.StatusBadRequest, e.Error())
+	default:
+		errorResponse(w, http.StatusInternalServerError, "internal server error")
+	}
 }
