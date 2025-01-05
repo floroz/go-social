@@ -61,11 +61,14 @@ func (s *userService) GetByID(ctx context.Context, id int) (*domain.User, error)
 }
 
 func (s *userService) Update(ctx context.Context, user *domain.UpdateUserDTO) (*domain.User, error) {
+	// TODO: check that current user is the owner of the user to be updated - after implementing authn and authz
 	updatedUser, err := s.userRepo.Update(ctx, user)
 	return updatedUser, err
 }
 
 func (s *userService) Delete(ctx context.Context, id int) error {
+	// TODO: check that current user is the owner of the user to be deleted - after implementing authn and authz
+
 	return s.userRepo.Delete(ctx, id)
 }
 

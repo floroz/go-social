@@ -56,29 +56,30 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 }
 
 func (r *UserRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.User, error) {
-	return nil, nil
-	// 	query := `
-	// 		SELECT id, first_name, last_name, email, password
-	// 		FROM users
-	// 		WHERE id = $1`
+	query := `
+			SELECT id, first_name, last_name, email, username, created_at, updated_at
+			FROM users
+			WHERE id = $1`
 
-	// 	user := &domain.User{}
-	// 	err := r.db.QueryRowContext(ctx, query, id).Scan(
-	// 		&user.ID,
-	// 		&user.FirstName,
-	// 		&user.LastName,
-	// 		&user.Email,
-	// 		&user.Password,
-	// 	)
+	user := &domain.User{}
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.Username,
+		&user.CreatedAt,
+	)
 
-	// 	if err != nil {
-	// 		if errors.Is(err, sql.ErrNoRows) {
-	// 			return nil, ErrNotFound
-	// 		}
-	// 		return nil, fmt.Errorf("get user by id: %w", err)
-	// 	}
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		log.Printf("error while getting user by id: %v", err)
+		return nil, domain.NewInternalServerError("failed to get user by id")
+	}
 
-	// return user, nil
+	return user, nil
 }
 
 func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
@@ -173,6 +174,15 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, updateUser *domain.Upda
 }
 
 func (r *UserRepositoryImpl) Delete(ctx context.Context, id int) error {
+	query := `
+			DELETE FROM users
+			WHERE id = $1`
+
+	_, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("delete user: %w", err)
+	}
+
 	return nil
 }
 

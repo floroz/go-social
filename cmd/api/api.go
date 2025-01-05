@@ -47,8 +47,12 @@ func (app *application) routes() http.Handler {
 		r.Get("/health", app.healthCheckHandler)
 
 		r.Route("/users", func(r chi.Router) {
+			// this should be public
 			r.Get("/", app.listUsersHandler)
+			// all other routes should be protected
 			r.Post("/", app.createUserHandler)
+			r.Delete("/{id}", app.deleteUserHandler)
+			// r.Put("/{id}", app.updateUserHandler)
 		})
 	})
 
@@ -117,6 +121,24 @@ func (app *application) listUsersHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	writeJSON(w, http.StatusOK, users)
+}
+
+func (app *application) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid id")
+		return
+	}
+
+	err = app.userService.Delete(r.Context(), id)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	writeJSON(w, http.StatusNoContent, nil)
 }
 
 func writeJSON(w http.ResponseWriter, status int, data interface{}) {
