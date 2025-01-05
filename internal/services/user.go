@@ -2,50 +2,59 @@ package services
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"regexp"
 
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/floroz/go-social/internal/domain"
+	"github.com/floroz/go-social/internal/interfaces"
 	"github.com/floroz/go-social/internal/repositories"
 )
 
-type UserService interface {
-	CreateUser(ctx context.Context, createUser *domain.CreateUserDTO) (*domain.User, error)
-	// GetUserByID(ctx context.Context, id int) (*domain.User, error)
-	// UpdateUser(ctx context.Context, updateUser *domain.UpdateUserDTO) (*domain.User, error)
-	// DeleteUser(ctx context.Context, id int) error
-	// ListUsers(ctx context.Context, limit, offset int) ([]domain.User, error)
-}
+var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 type userService struct {
-	userRepo repositories.UserRepositoryImpl
+	userRepo interfaces.UserRepository
 }
 
-func NewUserService(userRepo repositories.UserRepositoryImpl) UserService {
+func NewUserService(userRepo interfaces.UserRepository) interfaces.UserService {
 	return &userService{
 		userRepo: userRepo,
 	}
 }
 
 func (s *userService) CreateUser(ctx context.Context, user *domain.CreateUserDTO) (*domain.User, error) {
-	// Hash password
+	switch {
+	case user.Email == "":
+		return nil, domain.NewValidationError("email", "email is required")
+	case !emailRegex.MatchString(user.Email):
+		return nil, domain.NewValidationError("email", "invalid email format")
+	case user.Password == "":
+		return nil, domain.NewValidationError("password", "password is required")
+	case len(user.Password) < 8:
+		return nil, domain.NewValidationError("password", "password must be at least 8 characters")
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, fmt.Errorf("failed to hash password: %w", err)
+		return nil, domain.NewInternalServerError("failed to hash password")
 	}
+
 	user.Password = string(hashedPassword)
 
-	// Check if email already exists
-	// existing, err := s.userRepo.GetByEmail(ctx, user.Email)
-	// if err != nil && !errors.Is(err, repositories.ErrNotFound) {
-	// 	return nil, err
-	// }
-	// if existing != nil {
-	// 	return nil, repositories.ErrDuplicate
-	// }
+	// Create user
+	createdUser, err := s.userRepo.Create(ctx, user)
+	if err != nil {
+		// Convert repository errors to domain errors
+		if errors.Is(err, repositories.ErrDuplicate) {
+			return nil, domain.NewConflictError("email already exists")
+		}
+		return nil, err
+	}
 
-	return s.userRepo.Create(ctx, user)
+	createdUser.Password = "" // clear password before returning
+	return createdUser, nil
 }
 
 // func (s *userService) GetUserByID(ctx context.Context, id int) (*domain.User, error) {
