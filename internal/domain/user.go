@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 type User struct {
 	ID        int
 	FirstName string
@@ -7,8 +9,8 @@ type User struct {
 	Username  string
 	Email     string
 	Password  string
-	CreatedAt string
-	UpdatedAt string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type UserDTO struct {
