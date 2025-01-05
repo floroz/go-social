@@ -25,6 +25,10 @@ func NewUserService(userRepo interfaces.UserRepository) interfaces.UserService {
 func (s *userService) CreateUser(ctx context.Context, user *domain.CreateUserDTO) (*domain.User, error) {
 	// validation
 	switch {
+	case user.FirstName == "":
+		return nil, domain.NewValidationError("first_name", "first name is required")
+	case user.LastName == "":
+		return nil, domain.NewValidationError("last_name", "last name is required")
 	case user.Email == "":
 		return nil, domain.NewValidationError("email", "email is required")
 	case !emailRegex.MatchString(user.Email):
