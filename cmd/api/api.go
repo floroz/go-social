@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/floroz/go-social/internal/domain"
@@ -46,6 +47,7 @@ func (app *application) routes() http.Handler {
 		r.Get("/health", app.healthCheckHandler)
 
 		r.Route("/users", func(r chi.Router) {
+			r.Get("/", app.listUsersHandler)
 			r.Post("/", app.createUserHandler)
 		})
 	})
@@ -85,6 +87,36 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 
 	writeJSON(w, http.StatusCreated, user)
 
+}
+
+func (app *application) listUsersHandler(w http.ResponseWriter, r *http.Request) {
+	limitStr := r.URL.Query().Get("limit")
+	limit := 10
+
+	if limitStr != "" {
+		parsedLimit, err := strconv.Atoi(limitStr)
+		if err == nil {
+			limit = parsedLimit
+		}
+	}
+
+	offsetStr := r.URL.Query().Get("offset")
+	offset := 0
+
+	if offsetStr != "" {
+		parsedOffset, err := strconv.Atoi(offsetStr)
+		if err == nil {
+			offset = parsedOffset
+		}
+	}
+
+	users, err := app.userService.List(r.Context(), limit, offset)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, users)
 }
 
 func writeJSON(w http.ResponseWriter, status int, data interface{}) {

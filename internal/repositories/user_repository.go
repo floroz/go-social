@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/floroz/go-social/internal/domain"
@@ -25,7 +26,8 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 	query := `
         INSERT INTO users (first_name, last_name, email, username, password)
         VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, first_name, last_name, email, username`
+        RETURNING id, first_name, last_name, email, username, created_at, updated_at
+		`
 
 	err := r.db.QueryRowContext(
 		ctx,
@@ -41,6 +43,8 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 		&user.LastName,
 		&user.Email,
 		&user.Username,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	)
 
 	if err != nil {
@@ -79,7 +83,7 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.User,
 
 func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
-		SELECT id, first_name, last_name, email, username
+		SELECT id, first_name, last_name, email, username, created_at, updated_at
 		FROM users
 		WHERE email = $1`
 
@@ -90,6 +94,8 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 		&user.LastName,
 		&user.Email,
 		&user.Username,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	)
 
 	if err != nil {
@@ -171,33 +177,38 @@ func (r *UserRepositoryImpl) Delete(ctx context.Context, id int) error {
 }
 
 func (r *UserRepositoryImpl) List(ctx context.Context, limit, offset int) ([]domain.User, error) {
-	return nil, nil
-	// 	query := `
-	// 		SELECT id, first_name, last_name, email, password
-	// 		FROM users
-	// 		LIMIT $1 OFFSET $2`
+	if limit == 0 {
+		limit = 100
+	}
 
-	// 	rows, err := r.db.QueryContext(ctx, query, limit, offset)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("list users: %w", err)
-	// 	}
-	// 	defer rows.Close()
+	query := `
+			SELECT id, first_name, last_name, email, username, created_at, updated_at
+			FROM users
+			LIMIT $1 OFFSET $2`
 
-	// 	users := []domain.User{}
-	// 	for rows.Next() {
-	// 		user := domain.User{}
-	// 		err := rows.Scan(
-	// 			&user.ID,
-	// 			&user.FirstName,
-	// 			&user.LastName,
-	// 			&user.Email,
-	// 			&user.Password,
-	// 		)
-	// 		if err != nil {
-	// 			return nil, fmt.Errorf("list users: %w", err)
-	// 		}
-	// 		users = append(users, user)
-	// 	}
+	rows, err := r.db.QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("list users: %w", err)
+	}
+	defer rows.Close()
 
-	// return users, nil
+	users := []domain.User{}
+	for rows.Next() {
+		user := domain.User{}
+		err := rows.Scan(
+			&user.ID,
+			&user.FirstName,
+			&user.LastName,
+			&user.Email,
+			&user.Username,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("list users: %w", err)
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
 }
