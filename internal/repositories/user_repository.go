@@ -137,40 +137,41 @@ func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string)
 }
 
 func (r *UserRepositoryImpl) Update(ctx context.Context, updateUser *domain.UpdateUserDTO) (*domain.User, error) {
-	return nil, nil
-	// 	query := `
-	// 		UPDATE users
-	// 		SET first_name = $1, last_name = $2, email = $3, password = $4
-	// 		WHERE id = $5
-	// 		RETURNING id, first_name, last_name, email, password
-	// 		`
+	query := `
+			UPDATE users
+			SET first_name = $1, last_name = $2, email = $3, username = $4
+			WHERE id = $5
+			RETURNING id, first_name, last_name, email, username, created_at, updated_at
+			`
 
-	// 	user := domain.User{}
+	user := domain.User{}
 
-	// 	err := r.db.QueryRowContext(
-	// 		ctx,
-	// 		query,
-	// 		user.FirstName,
-	// 		user.LastName,
-	// 		user.Email,
-	// 		user.Password,
-	// 		user.ID,
-	// 	).Scan(
-	// 		&user.ID,
-	// 		&user.FirstName,
-	// 		&user.LastName,
-	// 		&user.Email,
-	// 		&user.Password,
-	// 	)
+	err := r.db.QueryRowContext(
+		ctx,
+		query,
+		user.FirstName,
+		user.LastName,
+		user.Email,
+		user.Username,
+		user.ID,
+	).Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.Username,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
 
-	// 	if err != nil {
-	// 		if errors.Is(err, sql.ErrNoRows) {
-	// 			return nil, ErrNotFound
-	// 		}
-	// 		return nil, fmt.Errorf("update user: %w", err)
-	// 	}
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, fmt.Errorf("update user: %w", err)
+	}
 
-	// return &user, nil
+	return &user, nil
 }
 
 func (r *UserRepositoryImpl) Delete(ctx context.Context, id int) error {
