@@ -2,14 +2,12 @@ package services
 
 import (
 	"context"
-	"errors"
 	"regexp"
 
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/interfaces"
-	"github.com/floroz/go-social/internal/repositories"
 )
 
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
@@ -25,6 +23,7 @@ func NewUserService(userRepo interfaces.UserRepository) interfaces.UserService {
 }
 
 func (s *userService) CreateUser(ctx context.Context, user *domain.CreateUserDTO) (*domain.User, error) {
+	// validation
 	switch {
 	case user.Email == "":
 		return nil, domain.NewValidationError("email", "email is required")
@@ -36,24 +35,33 @@ func (s *userService) CreateUser(ctx context.Context, user *domain.CreateUserDTO
 		return nil, domain.NewValidationError("password", "password must be at least 8 characters")
 	}
 
+	// check that user with email does not exist
+	existing, err := s.userRepo.GetByEmail(ctx, user.Email)
+
+	if existing != nil {
+		// obfuscate error message to avoid leaking user information
+		return nil, domain.NewBadRequestError("invalid body request")
+	}
+
+	if err != nil && err != domain.ErrNotFound {
+		return nil, domain.NewInternalServerError("something went wrong")
+	}
+
+	// hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, domain.NewInternalServerError("failed to hash password")
 	}
 
+	// replace plain password with hashed password
 	user.Password = string(hashedPassword)
 
 	// Create user
 	createdUser, err := s.userRepo.Create(ctx, user)
 	if err != nil {
-		// Convert repository errors to domain errors
-		if errors.Is(err, repositories.ErrDuplicate) {
-			return nil, domain.NewConflictError("email already exists")
-		}
 		return nil, err
 	}
 
-	createdUser.Password = "" // clear password before returning
 	return createdUser, nil
 }
 
