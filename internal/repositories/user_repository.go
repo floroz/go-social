@@ -19,12 +19,13 @@ func NewUserRepository(db *sql.DB) interfaces.UserRepository {
 }
 
 func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.UserDTO) (*domain.User, error) {
+
+	user := domain.User{}
+
 	query := `
         INSERT INTO users (first_name, last_name, email, password)
         VALUES ($1, $2, $3, $4)
         RETURNING id, first_name, last_name, email, password`
-
-	user := domain.User{}
 
 	err := r.db.QueryRowContext(
 		ctx,
