@@ -46,11 +46,8 @@ func (s *userService) Create(ctx context.Context, user *domain.CreateUserDTO) (*
 	if err != nil {
 		return nil, domain.NewInternalServerError("failed to hash password")
 	}
-
-	// replace plain password with hashed password
 	user.Password = string(hashedPassword)
 
-	// Create user
 	createdUser, err := s.userRepo.Create(ctx, user)
 	if err != nil {
 		return nil, err

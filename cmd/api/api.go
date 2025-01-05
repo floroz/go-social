@@ -71,16 +71,16 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 		switch e := err.(type) {
 		case *domain.ValidationError:
 			errorResponse(w, http.StatusBadRequest, e.Error())
-			return
 		case *domain.ConflictError:
 			errorResponse(w, http.StatusConflict, e.Error())
-			return
 		case *domain.InternalServerError:
 			errorResponse(w, http.StatusInternalServerError, e.Error())
+		case *domain.BadRequestError:
+			errorResponse(w, http.StatusBadRequest, e.Error())
 		default:
 			errorResponse(w, http.StatusInternalServerError, "internal server error")
-			return
 		}
+		return
 	}
 
 	writeJSON(w, http.StatusCreated, user)
