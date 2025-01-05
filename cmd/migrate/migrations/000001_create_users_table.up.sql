@@ -5,8 +5,7 @@ CREATE TABLE users (
     username VARCHAR(30) NOT NULL UNIQUE CHECK (LENGTH(username) > 0),
     email VARCHAR(255) NOT NULL CHECK (LENGTH(TRIM(email)) > 0),
     password VARCHAR(255) NOT NULL CHECK (LENGTH(password) >= 10),
-    -- mechanism to track failed logins and lock account - possible improvement
-    -- failed_login_attempts INT DEFAULT 0,
+    failed_login_attempts INT DEFAULT 0,
     profile_picture_url VARCHAR(255),
     bio TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
