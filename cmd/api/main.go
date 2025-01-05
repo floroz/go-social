@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/floroz/go-social/internal/env"
 	"github.com/floroz/go-social/internal/repositories"
@@ -24,7 +26,21 @@ func connectDb() (*sql.DB, error) {
 		return nil, err
 	}
 
-	log.Println("connected to database")
+	const connectionTimeout = 5 * time.Second
+
+	ctx, cancel := context.WithTimeout(context.Background(), connectionTimeout)
+	defer cancel()
+
+	if err := db.PingContext(ctx); err != nil {
+		return nil, err
+	}
+
+	db.SetConnMaxIdleTime(60 * time.Second)
+	db.SetConnMaxLifetime(60 * time.Second)
+	db.SetMaxOpenConns(100)
+	db.SetMaxIdleConns(10)
+
+	log.Println("database connection pool established")
 	return db, nil
 }
 
@@ -33,21 +49,21 @@ func main() {
 
 	db, err := connectDb()
 	if err != nil {
-		log.Fatal(err)
-		panic("failed to connect to database")
+		log.Fatalf("failed to connect to database: %v", err)
+		panic(err)
 	}
 	defer db.Close()
+
+	userRepo := repositories.NewUserRepository(db)
+	userService := services.NewUserService(userRepo)
 
 	config := &config{
 		port: env.GetEnvValue("PORT"),
 	}
 
-	userRepo := repositories.NewUserRepository(db)
-	userService := services.NewUserService(userRepo)
-
 	app := &application{
-		config,
-		userService,
+		config:      config,
+		userService: userService,
 	}
 
 	if err := app.run(); err != nil {
