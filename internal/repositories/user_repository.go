@@ -23,9 +23,9 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.User
 	user := domain.User{}
 
 	query := `
-        INSERT INTO users (first_name, last_name, email, password)
+        INSERT INTO users (first_name, last_name, email, username, password)
         VALUES ($1, $2, $3, $4)
-        RETURNING id, first_name, last_name, email, password`
+        RETURNING id, first_name, last_name, email, username, password`
 
 	err := r.db.QueryRowContext(
 		ctx,
@@ -33,12 +33,14 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.User
 		createUser.FirstName,
 		createUser.LastName,
 		createUser.Email,
+		createUser.Username,
 		createUser.Password,
 	).Scan(
 		&user.ID,
 		&user.FirstName,
 		&user.LastName,
 		&user.Email,
+		&user.Username,
 		&user.Password,
 	)
 
@@ -78,7 +80,7 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.User,
 
 func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
-		SELECT id, first_name, last_name, email, password
+		SELECT id, first_name, last_name, email, username, password
 		FROM users
 		WHERE email = $1`
 
@@ -88,6 +90,7 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 		&user.FirstName,
 		&user.LastName,
 		&user.Email,
+		&user.Username,
 		&user.Password,
 	)
 
@@ -97,6 +100,33 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 		}
 		log.Printf("error while getting user by email: %v", err)
 		return nil, domain.NewInternalServerError("failed to get user by email")
+	}
+
+	return user, nil
+}
+
+func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string) (*domain.User, error) {
+	query := `
+		SELECT id, first_name, last_name, email, username, password
+		FROM users
+		WHERE username = $1`
+
+	user := &domain.User{}
+	err := r.db.QueryRowContext(ctx, query, username).Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.Username,
+		&user.Password,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		log.Printf("error while getting user by username: %v", err)
+		return nil, domain.NewInternalServerError("failed to get user by username")
 	}
 
 	return user, nil

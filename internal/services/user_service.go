@@ -26,7 +26,15 @@ func (s *userService) Create(ctx context.Context, user *domain.UserDTO) (*domain
 		return nil, err
 	}
 
+	// check existing email
 	if existingUser, err := s.userRepo.GetByEmail(ctx, user.Email); existingUser != nil {
+		// obfuscate error message to avoid leaking user information
+		return nil, domain.NewBadRequestError("invalid body request")
+	} else if err != nil && err != domain.ErrNotFound {
+		return nil, domain.NewInternalServerError("something went wrong")
+	}
+	// check existing username
+	if existingUser, err := s.userRepo.GetByUsername(ctx, user.Username); existingUser != nil {
 		// obfuscate error message to avoid leaking user information
 		return nil, domain.NewBadRequestError("invalid body request")
 	} else if err != nil && err != domain.ErrNotFound {
