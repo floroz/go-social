@@ -58,7 +58,7 @@ func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request) {
-	createUserDto := &domain.CreateUserDTO{}
+	createUserDto := &domain.UserDTO{}
 
 	err := json.NewDecoder(r.Body).Decode(createUserDto)
 	if err != nil {
@@ -66,7 +66,7 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	user, err := app.userService.CreateUser(r.Context(), createUserDto)
+	user, err := app.userService.Create(r.Context(), createUserDto)
 	if err != nil {
 		switch e := err.(type) {
 		case *domain.ValidationError:
