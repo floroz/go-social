@@ -59,6 +59,9 @@ func main() {
 	userRepo := repositories.NewUserRepository(db)
 	userService := services.NewUserService(userRepo)
 
+	postRepo := repositories.NewPostRepository(db)
+	postService := services.NewPostService(postRepo)
+
 	config := &api.Config{
 		Port: env.GetEnvValue("PORT"),
 	}
@@ -66,6 +69,7 @@ func main() {
 	app := &api.Application{
 		Config:      config,
 		UserService: userService,
+		PostService: postService,
 	}
 
 	server := &http.Server{

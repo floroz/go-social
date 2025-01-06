@@ -11,6 +11,7 @@ import (
 type Application struct {
 	Config      *Config
 	UserService interfaces.UserService
+	PostService interfaces.PostService
 }
 
 type Config struct {
@@ -25,16 +26,24 @@ func (app *Application) Routes() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	r.Route("/v1", func(r chi.Router) {
+	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
 
 		r.Route("/users", func(r chi.Router) {
-			// PUBLIC
+			// public
 			r.Post("/", app.createUserHandler)
-			// PRIVATE
+			// protected
 			r.Delete("/{id}", app.deleteUserHandler)
 			r.Put("/{id}", app.updateUserHandler)
 			r.Get("/", app.listUsersHandler)
+		})
+
+		r.Route("/posts", func(r chi.Router) {
+			r.Post("/", app.createPostHandler)
+			r.Delete("/{id}", app.deletePostHandler)
+			r.Put("/{id}", app.updatePostHandler)
+			r.Get("/{id}", app.getPostByIdHandler)
+			r.Get("/", app.listPostsHandler)
 		})
 	})
 

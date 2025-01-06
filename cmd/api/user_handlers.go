@@ -11,8 +11,7 @@ import (
 func (app *Application) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	createUserDto := &domain.CreateUserDTO{}
 
-	err := readJSON(r.Body, createUserDto)
-	if err != nil {
+	if err := readJSON(r.Body, createUserDto); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

@@ -10,7 +10,7 @@ type Post struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type PostDTO struct {
+type CreatePostDTO struct {
 	UserID  int64  `json:"user_id"`
 	Content string `json:"content"`
 }
