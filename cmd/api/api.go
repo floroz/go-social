@@ -2,9 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/interfaces"
@@ -21,20 +19,7 @@ type Config struct {
 	Port string
 }
 
-func (app *Application) Run() error {
-	server := &http.Server{
-		Addr:         fmt.Sprintf(":%s", app.Config.Port),
-		Handler:      app.routes(),
-		WriteTimeout: time.Second * 30,
-		ReadTimeout:  time.Second * 15,
-		IdleTimeout:  time.Minute,
-	}
-
-	fmt.Printf("Starting server on %s\n", app.Config.Port)
-	return server.ListenAndServe()
-}
-
-func (app *Application) routes() http.Handler {
+func (app *Application) Routes() http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -46,12 +31,12 @@ func (app *Application) routes() http.Handler {
 		r.Get("/health", app.healthCheckHandler)
 
 		r.Route("/users", func(r chi.Router) {
-			// this should be public
-			r.Get("/", app.listUsersHandler)
-			// all other routes should be protected
+			// PUBLIC
 			r.Post("/", app.createUserHandler)
+			// PRIVATE
 			r.Delete("/{id}", app.deleteUserHandler)
 			r.Put("/{id}", app.updateUserHandler)
+			r.Get("/", app.listUsersHandler)
 		})
 	})
 

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/floroz/go-social/cmd/api"
@@ -67,7 +68,17 @@ func main() {
 		UserService: userService,
 	}
 
-	if err := app.Run(); err != nil {
+	server := &http.Server{
+		Addr:         fmt.Sprintf(":%s", app.Config.Port),
+		Handler:      app.Routes(),
+		WriteTimeout: time.Second * 30,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Minute,
+	}
+
+	fmt.Printf("Starting server on %s\n", app.Config.Port)
+
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }
