@@ -19,12 +19,12 @@ func (app *Application) createUserHandler(w http.ResponseWriter, r *http.Request
 
 	user, err := app.UserService.Create(r.Context(), createUserDto)
 	if err != nil {
-		handleServiceError(w, err)
+		handleErrors(w, err)
 		return
 	}
 
 	if err := writeJSON(w, http.StatusCreated, user); err != nil {
-		errorResponse(w, http.StatusInternalServerError, "failed to write response")
+		writeJSONError(w, http.StatusInternalServerError, "failed to write response")
 	}
 
 }
@@ -52,12 +52,12 @@ func (app *Application) listUsersHandler(w http.ResponseWriter, r *http.Request)
 
 	users, err := app.UserService.List(r.Context(), limit, offset)
 	if err != nil {
-		errorResponse(w, http.StatusInternalServerError, "internal server error")
+		writeJSONError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	if err := writeJSON(w, http.StatusOK, users); err != nil {
-		errorResponse(w, http.StatusInternalServerError, "failed to write response")
+		writeJSONError(w, http.StatusInternalServerError, "failed to write response")
 	}
 }
 
@@ -66,18 +66,18 @@ func (app *Application) deleteUserHandler(w http.ResponseWriter, r *http.Request
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		errorResponse(w, http.StatusBadRequest, "invalid id")
+		writeJSONError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
 
 	err = app.UserService.Delete(r.Context(), id)
 	if err != nil {
-		errorResponse(w, http.StatusInternalServerError, "internal server error")
+		writeJSONError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	if err := writeJSON(w, http.StatusNoContent, nil); err != nil {
-		errorResponse(w, http.StatusInternalServerError, "failed to write response")
+		writeJSONError(w, http.StatusInternalServerError, "failed to write response")
 	}
 }
 
@@ -85,7 +85,7 @@ func (app *Application) updateUserHandler(w http.ResponseWriter, r *http.Request
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		errorResponse(w, http.StatusBadRequest, "invalid id")
+		writeJSONError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
 
@@ -101,11 +101,11 @@ func (app *Application) updateUserHandler(w http.ResponseWriter, r *http.Request
 
 	user, err := app.UserService.Update(r.Context(), updateUserDto)
 	if err != nil {
-		handleServiceError(w, err)
+		handleErrors(w, err)
 		return
 	}
 
 	if err := writeJSON(w, http.StatusOK, user); err != nil {
-		errorResponse(w, http.StatusInternalServerError, "failed to write response")
+		writeJSONError(w, http.StatusInternalServerError, "failed to write response")
 	}
 }

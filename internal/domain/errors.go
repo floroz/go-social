@@ -9,8 +9,14 @@ var (
 	ErrNotFound = errors.New("not found")
 )
 
+type ErrorDetail struct {
+	// TODO: in the future an error catalog can be used to map errors to codes
+	// Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 type BadRequestError struct {
-	Message string
+	ErrorDetail
 }
 
 func (e *BadRequestError) Error() string {
@@ -19,42 +25,32 @@ func (e *BadRequestError) Error() string {
 
 func NewBadRequestError(message string) error {
 	return &BadRequestError{
-		Message: message,
+		ErrorDetail: ErrorDetail{
+			Message: message,
+		},
 	}
 }
 
 type ValidationError struct {
-	Field   string
-	Message string
+	ErrorDetail
+	Field string
 }
 
 func (e *ValidationError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Field, e.Message)
 }
 
-type ConflictError struct {
-	Message string
-}
-
-func (e *ConflictError) Error() string {
-	return e.Message
-}
-
 func NewValidationError(field, message string) error {
 	return &ValidationError{
-		Field:   field,
-		Message: message,
-	}
-}
-
-func NewConflictError(message string) error {
-	return &ConflictError{
-		Message: message,
+		Field: field,
+		ErrorDetail: ErrorDetail{
+			Message: message,
+		},
 	}
 }
 
 type InternalServerError struct {
-	Message string
+	ErrorDetail
 }
 
 func (e *InternalServerError) Error() string {
@@ -63,6 +59,8 @@ func (e *InternalServerError) Error() string {
 
 func NewInternalServerError(message string) error {
 	return &InternalServerError{
-		Message: message,
+		ErrorDetail: ErrorDetail{
+			Message: message,
+		},
 	}
 }
