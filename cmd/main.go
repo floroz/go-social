@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/floroz/go-social/cmd/api"
 	"github.com/floroz/go-social/internal/env"
 	"github.com/floroz/go-social/internal/repositories"
 	"github.com/floroz/go-social/internal/services"
@@ -57,16 +58,16 @@ func main() {
 	userRepo := repositories.NewUserRepository(db)
 	userService := services.NewUserService(userRepo)
 
-	config := &config{
-		port: env.GetEnvValue("PORT"),
+	config := &api.Config{
+		Port: env.GetEnvValue("PORT"),
 	}
 
-	app := &application{
-		config:      config,
-		userService: userService,
+	app := &api.Application{
+		Config:      config,
+		UserService: userService,
 	}
 
-	if err := app.run(); err != nil {
+	if err := app.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
