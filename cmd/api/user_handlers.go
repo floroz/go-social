@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -12,7 +11,7 @@ import (
 func (app *Application) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	createUserDto := &domain.CreateUserDTO{}
 
-	err := json.NewDecoder(r.Body).Decode(createUserDto)
+	err := readJSON(r.Body, createUserDto)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -92,7 +91,7 @@ func (app *Application) updateUserHandler(w http.ResponseWriter, r *http.Request
 
 	updateUserDto := &domain.UpdateUserDTO{}
 
-	err = json.NewDecoder(r.Body).Decode(updateUserDto)
+	err = readJSON(r.Body, updateUserDto)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
