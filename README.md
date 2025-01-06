@@ -9,6 +9,7 @@ Go-Social is a social media application built with Go. It provides features for 
 - Go 1.23 or later
 - Docker
 - [Air](https://github.com/air-verse/air)
+- [Golang Migrate](https://github.com/golang-migrate/migrate?tab=readme-ov-file#cli-usage)
 
 ### Installation
 
@@ -31,7 +32,13 @@ go mod tidy
 docker compose up -d
 ```
 
-4. Start the Go API
+4. Run Migrations
+   
+```sh
+make migrate-up
+```
+
+5. Start the Go API in Hot Reloading
 
 ```
 air

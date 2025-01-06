@@ -4,7 +4,7 @@ CREATE TABLE users (
     last_name VARCHAR(50) NOT NULL CHECK (LENGTH(TRIM(last_name)) > 0),
     username VARCHAR(30) NOT NULL UNIQUE CHECK (LENGTH(username) > 0),
     email VARCHAR(255) NOT NULL CHECK (LENGTH(TRIM(email)) > 0),
-    password VARCHAR(255) NOT NULL CHECK (LENGTH(password) >= 10),
+    password BYTEA NOT NULL CHECK (LENGTH(password) >= 10),
     failed_login_attempts INT DEFAULT 0,
     profile_picture_url VARCHAR(255),
     bio TEXT,
@@ -22,14 +22,6 @@ CREATE UNIQUE INDEX idx_users_email_lower ON users (LOWER(email));
 CREATE INDEX idx_users_created_at ON users (created_at DESC);
 
 -- Trigger to update updated_at timestamp
-CREATE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
 CREATE TRIGGER update_users_updated_at
     BEFORE UPDATE ON users
     FOR EACH ROW
