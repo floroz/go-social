@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/floroz/go-social/internal/domain"
+	"github.com/rs/zerolog/log"
 )
 
 type errorResponse struct {
@@ -42,13 +43,14 @@ func writeJSONError(w http.ResponseWriter, status int, message string) {
 }
 
 func handleErrors(w http.ResponseWriter, err error) {
-	switch err.(type) {
+	log.Error().Err(err).Msg("error")
+	switch e := err.(type) {
 	case *domain.ValidationError:
 		writeJSONError(w, http.StatusBadRequest, err.Error())
 	case *domain.InternalServerError:
-		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		writeJSONError(w, e.StatusCode, err.Error())
 	case *domain.BadRequestError:
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		writeJSONError(w, e.StatusCode, err.Error())
 	default:
 		writeJSONError(w, http.StatusInternalServerError, "internal server error")
 	}

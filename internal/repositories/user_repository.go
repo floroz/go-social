@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/interfaces"
@@ -47,12 +46,7 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 		&user.UpdatedAt,
 	)
 
-	if err != nil {
-		log.Printf("error while creating user: %v", err)
-		return nil, domain.NewInternalServerError("failed to create user")
-	}
-
-	return &user, nil
+	return &user, err
 }
 
 func (r *UserRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.User, error) {
@@ -75,8 +69,7 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.User,
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrNotFound
 		}
-		log.Printf("error while getting user by id: %v", err)
-		return nil, domain.NewInternalServerError("failed to get user by id")
+		return nil, err
 	}
 
 	return user, nil
@@ -103,8 +96,7 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrNotFound
 		}
-		log.Printf("error while getting user by email: %v", err)
-		return nil, domain.NewInternalServerError("failed to get user by email")
+		return nil, err
 	}
 
 	return user, nil
@@ -129,8 +121,7 @@ func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrNotFound
 		}
-		log.Printf("error while getting user by username: %v", err)
-		return nil, domain.NewInternalServerError("failed to get user by username")
+		return nil, err
 	}
 
 	return user, nil
@@ -168,7 +159,7 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, updateUser *domain.Upda
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrNotFound
 		}
-		return nil, fmt.Errorf("update user: %w", err)
+		return nil, err
 	}
 
 	return &user, nil
@@ -180,11 +171,8 @@ func (r *UserRepositoryImpl) Delete(ctx context.Context, id int) error {
 			WHERE id = $1`
 
 	_, err := r.db.ExecContext(ctx, query, id)
-	if err != nil {
-		return fmt.Errorf("delete user: %w", err)
-	}
 
-	return nil
+	return err
 }
 
 func (r *UserRepositoryImpl) List(ctx context.Context, limit, offset int) ([]domain.User, error) {
@@ -216,7 +204,7 @@ func (r *UserRepositoryImpl) List(ctx context.Context, limit, offset int) ([]dom
 			&user.UpdatedAt,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("list users: %w", err)
+			return nil, err
 		}
 		users = append(users, user)
 	}

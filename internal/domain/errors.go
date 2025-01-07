@@ -3,6 +3,7 @@ package domain
 import (
 	"errors"
 	"fmt"
+	"net/http"
 )
 
 var (
@@ -17,6 +18,7 @@ type ErrorDetail struct {
 
 type BadRequestError struct {
 	ErrorDetail
+	StatusCode int
 }
 
 func (e *BadRequestError) Error() string {
@@ -25,6 +27,7 @@ func (e *BadRequestError) Error() string {
 
 func NewBadRequestError(message string) error {
 	return &BadRequestError{
+		StatusCode: http.StatusBadRequest,
 		ErrorDetail: ErrorDetail{
 			Message: message,
 		},
@@ -51,6 +54,7 @@ func NewValidationError(field, message string) error {
 
 type InternalServerError struct {
 	ErrorDetail
+	StatusCode int
 }
 
 func (e *InternalServerError) Error() string {
@@ -59,6 +63,7 @@ func (e *InternalServerError) Error() string {
 
 func NewInternalServerError(message string) error {
 	return &InternalServerError{
+		StatusCode: http.StatusInternalServerError,
 		ErrorDetail: ErrorDetail{
 			Message: message,
 		},

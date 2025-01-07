@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/floroz/go-social/cmd/api"
 	"github.com/floroz/go-social/internal/env"
@@ -42,16 +43,17 @@ func connectDb() (*sql.DB, error) {
 	db.SetMaxOpenConns(100)
 	db.SetMaxIdleConns(10)
 
-	log.Println("database connection pool established")
+	log.Info().Msg("database connection pool established")
 	return db, nil
 }
 
 func main() {
+
 	env.MustLoadEnv(".env.local")
 
 	db, err := connectDb()
 	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+		log.Error().Err(err).Msg("failed to connect to database")
 		panic(err)
 	}
 	defer db.Close()
@@ -80,9 +82,9 @@ func main() {
 		IdleTimeout:  time.Minute,
 	}
 
-	fmt.Printf("Starting server on %s\n", app.Config.Port)
+	log.Info().Msgf("Starting server on %s", app.Config.Port)
 
 	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
+		log.Error().Err(err).Msg("server error")
 	}
 }
