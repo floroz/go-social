@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/interfaces"
@@ -81,4 +82,31 @@ func (r *PostRepositoryImpl) List(ctx context.Context, limit int, offset int) ([
 	}
 
 	return posts, nil
+}
+
+func (r *PostRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.Post, error) {
+	query := `
+		SELECT id, user_id, content, created_at, updated_at
+		FROM posts
+		WHERE id = $1
+		`
+
+	post := domain.Post{}
+
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&post.ID,
+		&post.UserID,
+		&post.Content,
+		&post.CreatedAt,
+		&post.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return &post, nil
 }

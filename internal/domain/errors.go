@@ -69,3 +69,21 @@ func NewInternalServerError(message string) error {
 		},
 	}
 }
+
+type NotFoundError struct {
+	ErrorDetail
+	StatusCode int
+}
+
+func (e *NotFoundError) Error() string {
+	return e.Message
+}
+
+func NewNotFoundError(message string) error {
+	return &NotFoundError{
+		StatusCode: http.StatusNotFound,
+		ErrorDetail: ErrorDetail{
+			Message: message,
+		},
+	}
+}

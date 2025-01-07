@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/floroz/go-social/internal/domain"
 )
@@ -44,5 +45,19 @@ func (app *Application) updatePostHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (app *Application) getPostByIdHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
 
+	if err != nil {
+		handleErrors(w, domain.NewBadRequestError("invalid id"))
+		return
+	}
+
+	post, err := app.PostService.GetByID(r.Context(), id)
+
+	if err != nil {
+		handleErrors(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, post)
 }

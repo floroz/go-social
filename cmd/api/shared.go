@@ -56,6 +56,8 @@ func handleErrors(w http.ResponseWriter, err error) {
 		writeJSONError(w, e.StatusCode, err.Error())
 	case *domain.BadRequestError:
 		writeJSONError(w, e.StatusCode, err.Error())
+	case *domain.NotFoundError:
+		writeJSONError(w, e.StatusCode, err.Error())
 	default:
 		writeJSONError(w, http.StatusInternalServerError, "internal server error")
 	}

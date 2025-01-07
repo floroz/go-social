@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/interfaces"
@@ -52,4 +53,21 @@ func (r *postService) List(ctx context.Context, limit int, offset int) ([]*domai
 	}
 
 	return posts, nil
+}
+
+func (r *postService) GetByID(ctx context.Context, id int) (*domain.Post, error) {
+	// TODO: Who can request users posts? Are they all public, or users can decide whether to make them public or not?
+
+	post, err := r.postRepo.GetByID(ctx, id)
+
+	if err != nil && errors.Is(err, domain.ErrNotFound) {
+		return nil, domain.NewNotFoundError("post not found")
+	}
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get post by id")
+		return nil, domain.NewInternalServerError("failed to get post by id")
+	}
+
+	return post, nil
 }
