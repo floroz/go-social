@@ -13,10 +13,15 @@ type errorResponse struct {
 	Errors []domain.ErrorDetail `json:"errors"`
 }
 
-func writeJSON(w http.ResponseWriter, status int, data any) error {
+func writeJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	return json.NewEncoder(w).Encode(data)
+	err := json.NewEncoder(w).Encode(data)
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to write response")
+		writeJSONError(w, http.StatusInternalServerError, "failed to write response")
+	}
 }
 
 func readJSON(source io.Reader, dest any) error {

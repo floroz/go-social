@@ -22,9 +22,7 @@ func (app *Application) createUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := writeJSON(w, http.StatusCreated, user); err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "failed to write response")
-	}
+	writeJSON(w, http.StatusCreated, user)
 
 }
 
@@ -55,9 +53,7 @@ func (app *Application) listUsersHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := writeJSON(w, http.StatusOK, users); err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "failed to write response")
-	}
+	writeJSON(w, http.StatusOK, users)
 }
 
 func (app *Application) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -75,9 +71,7 @@ func (app *Application) deleteUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := writeJSON(w, http.StatusNoContent, nil); err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "failed to write response")
-	}
+	writeJSON(w, http.StatusNoContent, nil)
 }
 
 func (app *Application) updateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +98,5 @@ func (app *Application) updateUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := writeJSON(w, http.StatusOK, user); err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "failed to write response")
-	}
+	writeJSON(w, http.StatusOK, user)
 }
