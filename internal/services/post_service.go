@@ -6,6 +6,7 @@ import (
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/interfaces"
 	"github.com/floroz/go-social/internal/validation"
+	"github.com/rs/zerolog/log"
 )
 
 type postService struct {
@@ -33,4 +34,22 @@ func (s *postService) Create(ctx context.Context, createPost *domain.CreatePostD
 	}
 
 	return post, nil
+}
+
+func (r *postService) List(ctx context.Context, limit int, offset int) ([]*domain.Post, error) {
+	if limit > 100 {
+		log.Warn().Msg("limit is too high, setting to 100")
+		limit = 100
+	} else if limit == 0 {
+		limit = 10
+	}
+
+	posts, err := r.postRepo.List(ctx, limit, offset)
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to list posts")
+		return nil, domain.NewInternalServerError("failed to list posts")
+	}
+
+	return posts, nil
 }

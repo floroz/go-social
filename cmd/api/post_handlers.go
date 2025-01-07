@@ -25,15 +25,25 @@ func (app *Application) createPostHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+func (app *Application) listPostsHandler(w http.ResponseWriter, r *http.Request) {
+
+	posts, err := app.PostService.List(r.Context(), 10, 0)
+
+	if err != nil {
+		handleErrors(w, err)
+		return
+	}
+
+	if err := writeJSON(w, http.StatusOK, posts); err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "failed to write response")
+	}
+}
+
 func (app *Application) deletePostHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
 func (app *Application) updatePostHandler(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func (app *Application) listPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 

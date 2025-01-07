@@ -44,3 +44,41 @@ func (r *PostRepositoryImpl) Create(ctx context.Context, post *domain.CreatePost
 
 	return &newPost, nil
 }
+
+func (r *PostRepositoryImpl) List(ctx context.Context, limit int, offset int) ([]*domain.Post, error) {
+	query := `
+		SELECT id, user_id, content, created_at, updated_at
+		FROM posts
+		LIMIT $1 OFFSET $2
+		`
+
+	rows, err := r.db.QueryContext(ctx, query, limit, offset)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	posts := make([]*domain.Post, 0)
+
+	for rows.Next() {
+		post := domain.Post{}
+
+		err := rows.Scan(
+			&post.ID,
+			&post.UserID,
+			&post.Content,
+			&post.CreatedAt,
+			&post.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, &post)
+	}
+
+	return posts, nil
+}
