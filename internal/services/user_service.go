@@ -21,14 +21,14 @@ func NewUserService(userRepo interfaces.UserRepository) interfaces.UserService {
 	}
 }
 
-func (s *userService) Create(ctx context.Context, user *domain.CreateUserDTO) (*domain.User, error) {
-	err := validation.ValidateCreateUserDTO(user)
+func (s *userService) Create(ctx context.Context, createUser *domain.CreateUserDTO) (*domain.User, error) {
+	err := validation.Validate.Struct(createUser)
 	if err != nil {
 		return nil, domain.NewBadRequestError(err.Error())
 	}
 
 	// check existing email
-	if existingUser, err := s.userRepo.GetByEmail(ctx, user.Email); existingUser != nil {
+	if existingUser, err := s.userRepo.GetByEmail(ctx, createUser.Email); existingUser != nil {
 		// obfuscate error message to avoid leaking user information
 		return nil, domain.NewBadRequestError("invalid body request")
 	} else if err != nil && err != domain.ErrNotFound {
@@ -36,7 +36,7 @@ func (s *userService) Create(ctx context.Context, user *domain.CreateUserDTO) (*
 		return nil, domain.NewInternalServerError("something went wrong")
 	}
 	// check existing username
-	if existingUser, err := s.userRepo.GetByUsername(ctx, user.Username); existingUser != nil {
+	if existingUser, err := s.userRepo.GetByUsername(ctx, createUser.Username); existingUser != nil {
 		// obfuscate error message to avoid leaking user information
 		return nil, domain.NewBadRequestError("invalid body request")
 	} else if err != nil && err != domain.ErrNotFound {
@@ -45,14 +45,14 @@ func (s *userService) Create(ctx context.Context, user *domain.CreateUserDTO) (*
 	}
 
 	// hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(createUser.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to hash password")
 		return nil, domain.NewInternalServerError("failed to hash password")
 	}
-	user.Password = string(hashedPassword)
+	createUser.Password = string(hashedPassword)
 
-	createdUser, err := s.userRepo.Create(ctx, user)
+	createdUser, err := s.userRepo.Create(ctx, createUser)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to create user")
 		return nil, domain.NewInternalServerError("failed to create user")
@@ -72,9 +72,10 @@ func (s *userService) GetByID(ctx context.Context, id int) (*domain.User, error)
 	return user, nil
 }
 
-func (s *userService) Update(ctx context.Context, user *domain.UpdateUserDTO) (*domain.User, error) {
+func (s *userService) Update(ctx context.Context, updateUser *domain.UpdateUserDTO) (*domain.User, error) {
+	err := validation.Validate.Struct(updateUser)
 	// TODO: check that current user is the owner of the user to be updated - after implementing authn and authz
-	updatedUser, err := s.userRepo.Update(ctx, user)
+	updatedUser, err := s.userRepo.Update(ctx, updateUser)
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to update user")

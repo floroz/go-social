@@ -19,7 +19,7 @@ func NewPostService(postRepo interfaces.PostRepository) interfaces.PostService {
 }
 
 func (s *postService) Create(ctx context.Context, createPost *domain.CreatePostDTO) (*domain.Post, error) {
-	err := validation.ValidateCreatePostDTO(createPost)
+	err := validation.Validate.Struct(createPost)
 
 	if err != nil {
 		return nil, domain.NewBadRequestError(err.Error())
