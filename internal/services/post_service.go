@@ -71,3 +71,44 @@ func (r *postService) GetByID(ctx context.Context, id int) (*domain.Post, error)
 
 	return post, nil
 }
+
+func (r *postService) Update(ctx context.Context, updatePost *domain.UpdatePostDTO) (*domain.Post, error) {
+	err := validation.Validate.Struct(updatePost)
+
+	if err != nil {
+		return nil, domain.NewBadRequestError(err.Error())
+	}
+
+	// validate that the user is trying to update a post for themselves
+	// TODO: requires authentication
+
+	post, err := r.postRepo.Update(ctx, updatePost)
+
+	if err != nil && errors.Is(err, domain.ErrNotFound) {
+		return nil, domain.NewNotFoundError("post not found")
+	}
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to update post")
+		return nil, domain.NewInternalServerError("failed to update post")
+	}
+
+	return post, nil
+}
+
+func (r *postService) Delete(ctx context.Context, id int) error {
+	// validate that the user is trying to delete a post for themselves
+
+	err := r.postRepo.Delete(ctx, id)
+
+	if err != nil && errors.Is(err, domain.ErrNotFound) {
+		return domain.NewNotFoundError("post not found")
+	}
+
+	if err != nil {
+		log.Error().Err(err).Msg("failed to delete post")
+		return domain.NewInternalServerError("failed to delete post")
+	}
+
+	return nil
+}

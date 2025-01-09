@@ -110,3 +110,54 @@ func (r *PostRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.Post,
 
 	return &post, nil
 }
+
+func (r *PostRepositoryImpl) Update(ctx context.Context, post *domain.UpdatePostDTO) (*domain.Post, error) {
+	query := `
+		UPDATE posts
+		SET content = $1
+		WHERE id = $2
+		RETURNING id, user_id, content, created_at, updated_at
+		`
+
+	updatedPost := domain.Post{}
+
+	err := r.db.QueryRowContext(
+		ctx,
+		query,
+		post.Content,
+		post.ID,
+	).Scan(
+		&updatedPost.ID,
+		&updatedPost.UserID,
+		&updatedPost.Content,
+		&updatedPost.CreatedAt,
+		&updatedPost.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return &updatedPost, nil
+}
+
+func (r *PostRepositoryImpl) Delete(ctx context.Context, id int) error {
+	query := `
+		DELETE FROM posts
+		WHERE id = $1
+		`
+
+	_, err := r.db.ExecContext(ctx, query, id)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.ErrNotFound
+		}
+		return err
+	}
+
+	return nil
+}

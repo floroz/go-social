@@ -37,10 +37,49 @@ func (app *Application) listPostsHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *Application) deletePostHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+
+	if err != nil {
+		handleErrors(w, domain.NewBadRequestError("invalid id"))
+		return
+	}
+
+	err = app.PostService.Delete(r.Context(), id)
+
+	if err != nil {
+		handleErrors(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusNoContent, nil)
 
 }
 
 func (app *Application) updatePostHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+
+	if err != nil {
+		handleErrors(w, domain.NewBadRequestError("invalid id"))
+		return
+	}
+
+	updatePostDTO := &domain.UpdatePostDTO{}
+
+	if err := readJSON(r.Body, updatePostDTO); err != nil {
+		handleErrors(w, domain.NewInternalServerError("failed to read request body"))
+		return
+	}
+
+	updatePostDTO.ID = id
+
+	post, err := app.PostService.Update(r.Context(), updatePostDTO)
+
+	if err != nil {
+		handleErrors(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, post)
 
 }
 
