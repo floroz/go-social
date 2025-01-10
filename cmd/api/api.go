@@ -82,7 +82,11 @@ func writeJSON(w http.ResponseWriter, status int, data any) {
 		return
 	}
 
-	err := json.NewEncoder(w).Encode(data)
+	response := map[string]any{
+		"data": data,
+	}
+
+	err := json.NewEncoder(w).Encode(response)
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to write response")
