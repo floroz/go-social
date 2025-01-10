@@ -1,12 +1,17 @@
 package domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/dgrijalva/jwt-go"
+)
 
 type User struct {
 	ID        int       `json:"id"`
 	FirstName string    `json:"first_name"`
 	LastName  string    `json:"last_name"`
 	Username  string    `json:"username"`
+	Password  string    `json:"-"`
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -27,4 +32,20 @@ type CreateUserDTO struct {
 type UpdateUserDTO struct {
 	ID int `json:"id" validate:"required,min=1"`
 	EditableUserField
+}
+
+type LoginUserDTO struct {
+	Email    string `json:"email" validate:"required,min=3,max=50,email"`
+	Password string `json:"password" validate:"required,min=8,max=50"`
+}
+
+type UserClaims struct {
+	ID        int       `json:"id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	jwt.StandardClaims
 }

@@ -25,7 +25,7 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 	query := `
         INSERT INTO users (first_name, last_name, email, username, password)
         VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, first_name, last_name, email, username, created_at, updated_at
+        RETURNING id, first_name, last_name, email, username, password, created_at, updated_at
 		`
 
 	err := r.db.QueryRowContext(
@@ -42,6 +42,7 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 		&user.LastName,
 		&user.Email,
 		&user.Username,
+		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -51,7 +52,7 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 
 func (r *UserRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.User, error) {
 	query := `
-			SELECT id, first_name, last_name, email, username, created_at, updated_at
+			SELECT id, first_name, last_name, email, username, password, created_at, updated_at
 			FROM users
 			WHERE id = $1`
 
@@ -62,7 +63,9 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.User,
 		&user.LastName,
 		&user.Email,
 		&user.Username,
+		&user.Password,
 		&user.CreatedAt,
+		&user.UpdatedAt,
 	)
 
 	if err != nil {
@@ -77,7 +80,7 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.User,
 
 func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
-		SELECT id, first_name, last_name, email, username, created_at, updated_at
+		SELECT id, first_name, last_name, email, username, password, created_at, updated_at
 		FROM users
 		WHERE email = $1`
 
@@ -88,6 +91,7 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 		&user.LastName,
 		&user.Email,
 		&user.Username,
+		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -104,7 +108,7 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 
 func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string) (*domain.User, error) {
 	query := `
-		SELECT id, first_name, last_name, email, username
+		SELECT id, first_name, last_name, email, username, password, created_at, updated_at
 		FROM users
 		WHERE username = $1`
 
@@ -115,6 +119,9 @@ func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string)
 		&user.LastName,
 		&user.Email,
 		&user.Username,
+		&user.Password,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	)
 
 	if err != nil {
@@ -132,7 +139,7 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, updateUser *domain.Upda
 			UPDATE users
 			SET first_name = $1, last_name = $2, email = $3, username = $4
 			WHERE id = $5
-			RETURNING id, first_name, last_name, email, username, created_at, updated_at
+			RETURNING id, first_name, last_name, email, username, password, created_at, updated_at
 			`
 
 	user := domain.User{}
@@ -151,6 +158,7 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, updateUser *domain.Upda
 		&user.LastName,
 		&user.Email,
 		&user.Username,
+		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -181,7 +189,7 @@ func (r *UserRepositoryImpl) List(ctx context.Context, limit, offset int) ([]dom
 	}
 
 	query := `
-			SELECT id, first_name, last_name, email, username, created_at, updated_at
+			SELECT id, first_name, last_name, email, username, password, created_at, updated_at
 			FROM users
 			LIMIT $1 OFFSET $2`
 
@@ -200,6 +208,7 @@ func (r *UserRepositoryImpl) List(ctx context.Context, limit, offset int) ([]dom
 			&user.LastName,
 			&user.Email,
 			&user.Username,
+			&user.Password,
 			&user.CreatedAt,
 			&user.UpdatedAt,
 		)

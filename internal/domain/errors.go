@@ -87,3 +87,21 @@ func NewNotFoundError(message string) error {
 		},
 	}
 }
+
+type UnauthorizedError struct {
+	ErrorDetail
+	StatusCode int
+}
+
+func (e *UnauthorizedError) Error() string {
+	return e.Message
+}
+
+func NewUnauthorizedError(message string) error {
+	return &UnauthorizedError{
+		StatusCode: http.StatusUnauthorized,
+		ErrorDetail: ErrorDetail{
+			Message: message,
+		},
+	}
+}
