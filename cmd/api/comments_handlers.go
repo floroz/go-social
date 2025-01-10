@@ -9,7 +9,6 @@ import (
 
 func (app *Application) createCommentHandler(w http.ResponseWriter, r *http.Request) {
 	postId, err := strconv.Atoi(r.PathValue("postId"))
-
 	if err != nil {
 		handleErrors(w, domain.NewBadRequestError("invalid id"))
 		return
@@ -97,24 +96,6 @@ func (app *Application) deleteCommentHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	err = app.CommentService.Delete(r.Context(), id)
-
-	if err != nil {
-		handleErrors(w, err)
-		return
-	}
-
-	writeJSONResponse(w, http.StatusNoContent, nil)
-}
-
-func (app *Application) deleteByPostIdCommentHandler(w http.ResponseWriter, r *http.Request) {
-	postId, err := strconv.Atoi(r.PathValue("postId"))
-
-	if err != nil {
-		handleErrors(w, domain.NewBadRequestError("invalid post id"))
-		return
-	}
-
-	err = app.CommentService.DeleteByPostID(r.Context(), postId)
 
 	if err != nil {
 		handleErrors(w, err)
