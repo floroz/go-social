@@ -8,24 +8,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func (app *Application) createUserHandler(w http.ResponseWriter, r *http.Request) {
-	createUserDto := &domain.CreateUserDTO{}
-
-	if err := readJSON(r.Body, createUserDto); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	user, err := app.UserService.Create(r.Context(), createUserDto)
-	if err != nil {
-		handleErrors(w, err)
-		return
-	}
-
-	writeJSON(w, http.StatusCreated, user)
-
-}
-
 func (app *Application) listUsersHandler(w http.ResponseWriter, r *http.Request) {
 	limitStr := r.URL.Query().Get("limit")
 	limit := 10
