@@ -45,21 +45,26 @@ func (app *Application) Routes() http.Handler {
 		})
 
 		r.Route("/users", func(r chi.Router) {
-			r.With(middlewares.AuthMiddleware).Delete("/{id}", app.deleteUserHandler)
-			r.With(middlewares.AuthMiddleware).Put("/{id}", app.updateUserHandler)
-			r.With(middlewares.AuthMiddleware).Get("/", app.listUsersHandler)
+			r.Use(middlewares.AuthMiddleware)
+
+			r.Delete("/{id}", app.deleteUserHandler)
+			r.Put("/{id}", app.updateUserHandler)
+			r.Get("/", app.listUsersHandler)
 		})
 
 		r.Route("/posts", func(r chi.Router) {
-			r.With(middlewares.AuthMiddleware).Post("/", app.createPostHandler)
-			r.With(middlewares.AuthMiddleware).Delete("/{id}", app.deletePostHandler)
-			r.With(middlewares.AuthMiddleware).Put("/{id}", app.updatePostHandler)
+			r.Use(middlewares.AuthMiddleware)
+
+			r.Post("/", app.createPostHandler)
+			r.Delete("/{id}", app.deletePostHandler)
+			r.Put("/{id}", app.updatePostHandler)
 			r.Get("/{id}", app.getPostByIdHandler)
 			r.Get("/", app.listPostsHandler)
 
 			r.Route("/{postId}/comments", func(r chi.Router) {
-				r.With(middlewares.AuthMiddleware).Post("/", app.createCommentHandler)
-				r.With(middlewares.AuthMiddleware).Delete("/{id}", app.deleteCommentHandler)
+
+				r.Post("/", app.createCommentHandler)
+				r.Delete("/{id}", app.deleteCommentHandler)
 				r.Get("/{id}", app.getCommentByIdHandler)
 				r.Get("/", app.listByPostIdHandler)
 			})

@@ -3,7 +3,6 @@ package middlewares
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/floroz/go-social/internal/domain"
@@ -17,19 +16,20 @@ const (
 )
 
 func AuthMiddleware(next http.Handler) http.Handler {
+	jwtSecret := env.GetJWTSecret()
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "missing authorization header", http.StatusUnauthorized)
+		cookie, err := r.Cookie("access_token")
+
+		if err != nil {
+			http.Error(w, "missing access token", http.StatusUnauthorized)
 			return
 		}
-
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		token, err := jwt.ParseWithClaims(tokenString, &domain.UserClaims{}, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(cookie.Value, &domain.UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, http.ErrAbortHandler
 			}
-			return []byte(env.GetJWTSecret()), nil
+			return []byte(jwtSecret), nil
 		})
 
 		if err != nil || !token.Valid {

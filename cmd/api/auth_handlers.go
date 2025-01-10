@@ -91,6 +91,7 @@ func (app *Application) loginHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    accessToken,
 		HttpOnly: true,
 		Expires:  time.Now().Add(15 * time.Minute),
+		Path:     "/",
 	})
 
 	http.SetCookie(w, &http.Cookie{
@@ -98,6 +99,7 @@ func (app *Application) loginHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    refreshToken,
 		HttpOnly: true,
 		Expires:  time.Now().Add(24 * time.Hour),
+		Path:     "/",
 	})
 
 	writeJSONResponse(w, http.StatusOK, user)
@@ -109,6 +111,7 @@ func (app *Application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    "",
 		HttpOnly: true,
 		Expires:  time.Unix(0, 0),
+		Path:     "/",
 	})
 
 	http.SetCookie(w, &http.Cookie{
@@ -116,6 +119,7 @@ func (app *Application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    "",
 		HttpOnly: true,
 		Expires:  time.Unix(0, 0),
+		Path:     "/",
 	})
 
 	w.WriteHeader(http.StatusOK)
@@ -168,6 +172,7 @@ func (app *Application) refreshHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    accessToken,
 		HttpOnly: true,
 		Expires:  time.Now().Add(15 * time.Minute),
+		Path:     "/",
 	})
 
 	w.WriteHeader(http.StatusOK)
