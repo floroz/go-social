@@ -65,7 +65,7 @@ func (s *commentsService) GetByID(ctx context.Context, id int) (*domain.Comment,
 	return s.commentsRepo.GetByID(ctx, id)
 }
 
-func (s *commentsService) ListByPostID(ctx context.Context, postId int, limit int, offset int) ([]*domain.Comment, error) {
+func (s *commentsService) ListByPostID(ctx context.Context, postId int, limit int, offset int) ([]domain.Comment, error) {
 	// todo validate authorization to list comments for a post
 
 	comments, err := s.commentsRepo.ListByPostID(ctx, postId, limit, offset)

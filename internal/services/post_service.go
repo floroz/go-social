@@ -11,11 +11,12 @@ import (
 )
 
 type postService struct {
-	postRepo interfaces.PostRepository
+	postRepo    interfaces.PostRepository
+	commentRepo interfaces.CommentRepository
 }
 
-func NewPostService(postRepo interfaces.PostRepository) interfaces.PostService {
-	return &postService{postRepo: postRepo}
+func NewPostService(postRepo interfaces.PostRepository, commentRepo interfaces.CommentRepository) interfaces.PostService {
+	return &postService{postRepo: postRepo, commentRepo: commentRepo}
 }
 
 func (s *postService) Create(ctx context.Context, createPost *domain.CreatePostDTO) (*domain.Post, error) {
@@ -59,15 +60,22 @@ func (r *postService) GetByID(ctx context.Context, id int) (*domain.Post, error)
 	// TODO: Who can request users posts? Are they all public, or users can decide whether to make them public or not?
 
 	post, err := r.postRepo.GetByID(ctx, id)
-
-	if err != nil && errors.Is(err, domain.ErrNotFound) {
-		return nil, domain.NewNotFoundError("post not found")
-	}
-
 	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.NewNotFoundError("post not found")
+		}
 		log.Error().Err(err).Msg("failed to get post by id")
 		return nil, domain.NewInternalServerError("failed to get post by id")
 	}
+
+	// For now offset and limit are hard-coded
+	comments, err := r.commentRepo.ListByPostID(ctx, id, 100, 0)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get comments by post id")
+		return nil, domain.NewInternalServerError("failed to get comments by post id")
+	}
+
+	post.Comments = comments
 
 	return post, nil
 }

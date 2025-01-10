@@ -65,11 +65,11 @@ func main() {
 	userRepo := repositories.NewUserRepository(db)
 	userService := services.NewUserService(userRepo)
 
-	postRepo := repositories.NewPostRepository(db)
-	postService := services.NewPostService(postRepo)
-
 	commentRepo := repositories.NewCommentRepository(db)
 	commentService := services.NewCommentService(commentRepo)
+
+	postRepo := repositories.NewPostRepository(db)
+	postService := services.NewPostService(postRepo, commentRepo)
 
 	authService := services.NewAuthService(userRepo)
 

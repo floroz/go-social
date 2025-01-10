@@ -114,7 +114,7 @@ func (r *CommentRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.Co
 	return &comment, nil
 }
 
-func (r *CommentRepositoryImpl) ListByPostID(ctx context.Context, postId int, limit int, offset int) ([]*domain.Comment, error) {
+func (r *CommentRepositoryImpl) ListByPostID(ctx context.Context, postId int, limit int, offset int) ([]domain.Comment, error) {
 	query := `
 		SELECT id, user_id, post_id, content, created_at, updated_at
 		FROM comments
@@ -132,7 +132,7 @@ func (r *CommentRepositoryImpl) ListByPostID(ctx context.Context, postId int, li
 
 	defer rows.Close()
 
-	comments := make([]*domain.Comment, 0)
+	comments := make([]domain.Comment, 0)
 
 	for rows.Next() {
 		comment := domain.Comment{}
@@ -150,7 +150,7 @@ func (r *CommentRepositoryImpl) ListByPostID(ctx context.Context, postId int, li
 			return nil, err
 		}
 
-		comments = append(comments, &comment)
+		comments = append(comments, comment)
 	}
 
 	return comments, nil
