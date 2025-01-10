@@ -64,14 +64,18 @@ func main() {
 	postRepo := repositories.NewPostRepository(db)
 	postService := services.NewPostService(postRepo)
 
+	commentRepo := repositories.NewCommentRepository(db)
+	commentService := services.NewCommentService(commentRepo)
+
 	config := &api.Config{
 		Port: env.GetEnvValue("PORT"),
 	}
 
 	app := &api.Application{
-		Config:      config,
-		UserService: userService,
-		PostService: postService,
+		Config:         config,
+		UserService:    userService,
+		PostService:    postService,
+		CommentService: commentService,
 	}
 
 	server := &http.Server{

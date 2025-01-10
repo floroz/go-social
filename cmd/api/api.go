@@ -13,9 +13,10 @@ import (
 )
 
 type Application struct {
-	Config      *Config
-	UserService interfaces.UserService
-	PostService interfaces.PostService
+	Config         *Config
+	UserService    interfaces.UserService
+	PostService    interfaces.PostService
+	CommentService interfaces.CommentService
 }
 
 type Config struct {
@@ -48,7 +49,16 @@ func (app *Application) Routes() http.Handler {
 			r.Put("/{id}", app.updatePostHandler)
 			r.Get("/{id}", app.getPostByIdHandler)
 			r.Get("/", app.listPostsHandler)
+
+			r.Route("/{postId}/comments", func(r chi.Router) {
+				r.Post("/", app.createCommentHandler)
+				r.Get("/{id}", app.getCommentByIdHandler)
+				r.Delete("/{id}", app.deleteCommentHandler)
+				r.Get("/", app.listByPostIdHandler)
+				r.Delete("/", app.deleteByPostIdCommentHandler)
+			})
 		})
+
 	})
 
 	return r
