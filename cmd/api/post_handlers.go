@@ -21,7 +21,7 @@ func (app *Application) createPostHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, post)
+	writeJSONResponse(w, http.StatusCreated, post)
 }
 
 func (app *Application) listPostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +33,7 @@ func (app *Application) listPostsHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, posts)
+	writeJSONResponse(w, http.StatusOK, posts)
 }
 
 func (app *Application) deletePostHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +51,7 @@ func (app *Application) deletePostHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	writeJSON(w, http.StatusNoContent, nil)
+	writeJSONResponse(w, http.StatusNoContent, nil)
 
 }
 
@@ -79,7 +79,7 @@ func (app *Application) updatePostHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	writeJSON(w, http.StatusOK, post)
+	writeJSONResponse(w, http.StatusOK, post)
 
 }
 
@@ -98,5 +98,5 @@ func (app *Application) getPostByIdHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	writeJSON(w, http.StatusOK, post)
+	writeJSONResponse(w, http.StatusOK, post)
 }

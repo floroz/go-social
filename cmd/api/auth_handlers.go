@@ -56,7 +56,7 @@ func (app *Application) signupHandler(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
-	writeJSON(w, http.StatusCreated, user)
+	writeJSONResponse(w, http.StatusCreated, user)
 
 }
 
@@ -100,7 +100,7 @@ func (app *Application) loginHandler(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
-	writeJSON(w, http.StatusOK, user)
+	writeJSONResponse(w, http.StatusOK, user)
 }
 
 func (app *Application) logoutHandler(w http.ResponseWriter, r *http.Request) {

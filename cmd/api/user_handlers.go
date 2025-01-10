@@ -35,7 +35,7 @@ func (app *Application) listUsersHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, users)
+	writeJSONResponse(w, http.StatusOK, users)
 }
 
 func (app *Application) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +53,7 @@ func (app *Application) deleteUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	writeJSON(w, http.StatusNoContent, nil)
+	writeJSONResponse(w, http.StatusNoContent, nil)
 }
 
 func (app *Application) updateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,5 +80,5 @@ func (app *Application) updateUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	writeJSON(w, http.StatusOK, user)
+	writeJSONResponse(w, http.StatusOK, user)
 }

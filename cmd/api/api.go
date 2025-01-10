@@ -74,7 +74,7 @@ type errorResponse struct {
 	Errors []domain.ErrorDetail `json:"errors"`
 }
 
-func writeJSON(w http.ResponseWriter, status int, data any) {
+func writeJSONResponse(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
@@ -95,6 +95,7 @@ func writeJSON(w http.ResponseWriter, status int, data any) {
 }
 
 func readJSON(source io.Reader, dest any) error {
+	// TODO: this could be extract into a middleware to specific routes if we need more fine-tuned control
 	maxBytes := int64(1 << 20) // 1MB
 	// Prevent reading too much data from the request body
 	// to avoid potential denial of service attacks
@@ -114,7 +115,7 @@ func writeJSONError(w http.ResponseWriter, status int, message string) {
 	errorResponse := errorResponse{
 		Errors: errors,
 	}
-	writeJSON(w, status, errorResponse)
+	writeJSONResponse(w, status, errorResponse)
 }
 
 func handleErrors(w http.ResponseWriter, err error) {

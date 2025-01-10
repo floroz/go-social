@@ -30,7 +30,7 @@ func (app *Application) createCommentHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, comment)
+	writeJSONResponse(w, http.StatusCreated, comment)
 }
 
 func (app *Application) getCommentByIdHandler(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +48,7 @@ func (app *Application) getCommentByIdHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	writeJSON(w, http.StatusOK, comment)
+	writeJSONResponse(w, http.StatusOK, comment)
 }
 
 func (app *Application) listByPostIdHandler(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +85,7 @@ func (app *Application) listByPostIdHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	writeJSON(w, http.StatusOK, comments)
+	writeJSONResponse(w, http.StatusOK, comments)
 }
 
 func (app *Application) deleteCommentHandler(w http.ResponseWriter, r *http.Request) {
@@ -103,7 +103,7 @@ func (app *Application) deleteCommentHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	writeJSON(w, http.StatusNoContent, nil)
+	writeJSONResponse(w, http.StatusNoContent, nil)
 }
 
 func (app *Application) deleteByPostIdCommentHandler(w http.ResponseWriter, r *http.Request) {
@@ -121,5 +121,5 @@ func (app *Application) deleteByPostIdCommentHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	writeJSON(w, http.StatusNoContent, nil)
+	writeJSONResponse(w, http.StatusNoContent, nil)
 }
