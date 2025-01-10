@@ -1,10 +1,12 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 
+	"github.com/floroz/go-social/cmd/middlewares"
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/interfaces"
 	"github.com/go-chi/chi/v5"
@@ -14,6 +16,7 @@ import (
 
 type Application struct {
 	Config         *Config
+	AuthService    interfaces.AuthService
 	UserService    interfaces.UserService
 	PostService    interfaces.PostService
 	CommentService interfaces.CommentService
@@ -34,28 +37,31 @@ func (app *Application) Routes() http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
 
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/login", app.loginHandler)
+			r.Post("/signup", app.signupHandler)
+			r.Post("/logout", app.logoutHandler)
+			r.Post("/refresh", app.refreshHandler)
+		})
+
 		r.Route("/users", func(r chi.Router) {
-			// public
-			r.Post("/", app.createUserHandler)
-			// protected
-			r.Delete("/{id}", app.deleteUserHandler)
-			r.Put("/{id}", app.updateUserHandler)
-			r.Get("/", app.listUsersHandler)
+			r.With(middlewares.AuthMiddleware).Delete("/{id}", app.deleteUserHandler)
+			r.With(middlewares.AuthMiddleware).Put("/{id}", app.updateUserHandler)
+			r.With(middlewares.AuthMiddleware).Get("/", app.listUsersHandler)
 		})
 
 		r.Route("/posts", func(r chi.Router) {
-			r.Post("/", app.createPostHandler)
-			r.Delete("/{id}", app.deletePostHandler)
-			r.Put("/{id}", app.updatePostHandler)
+			r.With(middlewares.AuthMiddleware).Post("/", app.createPostHandler)
+			r.With(middlewares.AuthMiddleware).Delete("/{id}", app.deletePostHandler)
+			r.With(middlewares.AuthMiddleware).Put("/{id}", app.updatePostHandler)
 			r.Get("/{id}", app.getPostByIdHandler)
 			r.Get("/", app.listPostsHandler)
 
 			r.Route("/{postId}/comments", func(r chi.Router) {
-				r.Post("/", app.createCommentHandler)
+				r.With(middlewares.AuthMiddleware).Post("/", app.createCommentHandler)
+				r.With(middlewares.AuthMiddleware).Delete("/{id}", app.deleteCommentHandler)
 				r.Get("/{id}", app.getCommentByIdHandler)
-				r.Delete("/{id}", app.deleteCommentHandler)
 				r.Get("/", app.listByPostIdHandler)
-				r.Delete("/", app.deleteByPostIdCommentHandler)
 			})
 		})
 
@@ -121,4 +127,9 @@ func handleErrors(w http.ResponseWriter, err error) {
 	default:
 		writeJSONError(w, http.StatusInternalServerError, "internal server error")
 	}
+}
+
+func GetUserFromContext(ctx context.Context) (*domain.UserClaims, bool) {
+	claims, ok := ctx.Value(middlewares.ContextKeyUser).(*domain.UserClaims)
+	return claims, ok
 }

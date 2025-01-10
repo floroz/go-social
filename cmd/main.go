@@ -71,6 +71,8 @@ func main() {
 	commentRepo := repositories.NewCommentRepository(db)
 	commentService := services.NewCommentService(commentRepo)
 
+	authService := services.NewAuthService(userRepo)
+
 	config := &api.Config{
 		Port: env.GetEnvValue("PORT"),
 	}
@@ -80,6 +82,7 @@ func main() {
 		UserService:    userService,
 		PostService:    postService,
 		CommentService: commentService,
+		AuthService:    authService,
 	}
 
 	server := &http.Server{
