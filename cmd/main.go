@@ -48,8 +48,12 @@ func connectDb() (*sql.DB, error) {
 }
 
 func main() {
-
 	env.MustLoadEnv(".env.local")
+
+	// crash immediately if there's no JWT_SECRET
+	if env.GetJWTSecret() == "" {
+		panic("fatal: JWT_SECRET is required but not set in env.")
+	}
 
 	db, err := connectDb()
 	if err != nil {

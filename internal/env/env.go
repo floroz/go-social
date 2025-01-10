@@ -7,6 +7,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func GetJWTSecret() string {
+	return GetEnvValue("JWT_SECRET")
+}
+
 func GetEnvValue(key string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
