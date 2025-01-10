@@ -155,3 +155,38 @@ func (r *CommentRepositoryImpl) ListByPostID(ctx context.Context, postId int, li
 
 	return comments, nil
 }
+
+func (r *CommentRepositoryImpl) Update(ctx context.Context, comment *domain.UpdateCommentDTO) (*domain.Comment, error) {
+	query := `
+		UPDATE comments
+		SET content = $1
+		WHERE id = $2
+		RETURNING id, user_id, post_id, content, created_at, updated_at
+		`
+
+	updatedComment := domain.Comment{}
+
+	err := r.db.QueryRowContext(
+		ctx,
+		query,
+		comment.Content,
+		comment.ID,
+	).Scan(
+		&updatedComment.ID,
+		&updatedComment.UserID,
+		&updatedComment.PostID,
+		&updatedComment.Content,
+		&updatedComment.CreatedAt,
+		&updatedComment.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+
+		return nil, err
+	}
+
+	return &updatedComment, nil
+}

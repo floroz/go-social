@@ -80,3 +80,25 @@ func (s *commentsService) ListByPostID(ctx context.Context, postId int, limit in
 
 	return comments, nil
 }
+
+func (s *commentsService) Update(ctx context.Context, comment *domain.UpdateCommentDTO) (*domain.Comment, error) {
+	// todo validate authorization to update a comment
+
+	err := validation.Validate.Struct(comment)
+
+	if err != nil {
+		return nil, domain.NewBadRequestError(err.Error())
+	}
+
+	updatedComment, err := s.commentsRepo.Update(ctx, comment)
+
+	if err != nil && err == domain.ErrNotFound {
+		return nil, domain.NewNotFoundError("comment not found")
+	}
+
+	if err != nil {
+		return nil, domain.NewInternalServerError("failed to update comment")
+	}
+
+	return updatedComment, nil
+}
