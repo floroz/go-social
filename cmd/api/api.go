@@ -46,10 +46,8 @@ func (app *Application) Routes() http.Handler {
 
 		r.Route("/users", func(r chi.Router) {
 			r.Use(middlewares.AuthMiddleware)
-
-			r.Delete("/{id}", app.deleteUserHandler)
-			r.Put("/{id}", app.updateUserHandler)
-			r.Get("/", app.listUsersHandler)
+			r.Put("/", app.updateUserHandler)
+			r.Get("/", app.getUserProfileHandler)
 		})
 
 		r.Route("/posts", func(r chi.Router) {
@@ -62,8 +60,8 @@ func (app *Application) Routes() http.Handler {
 			r.Get("/", app.listPostsHandler)
 
 			r.Route("/{postId}/comments", func(r chi.Router) {
-
 				r.Post("/", app.createCommentHandler)
+				r.Put("/{id}", app.updateCommentHandler)
 				r.Delete("/{id}", app.deleteCommentHandler)
 				r.Get("/{id}", app.getCommentByIdHandler)
 				r.Get("/", app.listByPostIdHandler)
@@ -139,7 +137,7 @@ func handleErrors(w http.ResponseWriter, err error) {
 	}
 }
 
-func GetUserFromContext(ctx context.Context) (*domain.UserClaims, bool) {
+func getUserClaimFromContext(ctx context.Context) (*domain.UserClaims, bool) {
 	claims, ok := ctx.Value(middlewares.ContextKeyUser).(*domain.UserClaims)
 	return claims, ok
 }
