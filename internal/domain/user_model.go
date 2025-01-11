@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	ID        int       `json:"id"`
+	ID        int64     `json:"id"`
 	FirstName string    `json:"first_name"`
 	LastName  string    `json:"last_name"`
 	Username  string    `json:"username"`
@@ -30,7 +30,6 @@ type CreateUserDTO struct {
 }
 
 type UpdateUserDTO struct {
-	ID int `json:"id" validate:"required,min=1"`
 	EditableUserField
 }
 
@@ -40,7 +39,7 @@ type LoginUserDTO struct {
 }
 
 type UserClaims struct {
-	ID        int       `json:"id"`
+	ID        int64     `json:"id"`
 	FirstName string    `json:"first_name"`
 	LastName  string    `json:"last_name"`
 	Username  string    `json:"username"`

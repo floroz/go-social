@@ -105,3 +105,21 @@ func NewUnauthorizedError(message string) error {
 		},
 	}
 }
+
+type ForbiddenError struct {
+	ErrorDetail
+	StatusCode int
+}
+
+func (e *ForbiddenError) Error() string {
+	return e.Message
+}
+
+func NewForbiddenError(message string) error {
+	return &ForbiddenError{
+		StatusCode: http.StatusForbidden,
+		ErrorDetail: ErrorDetail{
+			Message: message,
+		},
+	}
+}
