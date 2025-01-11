@@ -8,57 +8,24 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func (app *Application) listUsersHandler(w http.ResponseWriter, r *http.Request) {
-	limitStr := r.URL.Query().Get("limit")
-	limit := 10
-
-	if limitStr != "" {
-		parsedLimit, err := strconv.Atoi(limitStr)
-		if err == nil {
-			limit = parsedLimit
-		}
-	}
-
-	offsetStr := r.URL.Query().Get("offset")
-	offset := 0
-
-	if offsetStr != "" {
-		parsedOffset, err := strconv.Atoi(offsetStr)
-		if err == nil {
-			offset = parsedOffset
-		}
-	}
-
-	users, err := app.UserService.List(r.Context(), limit, offset)
-	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "internal server error")
+func (app *Application) getUserProfileHandler(w http.ResponseWriter, r *http.Request) {
+	claims, ok := getUserClaimFromContext(r.Context())
+	if !ok {
+		handleErrors(w, domain.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, users)
-}
-
-func (app *Application) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-
-	id, err := strconv.Atoi(idStr)
+	user, err := app.UserService.GetByID(r.Context(), claims.ID)
 	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, "invalid id")
+		handleErrors(w, err)
 		return
 	}
 
-	err = app.UserService.Delete(r.Context(), id)
-	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "internal server error")
-		return
-	}
-
-	writeJSONResponse(w, http.StatusNoContent, nil)
+	writeJSONResponse(w, http.StatusOK, user)
 }
 
 func (app *Application) updateUserHandler(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
+	userId, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		writeJSONError(w, http.StatusBadRequest, "invalid id")
 		return
@@ -72,9 +39,7 @@ func (app *Application) updateUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	updateUserDto.ID = id
-
-	user, err := app.UserService.Update(r.Context(), updateUserDto)
+	user, err := app.UserService.Update(r.Context(), int64(userId), updateUserDto)
 	if err != nil {
 		handleErrors(w, err)
 		return

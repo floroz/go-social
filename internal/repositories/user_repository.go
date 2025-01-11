@@ -50,14 +50,14 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 	return &user, err
 }
 
-func (r *UserRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.User, error) {
+func (r *UserRepositoryImpl) GetByID(ctx context.Context, userId int64) (*domain.User, error) {
 	query := `
 			SELECT id, first_name, last_name, email, username, password, created_at, updated_at
 			FROM users
 			WHERE id = $1`
 
 	user := &domain.User{}
-	err := r.db.QueryRowContext(ctx, query, id).Scan(
+	err := r.db.QueryRowContext(ctx, query, userId).Scan(
 		&user.ID,
 		&user.FirstName,
 		&user.LastName,
@@ -134,7 +134,7 @@ func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string)
 	return user, nil
 }
 
-func (r *UserRepositoryImpl) Update(ctx context.Context, updateUser *domain.UpdateUserDTO) (*domain.User, error) {
+func (r *UserRepositoryImpl) Update(ctx context.Context, userId int64, updateUser *domain.UpdateUserDTO) (*domain.User, error) {
 	query := `
 			UPDATE users
 			SET first_name = $1, last_name = $2, email = $3, username = $4
@@ -147,11 +147,11 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, updateUser *domain.Upda
 	err := r.db.QueryRowContext(
 		ctx,
 		query,
-		user.FirstName,
-		user.LastName,
-		user.Email,
-		user.Username,
-		user.ID,
+		updateUser.FirstName,
+		updateUser.LastName,
+		updateUser.Email,
+		updateUser.Username,
+		userId,
 	).Scan(
 		&user.ID,
 		&user.FirstName,
@@ -173,12 +173,12 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, updateUser *domain.Upda
 	return &user, nil
 }
 
-func (r *UserRepositoryImpl) Delete(ctx context.Context, id int) error {
+func (r *UserRepositoryImpl) Delete(ctx context.Context, userId int64) error {
 	query := `
 			DELETE FROM users
 			WHERE id = $1`
 
-	_, err := r.db.ExecContext(ctx, query, id)
+	_, err := r.db.ExecContext(ctx, query, userId)
 
 	return err
 }

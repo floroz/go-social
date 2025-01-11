@@ -8,14 +8,20 @@ import (
 )
 
 func (app *Application) createPostHandler(w http.ResponseWriter, r *http.Request) {
-	createPostDTO := &domain.CreatePostDTO{}
-
-	if err := readJSON(r.Body, createPostDTO); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	claims, ok := getUserClaimFromContext(r.Context())
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	post, err := app.PostService.Create(r.Context(), createPostDTO)
+	createPostDTO := &domain.CreatePostDTO{}
+
+	if err := readJSON(r.Body, createPostDTO); err != nil {
+		handleErrors(w, domain.NewBadRequestError("failed to read request body"))
+		return
+	}
+
+	post, err := app.PostService.Create(r.Context(), claims.ID, createPostDTO)
 	if err != nil {
 		handleErrors(w, err)
 		return
@@ -37,15 +43,19 @@ func (app *Application) listPostsHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *Application) deletePostHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-
+	postId, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		handleErrors(w, domain.NewBadRequestError("invalid id"))
 		return
 	}
 
-	err = app.PostService.Delete(r.Context(), id)
+	claims, ok := getUserClaimFromContext(r.Context())
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
 
+	err = app.PostService.Delete(r.Context(), claims.ID, int64(postId))
 	if err != nil {
 		handleErrors(w, err)
 		return
@@ -56,8 +66,13 @@ func (app *Application) deletePostHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (app *Application) updatePostHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	claims, ok := getUserClaimFromContext(r.Context())
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
 
+	postId, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		handleErrors(w, domain.NewBadRequestError("invalid id"))
 		return
@@ -70,9 +85,7 @@ func (app *Application) updatePostHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	updatePostDTO.ID = id
-
-	post, err := app.PostService.Update(r.Context(), updatePostDTO)
+	post, err := app.PostService.Update(r.Context(), claims.ID, int64(postId), updatePostDTO)
 
 	if err != nil {
 		handleErrors(w, err)
@@ -84,14 +97,14 @@ func (app *Application) updatePostHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (app *Application) getPostByIdHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	postId, err := strconv.Atoi(r.PathValue("id"))
 
 	if err != nil {
 		handleErrors(w, domain.NewBadRequestError("invalid id"))
 		return
 	}
 
-	post, err := app.PostService.GetByID(r.Context(), id)
+	post, err := app.PostService.GetByID(r.Context(), int64(postId))
 
 	if err != nil {
 		handleErrors(w, err)

@@ -17,7 +17,7 @@ func NewPostRepository(db *sql.DB) interfaces.PostRepository {
 	return &PostRepositoryImpl{db: db}
 }
 
-func (r *PostRepositoryImpl) Create(ctx context.Context, post *domain.CreatePostDTO) (*domain.Post, error) {
+func (r *PostRepositoryImpl) Create(ctx context.Context, userId int64, createPost *domain.CreatePostDTO) (*domain.Post, error) {
 	query := `
 		INSERT INTO posts (user_id, content)
 		VALUES ($1, $2)
@@ -29,8 +29,8 @@ func (r *PostRepositoryImpl) Create(ctx context.Context, post *domain.CreatePost
 	err := r.db.QueryRowContext(
 		ctx,
 		query,
-		post.UserID,
-		post.Content,
+		userId,
+		createPost.Content,
 	).Scan(
 		&newPost.ID,
 		&newPost.UserID,
@@ -84,7 +84,7 @@ func (r *PostRepositoryImpl) List(ctx context.Context, limit int, offset int) ([
 	return posts, nil
 }
 
-func (r *PostRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.Post, error) {
+func (r *PostRepositoryImpl) GetByID(ctx context.Context, postId int64) (*domain.Post, error) {
 	query := `
 		SELECT id, user_id, content, created_at, updated_at
 		FROM posts
@@ -93,7 +93,7 @@ func (r *PostRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.Post,
 
 	post := domain.Post{}
 
-	err := r.db.QueryRowContext(ctx, query, id).Scan(
+	err := r.db.QueryRowContext(ctx, query, postId).Scan(
 		&post.ID,
 		&post.UserID,
 		&post.Content,
@@ -111,11 +111,11 @@ func (r *PostRepositoryImpl) GetByID(ctx context.Context, id int) (*domain.Post,
 	return &post, nil
 }
 
-func (r *PostRepositoryImpl) Update(ctx context.Context, post *domain.UpdatePostDTO) (*domain.Post, error) {
+func (r *PostRepositoryImpl) Update(ctx context.Context, userId, postId int64, post *domain.UpdatePostDTO) (*domain.Post, error) {
 	query := `
 		UPDATE posts
 		SET content = $1
-		WHERE id = $2
+		WHERE id = $2 AND user_id = $3
 		RETURNING id, user_id, content, created_at, updated_at
 		`
 
@@ -125,7 +125,8 @@ func (r *PostRepositoryImpl) Update(ctx context.Context, post *domain.UpdatePost
 		ctx,
 		query,
 		post.Content,
-		post.ID,
+		userId,
+		postId,
 	).Scan(
 		&updatedPost.ID,
 		&updatedPost.UserID,
@@ -144,13 +145,13 @@ func (r *PostRepositoryImpl) Update(ctx context.Context, post *domain.UpdatePost
 	return &updatedPost, nil
 }
 
-func (r *PostRepositoryImpl) Delete(ctx context.Context, id int) error {
+func (r *PostRepositoryImpl) Delete(ctx context.Context, userId, postId int64) error {
 	query := `
 		DELETE FROM posts
-		WHERE id = $1
+		WHERE id = $1 AND user_id = $2
 		`
 
-	_, err := r.db.ExecContext(ctx, query, id)
+	_, err := r.db.ExecContext(ctx, query, postId, userId)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

@@ -61,9 +61,8 @@ func (s *userService) Create(ctx context.Context, createUser *domain.CreateUserD
 	return createdUser, nil
 }
 
-func (s *userService) GetByID(ctx context.Context, id int) (*domain.User, error) {
-	user, err := s.userRepo.GetByID(ctx, id)
-
+func (s *userService) GetByID(ctx context.Context, userId int64) (*domain.User, error) {
+	user, err := s.userRepo.GetByID(ctx, userId)
 	if err != nil && err == domain.ErrNotFound {
 		log.Error().Err(err).Msg("failed to get user")
 		return nil, domain.NewInternalServerError("failed to get user")
@@ -72,11 +71,12 @@ func (s *userService) GetByID(ctx context.Context, id int) (*domain.User, error)
 	return user, nil
 }
 
-func (s *userService) Update(ctx context.Context, updateUser *domain.UpdateUserDTO) (*domain.User, error) {
-	err := validation.Validate.Struct(updateUser)
-	// TODO: check that current user is the owner of the user to be updated - after implementing authn and authz
-	updatedUser, err := s.userRepo.Update(ctx, updateUser)
+func (s *userService) Update(ctx context.Context, userId int64, updateUser *domain.UpdateUserDTO) (*domain.User, error) {
+	if err := validation.Validate.Struct(updateUser); err != nil {
+		return nil, domain.NewBadRequestError(err.Error())
+	}
 
+	updatedUser, err := s.userRepo.Update(ctx, userId, updateUser)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to update user")
 		return nil, domain.NewInternalServerError("failed to update user")
@@ -85,12 +85,8 @@ func (s *userService) Update(ctx context.Context, updateUser *domain.UpdateUserD
 	return updatedUser, err
 }
 
-func (s *userService) Delete(ctx context.Context, id int) error {
-	// TODO: check that current user is the owner of the user to be deleted - after implementing authn and authz
-
-	err := s.userRepo.Delete(ctx, id)
-
-	if err != nil {
+func (s *userService) Delete(ctx context.Context, userId int64) error {
+	if err := s.userRepo.Delete(ctx, userId); err != nil {
 		log.Error().Err(err).Msg("failed to delete user")
 		return domain.NewInternalServerError("failed to delete user")
 	}
@@ -100,7 +96,6 @@ func (s *userService) Delete(ctx context.Context, id int) error {
 
 func (s *userService) List(ctx context.Context, limit, offset int) ([]domain.User, error) {
 	users, err := s.userRepo.List(ctx, limit, offset)
-
 	if err != nil {
 		log.Error().Err(err).Msg("failed to list users")
 		return nil, domain.NewInternalServerError("failed to list users")
