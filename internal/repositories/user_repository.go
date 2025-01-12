@@ -19,7 +19,6 @@ func NewUserRepository(db *sql.DB) interfaces.UserRepository {
 }
 
 func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.CreateUserDTO) (*domain.User, error) {
-
 	user := domain.User{}
 
 	query := `
@@ -28,7 +27,7 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
         RETURNING id, first_name, last_name, email, username, password, created_at, updated_at
 		`
 
-	err := r.db.QueryRowContext(
+	row := r.db.QueryRowContext(
 		ctx,
 		query,
 		createUser.FirstName,
@@ -36,7 +35,9 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 		createUser.Email,
 		createUser.Username,
 		createUser.Password,
-	).Scan(
+	)
+
+	if err := row.Scan(
 		&user.ID,
 		&user.FirstName,
 		&user.LastName,
@@ -45,9 +46,11 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
-	)
+	); err != nil {
+		return nil, err
+	}
 
-	return &user, err
+	return &user, nil
 }
 
 func (r *UserRepositoryImpl) GetByID(ctx context.Context, userId int64) (*domain.User, error) {
