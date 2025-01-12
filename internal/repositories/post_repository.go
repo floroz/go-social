@@ -46,7 +46,7 @@ func (r *PostRepositoryImpl) Create(ctx context.Context, userId int64, createPos
 	return &newPost, nil
 }
 
-func (r *PostRepositoryImpl) List(ctx context.Context, limit int, offset int) ([]*domain.Post, error) {
+func (r *PostRepositoryImpl) List(ctx context.Context, limit int, offset int) ([]domain.Post, error) {
 	query := `
 		SELECT id, user_id, content, created_at, updated_at
 		FROM posts
@@ -61,7 +61,7 @@ func (r *PostRepositoryImpl) List(ctx context.Context, limit int, offset int) ([
 
 	defer rows.Close()
 
-	posts := make([]*domain.Post, 0)
+	posts := make([]domain.Post, 0)
 
 	for rows.Next() {
 		post := domain.Post{}
@@ -78,7 +78,7 @@ func (r *PostRepositoryImpl) List(ctx context.Context, limit int, offset int) ([
 			return nil, err
 		}
 
-		posts = append(posts, &post)
+		posts = append(posts, post)
 	}
 
 	return posts, nil

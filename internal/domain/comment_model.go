@@ -20,6 +20,6 @@ type CreateCommentDTO struct {
 }
 
 type UpdateCommentDTO struct {
-	ID int `json:"id" validate:"required,min=1"`
+	ID int64 `json:"id" validate:"required,min=1"`
 	EditableCommentFields
 }

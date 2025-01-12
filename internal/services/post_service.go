@@ -35,7 +35,7 @@ func (s *postService) Create(ctx context.Context, userId int64, createPost *doma
 	return post, nil
 }
 
-func (r *postService) List(ctx context.Context, limit int, offset int) ([]*domain.Post, error) {
+func (r *postService) List(ctx context.Context, limit int, offset int) ([]domain.Post, error) {
 	if limit > 100 {
 		log.Warn().Msg("limit is too high, setting to 100")
 		limit = 100

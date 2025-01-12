@@ -57,7 +57,7 @@ func (app *Application) updateCommentHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	updateCommentDTO := &domain.UpdateCommentDTO{
-		ID: commentId,
+		ID: int64(commentId),
 	}
 	if err := readJSON(r.Body, updateCommentDTO); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
