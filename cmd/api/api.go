@@ -35,7 +35,7 @@ func (app *Application) Routes() http.Handler {
 	r.Use(middleware.Recoverer)
 
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Get("/health", app.healthCheckHandler)
+		r.Get("/healthz", app.healthCheckHandler)
 
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/login", app.loginHandler)
