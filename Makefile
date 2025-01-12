@@ -15,3 +15,7 @@ migrate-up:
 .PHONY: migrate-down
 migrate-down:
 	@migrate -database "$(DATABASE_URL)" -path $(MIGRATIONS_PATH) down
+
+.PHONE: test
+test:
+	@go test ./...

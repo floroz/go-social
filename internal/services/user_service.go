@@ -76,6 +76,13 @@ func (s *userService) Update(ctx context.Context, userId int64, updateUser *doma
 		return nil, domain.NewBadRequestError(err.Error())
 	}
 
+	// check a user exists
+	if existingUser, err := s.userRepo.GetByID(ctx, userId); existingUser == nil {
+		return nil, domain.NewNotFoundError("user not found")
+	} else if err != nil {
+		log.Error().Err(err).Msg("failed to get user by id")
+		return nil, domain.NewInternalServerError("failed to get user by id")
+	}
 	updatedUser, err := s.userRepo.Update(ctx, userId, updateUser)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to update user")
