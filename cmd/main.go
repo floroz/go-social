@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,42 +8,11 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/floroz/go-social/cmd/api"
+	"github.com/floroz/go-social/cmd/database"
 	"github.com/floroz/go-social/internal/env"
 	"github.com/floroz/go-social/internal/repositories"
 	"github.com/floroz/go-social/internal/services"
-	_ "github.com/lib/pq"
 )
-
-func connectDb() (*sql.DB, error) {
-	postgresConnection := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
-		env.GetEnvValue("DB_USER"),
-		env.GetEnvValue("DB_PASSWORD"),
-		env.GetEnvValue("DB_HOST"),
-		env.GetEnvValue("DB_NAME"),
-	)
-
-	db, err := sql.Open("postgres", postgresConnection)
-	if err != nil {
-		return nil, err
-	}
-
-	const connectionTimeout = 5 * time.Second
-
-	ctx, cancel := context.WithTimeout(context.Background(), connectionTimeout)
-	defer cancel()
-
-	if err := db.PingContext(ctx); err != nil {
-		return nil, err
-	}
-
-	db.SetConnMaxIdleTime(60 * time.Second)
-	db.SetConnMaxLifetime(60 * time.Second)
-	db.SetMaxOpenConns(100)
-	db.SetMaxIdleConns(10)
-
-	log.Info().Msg("database connection pool established")
-	return db, nil
-}
 
 func main() {
 	env.MustLoadEnv(".env.local")
@@ -55,7 +22,7 @@ func main() {
 		panic("fatal: JWT_SECRET is required but not set in env.")
 	}
 
-	db, err := connectDb()
+	db, err := database.ConnectDb()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to connect to database")
 		panic(err)
