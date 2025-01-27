@@ -1,7 +1,6 @@
 package integration_tests
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -82,14 +81,14 @@ func TestMain(m *testing.M) {
 		}
 	}()
 
+	shutdown := startAPIServer(db)
+	defer shutdown()
+
 	// run tests
 	m.Run()
 }
 
 func TestHealthCheck(t *testing.T) {
-	shutdown := startAPIServer(db)
-	defer shutdown()
-
 	req, err := http.NewRequest(http.MethodGet, env.GetEnvValue("API_URL")+"/api/v1/healthz", nil)
 	assert.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
@@ -103,9 +102,6 @@ func TestHealthCheck(t *testing.T) {
 }
 
 func TestUserSignup(t *testing.T) {
-	shutdownServer := startAPIServer(db)
-	defer shutdownServer()
-
 	createUserDTO := &domain.CreateUserDTO{
 		EditableUserField: domain.EditableUserField{
 			FirstName: "John",
@@ -116,29 +112,16 @@ func TestUserSignup(t *testing.T) {
 		Password: "password123",
 	}
 
-	body, err := json.Marshal(createUserDTO)
+	_, err := json.Marshal(createUserDTO)
 	assert.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodPost, env.GetEnvValue("API_URL")+"/api/v1/auth/signup", bytes.NewBuffer(body))
-	assert.NoError(t, err)
-	req.Header.Set("Content-Type", "application/json")
+	user, _ := signupAndGetCookies(t, &http.Client{}, env.GetEnvValue("API_URL"), createUserDTO)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	assert.NoError(t, err)
-	defer resp.Body.Close()
-
-	assert.Equal(t, http.StatusCreated, resp.StatusCode)
-
-	var responseUser domain.User
-	err = json.NewDecoder(resp.Body).Decode(&responseUser)
-	assert.NoError(t, err)
-
-	assert.Equal(t, createUserDTO.Email, responseUser.Email)
-	assert.Equal(t, createUserDTO.Username, responseUser.Username)
-	assert.NotZero(t, responseUser.ID)
-	assert.NotZero(t, responseUser.CreatedAt)
-	assert.NotZero(t, responseUser.UpdatedAt)
-	assert.NotEmpty(t, responseUser.Password)
-	assert.NotEqual(t, createUserDTO.Password, responseUser.Password)
+	// Assert
+	assert.Equal(t, createUserDTO.Email, user.Email)
+	assert.Equal(t, createUserDTO.Username, user.Username)
+	assert.NotZero(t, user.ID)
+	assert.NotZero(t, user.CreatedAt)
+	assert.NotZero(t, user.UpdatedAt)
+	assert.Empty(t, user.Password)
 }
