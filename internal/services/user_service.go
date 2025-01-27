@@ -93,7 +93,11 @@ func (s *userService) Update(ctx context.Context, userId int64, updateUser *doma
 }
 
 func (s *userService) Delete(ctx context.Context, userId int64) error {
-	if err := s.userRepo.Delete(ctx, userId); err != nil {
+	err := s.userRepo.Delete(ctx, userId)
+
+	if err == domain.ErrNotFound {
+		return domain.NewNotFoundError("user not found")
+	} else if err != nil {
 		log.Error().Err(err).Msg("failed to delete user")
 		return domain.NewInternalServerError("failed to delete user")
 	}

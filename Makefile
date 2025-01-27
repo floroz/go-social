@@ -17,7 +17,7 @@ migrate-down:
 	@migrate -database "$(DATABASE_URL)" -path $(MIGRATIONS_PATH) down
 
 .PHONY: migrate-seed
-migrate-down:
+migrate-seed:
 	@go run ./cmd/migrate/seed_db/main.go
 
 .PHONE: test

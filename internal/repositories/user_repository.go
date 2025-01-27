@@ -57,7 +57,7 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, userId int64) (*domain
 	query := `
 			SELECT id, first_name, last_name, email, username, password, created_at, updated_at
 			FROM users
-			WHERE id = $1`
+			WHERE id = $1 AND is_deleted = false`
 
 	user := &domain.User{}
 	err := r.db.QueryRowContext(ctx, query, userId).Scan(
@@ -85,7 +85,7 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 	query := `
 		SELECT id, first_name, last_name, email, username, password, created_at, updated_at
 		FROM users
-		WHERE email = $1`
+		WHERE email = $1 AND is_deleted = false`
 
 	user := &domain.User{}
 	err := r.db.QueryRowContext(ctx, query, email).Scan(
@@ -113,7 +113,7 @@ func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string)
 	query := `
 		SELECT id, first_name, last_name, email, username, password, created_at, updated_at
 		FROM users
-		WHERE username = $1`
+		WHERE username = $1 AND is_deleted = false`
 
 	user := &domain.User{}
 	err := r.db.QueryRowContext(ctx, query, username).Scan(
@@ -141,7 +141,7 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, userId int64, updateUse
 	query := `
 			UPDATE users
 			SET first_name = $1, last_name = $2, email = $3, username = $4
-			WHERE id = $5
+			WHERE id = $5 AND is_deleted = false
 			RETURNING id, first_name, last_name, email, username, password, created_at, updated_at
 			`
 
@@ -178,10 +178,17 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, userId int64, updateUse
 
 func (r *UserRepositoryImpl) Delete(ctx context.Context, userId int64) error {
 	query := `
-			DELETE FROM users
-			WHERE id = $1`
+	UPDATE users
+	SET is_deleted = true, deleted_at = NOW()
+	WHERE id = $1`
 
 	_, err := r.db.ExecContext(ctx, query, userId)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.ErrNotFound
+		}
+	}
 
 	return err
 }
@@ -194,6 +201,7 @@ func (r *UserRepositoryImpl) List(ctx context.Context, limit, offset int) ([]dom
 	query := `
 			SELECT id, first_name, last_name, email, username, password, created_at, updated_at
 			FROM users
+			WHERE is_deleted = false
 			LIMIT $1 OFFSET $2`
 
 	rows, err := r.db.QueryContext(ctx, query, limit, offset)

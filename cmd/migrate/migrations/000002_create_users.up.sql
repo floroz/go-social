@@ -11,15 +11,18 @@ CREATE TABLE users (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login_at TIMESTAMP WITH TIME ZONE,
-    is_active BOOLEAN NOT NULL DEFAULT true,
+    is_deleted BOOLEAN NOT NULL DEFAULT false,
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
--- Index for email lookups (case insensitive)
-CREATE UNIQUE INDEX idx_users_email_lower ON users (LOWER(email));
+-- Partial index for email lookups (case insensitive)
+CREATE UNIQUE INDEX idx_users_email_lower ON users (LOWER(email)) WHERE is_deleted = false;
 
--- Index for pagination and sorting
-CREATE INDEX idx_users_created_at ON users (created_at DESC);
+-- Partial unique index for username to enforce soft deletion constraint
+CREATE UNIQUE INDEX idx_users_username_unique ON users (username) WHERE is_deleted = false;
+
+-- Partial Index for pagination and sorting
+CREATE INDEX idx_users_created_at ON users (created_at DESC) WHERE is_deleted = false;
 
 -- Trigger to update updated_at timestamp
 CREATE TRIGGER update_users_updated_at
