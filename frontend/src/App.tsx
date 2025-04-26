@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button"; // Import Shadcn Button
 
 function App() {
   return (
@@ -6,6 +7,7 @@ function App() {
         GoSocial Frontend
       </h1>
       <p>Tailwind CSS is working!</p>
+      <Button className="mt-4">Shadcn Button</Button> {/* Added Shadcn Button */}
     </div>
   )
 }
