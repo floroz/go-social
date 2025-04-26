@@ -11,6 +11,7 @@ import (
 	"github.com/floroz/go-social/internal/interfaces"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors" // Import cors package
 	"github.com/rs/zerolog/log"
 )
 
@@ -28,6 +29,17 @@ type Config struct {
 
 func (app *Application) Routes() http.Handler {
 	r := chi.NewRouter()
+
+	// Add CORS middleware
+	r.Use(cors.Handler(cors.Options{
+		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin
+		AllowedOrigins:   []string{"http://localhost:5173", "http://127.0.0.1:5173"}, // Allow frontend dev server
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
