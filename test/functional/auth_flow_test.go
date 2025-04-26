@@ -1,6 +1,7 @@
 package integration_tests
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -102,12 +103,14 @@ func TestHealthCheck(t *testing.T) {
 }
 
 func TestUserSignup(t *testing.T) {
+	// Generate unique suffix for email and username
+	uniqueSuffix := fmt.Sprintf("ts%d", time.Now().UnixNano()) // Removed underscore
 	createUserDTO := &domain.CreateUserDTO{
 		EditableUserField: domain.EditableUserField{
 			FirstName: "John",
 			LastName:  "Doe",
-			Email:     "john.doe@example.com",
-			Username:  "johndoe",
+			Email:     fmt.Sprintf("john.doe%s@example.com", uniqueSuffix), // Email can have special chars, keep suffix as is for uniqueness
+			Username:  fmt.Sprintf("johndoets%d", time.Now().UnixNano()),   // Ensure username is purely alphanumeric
 		},
 		Password: "password123",
 	}
@@ -124,4 +127,62 @@ func TestUserSignup(t *testing.T) {
 	assert.NotZero(t, user.CreatedAt)
 	assert.NotZero(t, user.UpdatedAt)
 	assert.Empty(t, user.Password)
+}
+
+func TestUserLogin(t *testing.T) {
+	// Generate unique suffix for email and username
+	uniqueSuffix := fmt.Sprintf("ts%d", time.Now().UnixNano()) // Removed underscore
+	createUserDTO := &domain.CreateUserDTO{
+		EditableUserField: domain.EditableUserField{
+			FirstName: "John",
+			LastName:  "Doe",
+			Email:     fmt.Sprintf("john.doe%s@example.com", uniqueSuffix), // Email can have special chars, keep suffix as is for uniqueness
+			Username:  fmt.Sprintf("johndoets%d", time.Now().UnixNano()),   // Ensure username is purely alphanumeric
+		},
+		Password: "password123",
+	}
+
+	_, cookies := signupAndGetCookies(t, &http.Client{}, env.GetEnvValue("API_URL"), createUserDTO)
+
+	loginUserDTO := &domain.LoginUserDTO{
+		Email:    createUserDTO.Email,
+		Password: createUserDTO.Password,
+	}
+
+	body, err := json.Marshal(map[string]any{
+		"data": loginUserDTO,
+	})
+	assert.NoError(t, err)
+
+	req, err := http.NewRequest(http.MethodPost, env.GetEnvValue("API_URL")+loginEndpoint, bytes.NewBuffer(body))
+
+	assert.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(cookies[0])
+	req.AddCookie(cookies[1])
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	assert.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// Define a struct matching the response structure {"data": User}
+	var responseData struct {
+		Data domain.User `json:"data"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&responseData)
+	assert.NoError(t, err)
+
+	// Assert against the user data inside the "data" key
+	userResponse := responseData.Data
+	assert.Equal(t, createUserDTO.Email, userResponse.Email)
+	assert.Equal(t, createUserDTO.Username, userResponse.Username)
+	assert.NotZero(t, userResponse.ID)
+	assert.NotZero(t, userResponse.CreatedAt)
+	assert.NotZero(t, userResponse.UpdatedAt)
+	assert.NotZero(t, userResponse.LastLogin)
+	assert.Empty(t, userResponse.Password)
+
 }

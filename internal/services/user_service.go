@@ -114,3 +114,13 @@ func (s *userService) List(ctx context.Context, limit, offset int) ([]domain.Use
 
 	return users, nil
 }
+
+func (s *userService) UpdateLastLogin(ctx context.Context, userId int64) error {
+	err := s.userRepo.UpdateLastLogin(ctx, userId)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to update last login")
+		return domain.NewInternalServerError("failed to update last login")
+	}
+
+	return nil
+}

@@ -104,7 +104,9 @@ func startAPIServer(db *sql.DB) func() {
 
 // signupAndGetCookies signs up a user and returns the cookies
 func signupAndGetCookies(t *testing.T, client *http.Client, baseURL string, createUserDTO *domain.CreateUserDTO) (*domain.User, []*http.Cookie) {
-	body, err := json.Marshal(createUserDTO)
+	body, err := json.Marshal(map[string]any{
+		"data": createUserDTO,
+	})
 	assert.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodPost, baseURL+signupEndpoint, bytes.NewBuffer(body))

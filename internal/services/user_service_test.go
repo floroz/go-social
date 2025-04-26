@@ -502,7 +502,7 @@ func TestDeleteUser_NotFound(t *testing.T) {
 
 	// Assert
 	assert.NotNil(t, err)
-	assert.IsType(t, &domain.InternalServerError{}, err)
+	assert.IsType(t, &domain.NotFoundError{}, err)
 	mockUserRepo.AssertCalled(t, "Delete", mock.Anything, userId)
 	mockUserRepo.AssertExpectations(t)
 }

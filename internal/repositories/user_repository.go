@@ -24,7 +24,7 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 	query := `
         INSERT INTO users (first_name, last_name, email, username, password)
         VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, first_name, last_name, email, username, password, created_at, updated_at
+        RETURNING id, first_name, last_name, email, username, password, created_at, updated_at, last_login
 		`
 
 	row := r.db.QueryRowContext(
@@ -46,6 +46,7 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.LastLogin,
 	); err != nil {
 		return nil, err
 	}
@@ -55,7 +56,7 @@ func (r *UserRepositoryImpl) Create(ctx context.Context, createUser *domain.Crea
 
 func (r *UserRepositoryImpl) GetByID(ctx context.Context, userId int64) (*domain.User, error) {
 	query := `
-			SELECT id, first_name, last_name, email, username, password, created_at, updated_at
+			SELECT id, first_name, last_name, email, username, password, created_at, updated_at, last_login
 			FROM users
 			WHERE id = $1 AND is_deleted = false`
 
@@ -69,6 +70,7 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, userId int64) (*domain
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.LastLogin,
 	)
 
 	if err != nil {
@@ -83,7 +85,7 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, userId int64) (*domain
 
 func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
-		SELECT id, first_name, last_name, email, username, password, created_at, updated_at
+		SELECT id, first_name, last_name, email, username, password, created_at, updated_at, last_login
 		FROM users
 		WHERE email = $1 AND is_deleted = false`
 
@@ -97,6 +99,7 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.LastLogin,
 	)
 
 	if err != nil {
@@ -111,7 +114,7 @@ func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 
 func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string) (*domain.User, error) {
 	query := `
-		SELECT id, first_name, last_name, email, username, password, created_at, updated_at
+		SELECT id, first_name, last_name, email, username, password, created_at, updated_at, last_login
 		FROM users
 		WHERE username = $1 AND is_deleted = false`
 
@@ -125,6 +128,7 @@ func (r *UserRepositoryImpl) GetByUsername(ctx context.Context, username string)
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.LastLogin,
 	)
 
 	if err != nil {
@@ -142,7 +146,7 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, userId int64, updateUse
 			UPDATE users
 			SET first_name = $1, last_name = $2, email = $3, username = $4
 			WHERE id = $5 AND is_deleted = false
-			RETURNING id, first_name, last_name, email, username, password, created_at, updated_at
+			RETURNING id, first_name, last_name, email, username, password, created_at, updated_at, last_login
 			`
 
 	user := domain.User{}
@@ -164,6 +168,7 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, userId int64, updateUse
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.LastLogin,
 	)
 
 	if err != nil {
@@ -177,10 +182,7 @@ func (r *UserRepositoryImpl) Update(ctx context.Context, userId int64, updateUse
 }
 
 func (r *UserRepositoryImpl) Delete(ctx context.Context, userId int64) error {
-	query := `
-	UPDATE users
-	SET is_deleted = true, deleted_at = NOW()
-	WHERE id = $1`
+	query := `UPDATE users SET is_deleted = true, deleted_at = NOW() WHERE id = $1`
 
 	_, err := r.db.ExecContext(ctx, query, userId)
 
@@ -199,7 +201,7 @@ func (r *UserRepositoryImpl) List(ctx context.Context, limit, offset int) ([]dom
 	}
 
 	query := `
-			SELECT id, first_name, last_name, email, username, password, created_at, updated_at
+			SELECT id, first_name, last_name, email, username, password, created_at, updated_at, last_login
 			FROM users
 			WHERE is_deleted = false
 			LIMIT $1 OFFSET $2`
@@ -222,6 +224,7 @@ func (r *UserRepositoryImpl) List(ctx context.Context, limit, offset int) ([]dom
 			&user.Password,
 			&user.CreatedAt,
 			&user.UpdatedAt,
+			&user.LastLogin,
 		)
 		if err != nil {
 			return nil, err
@@ -230,4 +233,21 @@ func (r *UserRepositoryImpl) List(ctx context.Context, limit, offset int) ([]dom
 	}
 
 	return users, nil
+}
+
+func (r *UserRepositoryImpl) UpdateLastLogin(ctx context.Context, userId int64) error {
+	query := `
+		UPDATE users
+		SET last_login = NOW()
+		WHERE id = $1`
+
+	_, err := r.db.ExecContext(ctx, query, userId)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.ErrNotFound
+		}
+	}
+
+	return err
 }

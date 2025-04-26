@@ -45,3 +45,8 @@ func (m *MockedUserRepository) List(ctx context.Context, limit, offset int) ([]d
 	args := m.Called(ctx, limit, offset)
 	return args.Get(0).([]domain.User), args.Error(1)
 }
+
+func (m *MockedUserRepository) UpdateLastLogin(ctx context.Context, userId int64) error {
+	args := m.Called(ctx, userId)
+	return args.Error(0)
+}

@@ -20,6 +20,6 @@ migrate-down:
 migrate-seed:
 	@go run ./cmd/migrate/seed_db/main.go
 
-.PHONE: test
+.PHONY: test
 test:
 	@go test -cover ./...

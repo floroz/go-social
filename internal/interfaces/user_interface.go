@@ -14,6 +14,7 @@ type UserRepository interface {
 	GetByID(ctx context.Context, userId int64) (*domain.User, error)
 	Delete(ctx context.Context, userId int64) error
 	List(ctx context.Context, limit, offset int) ([]domain.User, error)
+	UpdateLastLogin(ctx context.Context, userId int64) error
 }
 
 type UserService interface {
@@ -22,4 +23,5 @@ type UserService interface {
 	GetByID(ctx context.Context, userId int64) (*domain.User, error)
 	Delete(ctx context.Context, userId int64) error
 	List(ctx context.Context, limit, offset int) ([]domain.User, error)
+	UpdateLastLogin(ctx context.Context, userId int64) error
 }
