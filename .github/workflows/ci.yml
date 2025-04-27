@@ -1,0 +1,98 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  backend-checks:
+    name: Backend Checks
+    runs-on: ubuntu-latest
+    services:
+      # Add Docker-in-Docker service
+      dind:
+        image: docker:23.0-dind # Using standard dind image
+        # privileged: true # May be needed depending on runner environment
+        options: --add-host=host.docker.internal:host-gateway # Helps container connect to host if needed, though not strictly for dockertest here
+        ports:
+          - 2375:2375 # Expose Docker daemon port
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22' # Use the version from go.mod or specify desired version
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Install golangci-lint
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+      - name: Run Go Linter
+        run: $(go env GOPATH)/bin/golangci-lint run ./...
+
+      - name: Run Go Build
+        run: go build ./...
+
+      - name: Run Go Tests
+        env:
+          # Tell dockertest to use the DinD service container
+          DOCKER_HOST: tcp://localhost:2375 # Connect to the exposed port of the dind service
+          # Keep JWT_SECRET needed by the application logic
+          JWT_SECRET: test-ci-jwt-secret
+        run: make test
+
+  frontend-checks:
+    name: Frontend Checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12' # Use the version from package.json
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Run Build (includes Typecheck)
+        # Pass API URL required for build-time checks if any, otherwise use default/placeholder
+        env:
+           VITE_API_BASE_URL: http://dummy-api.com/api # Placeholder for build
+        run: npm run build
+
+      - name: Run Tests
+        run: npm run test -- --run # Use --run for non-watch mode
+
+  ci-passed:
+    name: CI Passed
+    runs-on: ubuntu-latest
+    needs: [backend-checks, frontend-checks] # Run only if both previous jobs succeed
+    steps:
+      - name: All checks passed
+        run: echo "Backend and Frontend checks passed successfully!"
