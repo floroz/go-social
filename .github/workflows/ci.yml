@@ -50,8 +50,8 @@ jobs:
 
       - name: Run Go Tests
         env:
-          # Tell dockertest to use the DinD service container
-          DOCKER_HOST: tcp://dind:2375 # Use service name 'dind' as hostname
+          # Tell dockertest to use the DinD service container via mapped port
+          DOCKER_HOST: tcp://localhost:2375 # Use localhost and the mapped port
           # Keep JWT_SECRET needed by the application logic
           JWT_SECRET: test-ci-jwt-secret
         run: make test
