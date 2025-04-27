@@ -36,25 +36,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/SignupSuccessResponse'
         '400':
           description: Invalid input data (e.g., validation errors).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ApiErrorResponse'
         '409':
           description: Username or email already exists.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ApiErrorResponse'
         '500':
           description: Server error during registration.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ApiErrorResponse'
   /v1/auth/login:
     post:
       tags:
@@ -75,42 +75,37 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
+                $ref: '#/components/schemas/LoginSuccessResponse'
         '400':
           description: Invalid input data (e.g., validation errors).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ApiErrorResponse'
         '401':
           description: Invalid email or password.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ApiErrorResponse'
         '500':
           description: Server error during login.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   schemas:
-    ErrorResponse:
+    ApiErrorResponse:
       type: object
       properties:
-        error:
-          type: string
-          description: A human-readable error message.
-          example: Invalid credentials provided.
-        details:
-          type: object
-          description: Optional additional details or validation errors.
-          additionalProperties: true
-          example:
-            email: Invalid email format
+        errors:
+          type: array
+          description: An array containing one or more error objects.
+          items:
+            $ref: '#/components/schemas/ApiError'
       required:
-        - error
+        - errors
     User:
       type: object
       description: Represents a user in the system.
@@ -240,6 +235,42 @@ components:
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
       required:
         - token
+    SignupSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful signup response.
+      properties:
+        data:
+          description: Contains the created user object.
+          $ref: '#/components/schemas/User'
+      required:
+        - data
+    ApiError:
+      type: object
+      properties:
+        code:
+          type: string
+          description: An application-specific error code.
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          description: A human-readable description of the error.
+          example: Email format is invalid.
+        field:
+          type: string
+          description: The specific input field related to the error (optional).
+          example: email
+      required:
+        - code
+        - message
+    LoginSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful login response.
+      properties:
+        data:
+          description: Contains the login response object (e.g., JWT token).
+          $ref: '#/components/schemas/LoginResponse'
+      required:
+        - data
   securitySchemes:
     bearerAuth:
       type: http

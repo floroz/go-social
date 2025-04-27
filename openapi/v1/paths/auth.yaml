@@ -20,25 +20,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '../../shared/schemas/user.yaml#/components/schemas/User'
+                $ref: '../schemas/auth.yaml#/components/schemas/SignupSuccessResponse'
         '400': # Bad Request
           description: Invalid input data (e.g., validation errors).
           content:
             application/json:
               schema:
-                $ref: '../../shared/schemas/common.yaml#/components/schemas/ErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '409': # Conflict
           description: Username or email already exists.
           content:
             application/json:
               schema:
-                $ref: '../../shared/schemas/common.yaml#/components/schemas/ErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500': # Internal Server Error
           description: Server error during registration.
           content:
             application/json:
               schema:
-                $ref: '../../shared/schemas/common.yaml#/components/schemas/ErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
 
   /v1/auth/login:
     post:
@@ -60,22 +60,22 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '../schemas/auth.yaml#/components/schemas/LoginResponse'
+                $ref: '../schemas/auth.yaml#/components/schemas/LoginSuccessResponse'
         '400': # Bad Request
           description: Invalid input data (e.g., validation errors).
           content:
             application/json:
               schema:
-                $ref: '../../shared/schemas/common.yaml#/components/schemas/ErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '401': # Unauthorized
           description: Invalid email or password.
           content:
             application/json:
               schema:
-                $ref: '../../shared/schemas/common.yaml#/components/schemas/ErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500': # Internal Server Error
           description: Server error during login.
           content:
             application/json:
               schema:
-                $ref: '../../shared/schemas/common.yaml#/components/schemas/ErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'

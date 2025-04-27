@@ -22,13 +22,22 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// ErrorResponse defines model for ErrorResponse.
-type ErrorResponse struct {
-	// Details Optional additional details or validation errors.
-	Details *map[string]interface{} `json:"details,omitempty"`
+// ApiError defines model for ApiError.
+type ApiError struct {
+	// Code An application-specific error code.
+	Code string `json:"code"`
 
-	// Error A human-readable error message.
-	Error string `json:"error"`
+	// Field The specific input field related to the error (optional).
+	Field *string `json:"field,omitempty"`
+
+	// Message A human-readable description of the error.
+	Message string `json:"message"`
+}
+
+// ApiErrorResponse defines model for ApiErrorResponse.
+type ApiErrorResponse struct {
+	// Errors An array containing one or more error objects.
+	Errors []ApiError `json:"errors"`
 }
 
 // LoginRequest Data required for user login.
@@ -44,6 +53,12 @@ type LoginRequest struct {
 type LoginResponse struct {
 	// Token JSON Web Token for authenticated sessions.
 	Token string `json:"token"`
+}
+
+// LoginSuccessResponse Standard wrapper for the successful login response.
+type LoginSuccessResponse struct {
+	// Data Response containing the JWT upon successful login.
+	Data LoginResponse `json:"data"`
 }
 
 // SignupRequest Data required for user signup.
@@ -62,6 +77,12 @@ type SignupRequest struct {
 
 	// Username Desired username (alphanumeric).
 	Username string `json:"username"`
+}
+
+// SignupSuccessResponse Standard wrapper for the successful signup response.
+type SignupSuccessResponse struct {
+	// Data Represents a user in the system.
+	Data User `json:"data"`
 }
 
 // User Represents a user in the system.
@@ -366,10 +387,10 @@ type ClientWithResponsesInterface interface {
 type LoginUserV1Response struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *LoginResponse
-	JSON400      *ErrorResponse
-	JSON401      *ErrorResponse
-	JSON500      *ErrorResponse
+	JSON200      *LoginSuccessResponse
+	JSON400      *ApiErrorResponse
+	JSON401      *ApiErrorResponse
+	JSON500      *ApiErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -391,10 +412,10 @@ func (r LoginUserV1Response) StatusCode() int {
 type SignupUserV1Response struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *User
-	JSON400      *ErrorResponse
-	JSON409      *ErrorResponse
-	JSON500      *ErrorResponse
+	JSON201      *SignupSuccessResponse
+	JSON400      *ApiErrorResponse
+	JSON409      *ApiErrorResponse
+	JSON500      *ApiErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -462,28 +483,28 @@ func ParseLoginUserV1Response(rsp *http.Response) (*LoginUserV1Response, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest LoginResponse
+		var dest LoginSuccessResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorResponse
+		var dest ApiErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ErrorResponse
+		var dest ApiErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest ErrorResponse
+		var dest ApiErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -509,28 +530,28 @@ func ParseSignupUserV1Response(rsp *http.Response) (*SignupUserV1Response, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest User
+		var dest SignupSuccessResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorResponse
+		var dest ApiErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest ErrorResponse
+		var dest ApiErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest ErrorResponse
+		var dest ApiErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -610,31 +631,34 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"H4sIAAAAAAAC/9RYb1PbuBP+Khr9OvODufxxCHBHXjXHv3FaCE0C3LXDMcLeJAJbUiWZkHby3W8k2YmD",
+	"HQIt1+u9gljy7qPdfZ5d+SsOeCw4A6YVbn3FKhhDTOy/bUEPpeTS/C8kFyA1BbsS8BDM3xBUIKnQlDPc",
+	"wm2GiBARDYh5UFUCAjqkAQJjBJl3ariC4YHEIgLcwhft9/5Be+B3T68Pe71uD1ewngqzorSkbIRnFTyk",
+	"EIVFV4MxoLl9ykSikd2JJEREQ4g0R3oMqesNbt8j0eYyAIgJjcq8xqAUGZUdEY2TmLCqBBKSmwhQbhnx",
+	"4cLnsqND4wgNuYyJRlQhyu5JRMNa0fesgiV8TqiEELc+uUAv8FzN9/ObWwi0wZplqQdKcKagmC0LSJXn",
+	"S0oyRQFnmlBG2QhxBohLFHOZBc95UgYr1RBbO28kDHEL/6++qJ16Wjj1edXM5mCtl8LZUlhlZ3rPR5T1",
+	"4HMCShdxHxBNUGbJRBUlCiSKzEsG5qPT2yQXjJwrkP9XyK4iEoYSlFpO2i1hUAs5vE0f1QIe4wp2WcxV",
+	"T0we3gMb6TFu7XgVHFOW/WyWlJYgSk24DFciyjYsg1HNQDa1eKvUxJNhHsbc4FNIfltXaNlh5taeSMui",
+	"zpYPkK3k68kQonM5QIngDKkkCECpYRKtSpbmd8CKljv97im6hBs0MOs25STRY2DaiA2ESIFSlLNHGYRp",
+	"Z3xzHNAu7fjnX/zGKfWVz3o7wb6/69+JPy72O3s1mHa+hJc+7VL/4eT2xDsd/NnsHtxNfDqhN/GR/ti3",
+	"m+/J8faod7wXmefk8sjzb/nD6eBw6+T2ZOfkwJ8OP9T6w+jdw6TX6Z/Au3dHWx8G28OJOIHOsLl71r3b",
+	"nXYurkn4QanJTpDP4O1ErxUCF5iVSem7yK7OTV8TFhIZookkQoC0MTTJeZwTJFMbxeSERJN17F8ukcen",
+	"sBbKDtGnI5aIlzJe2bd+esoPqVT6mpEYVmKyW5DZsgyoQxi82F9E1rkzO0q8HXB4RT07AGXT9YMErYJN",
+	"TZQfO4OS7UAbJBJjwpIYJA02i0UQro+EIFqDNNb/+kSqX9rVj1517+qXN2upnCuHfK5y+CvPk2NHmleh",
+	"vmPSd3LfFNfzKW93l/QQIUEZs4g4klPmwE6VhrgILJBgOsA1KZGNAY1BaRILNBmDM2NNTohC6XvLqd/y",
+	"trarXqPa2Bk0vFbTa3nex3xphkRDVVObIjMCdlk0xS0tEygpx29XIT5mz1GhVxUaPmZlJmnZoMLo5wQQ",
+	"DU3/HdJcRZnoLtlteI0ccMr07vbq0FGmYQRyLmG2Hz2V1XTgTnKiNp8rSpL668Dba3lPJpUlUWTm+gzZ",
+	"2iR/p9YWNUyE31TO1kv68orj7w4aW63tne+q6dUSm542cbWR7SsWdlh27keaQW0/eIFM5kRgKYRF3ZlV",
+	"sIIgkVRP+0a2nIjcAJEg24mR9uzXURagzuUAV9y92Fhyq4szjLUWeGYMUzbkJbesM39+VbUX4zlbjjnq",
+	"84CSKH9ttndCqm28FhvaZz6u4HuQyhlt1LyaZxLCBTAiKG7hZs2rNW3L0GN7qPp9o26m5PqcR4KXDVft",
+	"3CQ9V13CzF1aJ5KZR53LgcFldNeC9EPccoOnSftFA7v8gdK/83DqvhAwDcx6yx2ufqs4W3xleOYw6YZC",
+	"G+JizaVTayDByhGJFM4Xk6ljW12usdnAbHne60J83IJLoNp9uY5bQ718dJGd72smo9uviK7wbaAEme++",
+	"RaRfUUy7RhtQG9UqyD53Jevu6pspwMa/AtB1TC5zA+Wsgnd+cLj6IO9Bpt9GwsToV9Z0rLgkcUzk1GXc",
+	"zC6OT4bUZKSMuOXoZiJ70cBX5sU5W90otpqu+1brTN0wmKRkDQKeMF2kqJsQ/1GOLt/cVpE0nS9D0IQ+",
+	"i6GNVwb4DIo6oHOGRlMkYUSVBgnhgq5GuNN244LvOst/hbp7PxTgeXbf4jIbeCMzY0wRPFCl1U/DYJdp",
+	"mXbgZSKbAkKJyBFuHZvtkGGcmC3Fu+g9RFzEwDRyu8zMIiPcwnXTyWdXc+uPX+1m5Fb579xOApZxbFy4",
+	"UQE1Ns1Uaye2EqyzyvNdqHKj53bpBbaMqq2wdWaXXmAr4HFs74ql5vazVWPxavZ3AAAA//9OVyG/6hgA",
+	"AA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

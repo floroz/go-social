@@ -27,8 +27,8 @@ paths:
 components:
   schemas:
     # References to shared schemas will go here
-    ErrorResponse:
-      $ref: './shared/schemas/common.yaml#/components/schemas/ErrorResponse'
+    ApiErrorResponse:
+      $ref: './shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
     User:
       $ref: './shared/schemas/user.yaml#/components/schemas/User'
     SignupRequest:

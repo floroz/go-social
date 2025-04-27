@@ -1,17 +1,33 @@
 # This file defines common, reusable schemas shared across API versions.
 components:
   schemas:
-    ErrorResponse:
+    ApiError:
       type: object
       properties:
-        error:
+        code:
           type: string
-          description: A human-readable error message.
-          example: "Invalid credentials provided."
-        details:
-          type: object
-          description: Optional additional details or validation errors.
-          additionalProperties: true # Allows for flexible error details
-          example: { "email": "Invalid email format" }
+          description: An application-specific error code.
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: A human-readable description of the error.
+          example: "Email format is invalid."
+        field:
+          type: string
+          description: The specific input field related to the error (optional).
+          example: "email"
       required:
-        - error
+        - code
+        - message
+
+    # Defines the standard wrapper for error responses, containing an array of errors
+    ApiErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          description: An array containing one or more error objects.
+          items:
+            $ref: '#/components/schemas/ApiError' # Reference the ApiError schema
+      required:
+        - errors

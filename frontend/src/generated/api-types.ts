@@ -48,21 +48,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        ErrorResponse: {
-            /**
-             * @description A human-readable error message.
-             * @example Invalid credentials provided.
-             */
-            error: string;
-            /**
-             * @description Optional additional details or validation errors.
-             * @example {
-             *       "email": "Invalid email format"
-             *     }
-             */
-            details?: {
-                [key: string]: unknown;
-            };
+        ApiErrorResponse: {
+            /** @description An array containing one or more error objects. */
+            errors: components["schemas"]["ApiError"][];
         };
         /** @description Represents a user in the system. */
         User: {
@@ -166,6 +154,33 @@ export interface components {
              */
             token: string;
         };
+        /** @description Standard wrapper for the successful signup response. */
+        SignupSuccessResponse: {
+            /** @description Contains the created user object. */
+            data: components["schemas"]["User"];
+        };
+        ApiError: {
+            /**
+             * @description An application-specific error code.
+             * @example VALIDATION_ERROR
+             */
+            code: string;
+            /**
+             * @description A human-readable description of the error.
+             * @example Email format is invalid.
+             */
+            message: string;
+            /**
+             * @description The specific input field related to the error (optional).
+             * @example email
+             */
+            field?: string;
+        };
+        /** @description Standard wrapper for the successful login response. */
+        LoginSuccessResponse: {
+            /** @description Contains the login response object (e.g., JWT token). */
+            data: components["schemas"]["LoginResponse"];
+        };
     };
     responses: never;
     parameters: never;
@@ -195,7 +210,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["User"];
+                    "application/json": components["schemas"]["SignupSuccessResponse"];
                 };
             };
             /** @description Invalid input data (e.g., validation errors). */
@@ -204,7 +219,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description Username or email already exists. */
@@ -213,7 +228,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description Server error during registration. */
@@ -222,7 +237,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -247,7 +262,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginResponse"];
+                    "application/json": components["schemas"]["LoginSuccessResponse"];
                 };
             };
             /** @description Invalid input data (e.g., validation errors). */
@@ -256,7 +271,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description Invalid email or password. */
@@ -265,7 +280,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description Server error during login. */
@@ -274,7 +289,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };

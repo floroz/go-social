@@ -78,3 +78,23 @@ components:
           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
       required:
         - token
+
+    SignupSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful signup response.
+      properties:
+        data:
+          description: Contains the created user object.
+          $ref: '../../shared/schemas/user.yaml#/components/schemas/User'
+      required:
+        - data
+
+    LoginSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful login response.
+      properties:
+        data:
+          description: Contains the login response object (e.g., JWT token).
+          $ref: '#/components/schemas/LoginResponse' 
+      required:
+        - data
