@@ -16,6 +16,14 @@ migrate-up:
 migrate-down:
 	@migrate -database "$(DATABASE_URL)" -path $(MIGRATIONS_PATH) down
 
+.PHONY: generate-go-types
+generate-go-types: ## Bundle OpenAPI spec and generate Go types
+	@echo "Bundling OpenAPI spec..."
+	@redocly bundle openapi/openapi.yaml -o openapi/openapi-bundled.yaml
+	@echo "Generating Go types from bundled spec..."
+	@mkdir -p internal/generated # Ensure the directory exists
+	@oapi-codegen -package generated -o internal/generated/types.go openapi/openapi-bundled.yaml
+
 .PHONY: migrate-seed
 migrate-seed:
 	@go run ./cmd/migrate/seed_db/main.go
