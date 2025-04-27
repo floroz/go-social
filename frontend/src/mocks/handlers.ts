@@ -17,8 +17,8 @@ const mockUser: User = {
 };
 
 export const handlers = [
-  // Mock the POST /auth/signup endpoint
-  http.post(`${API_BASE_URL}/auth/signup`, async (/*{ request }*/) => {
+  // Mock the POST /v1/auth/signup endpoint
+  http.post(`${API_BASE_URL}/v1/auth/signup`, async (/*{ request }*/) => {
     // Removed unused request param
     // You can optionally inspect the request body if needed
     // const body = await request.json() as { data: SignupRequestDTO };
@@ -36,5 +36,5 @@ export const handlers = [
   }),
 
   // TODO: Add handlers for login, posts, comments etc. later
-  // http.post(`${API_BASE_URL}/auth/login`, async ({ request }) => { ... })
+  // http.post(`${API_BASE_URL}/v1/auth/login`, async ({ request }) => { ... })
 ];

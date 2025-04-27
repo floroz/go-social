@@ -14,15 +14,12 @@ const getConfigValue = (key: string, defaultValue?: string): string => {
     // Throw an error for required variables without defaults
     throw new Error(`Missing required environment variable: ${key}`);
   }
-  return String(value);
+  return String(value); // Ensure value is a string
 };
 
 const config: AppConfig = {
   // Use VITE_ prefix as required by Vite to expose to client
-  apiBaseUrl: getConfigValue(
-    "VITE_API_BASE_URL",
-    "http://localhost:8080/api/v1"
-  ), // Provide fallback for safety/simplicity
+  apiBaseUrl: getConfigValue("VITE_API_BASE_URL", "http://localhost:8080/api"),
 };
 
 // Validate required configurations (optional but recommended)

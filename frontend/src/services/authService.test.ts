@@ -54,7 +54,7 @@ describe("AuthService", () => {
 
       // Override the default handler for this specific test
       server.use(
-        http.post(`${API_BASE_URL}/auth/signup`, () => {
+        http.post(`${API_BASE_URL}/v1/auth/signup`, () => {
           return HttpResponse.json(
             { errors: [{ message: errorMessage }] },
             { status: 400 }
@@ -71,7 +71,7 @@ describe("AuthService", () => {
       } as SignupRequestDTO;
 
       server.use(
-        http.post(`${API_BASE_URL}/auth/signup`, () => {
+        http.post(`${API_BASE_URL}/v1/auth/signup`, () => {
           return new HttpResponse(null, {
             status: 500,
             statusText: "Internal Server Error",
@@ -85,12 +85,15 @@ describe("AuthService", () => {
 
   describe("login", () => {
     // Mock successful login handler
-    const loginSuccessHandler = http.post(`${API_BASE_URL}/auth/login`, () => {
-      return HttpResponse.json({ data: mockUser }, { status: 200 });
-    });
+    const loginSuccessHandler = http.post(
+      `${API_BASE_URL}/v1/auth/login`,
+      () => {
+        return HttpResponse.json({ data: mockUser }, { status: 200 });
+      }
+    );
 
     // Mock failed login handler (401 Unauthorized)
-    const loginFailHandler = http.post(`${API_BASE_URL}/auth/login`, () => {
+    const loginFailHandler = http.post(`${API_BASE_URL}/v1/auth/login`, () => {
       return HttpResponse.json(
         { errors: [{ message: "Invalid credentials" }] },
         { status: 401 }
@@ -132,7 +135,7 @@ describe("AuthService", () => {
       } as LoginRequestDTO;
 
       server.use(
-        http.post(`${API_BASE_URL}/auth/login`, () => {
+        http.post(`${API_BASE_URL}/v1/auth/login`, () => {
           return new HttpResponse(null, { status: 500 });
         })
       );

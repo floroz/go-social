@@ -13,15 +13,19 @@ const AuthService = {
    * @returns A promise that resolves with the created User object.
    */
   signup: async (signupData: SignupRequestDTO): Promise<User> => {
+    // eslint-disable-next-line no-useless-catch
     try {
-      const response = await apiClient.post<UserApiResponse>("/auth/signup", {
-        data: signupData,
-      });
+      const response = await apiClient.post<UserApiResponse>(
+        "/v1/auth/signup",
+        {
+          data: signupData,
+        }
+      );
       // Return only the user data from the response
       return response.data.data;
     } catch (error) {
       // TODO: Improve error handling/logging
-      console.error("AuthService signup error:", error);
+      // console.error("AuthService signup error:", error);
       // Re-throw the error so React Query can handle it
       throw error;
     }
@@ -33,15 +37,16 @@ const AuthService = {
    * @returns A promise that resolves with the logged-in User object.
    */
   login: async (loginData: LoginRequestDTO): Promise<User> => {
+    // eslint-disable-next-line no-useless-catch
     try {
-      const response = await apiClient.post<UserApiResponse>("/auth/login", {
+      const response = await apiClient.post<UserApiResponse>("/v1/auth/login", {
         data: loginData,
       });
       // Return only the user data from the response
       return response.data.data;
     } catch (error) {
       // TODO: Improve error handling/logging
-      console.error("AuthService login error:", error);
+      // console.error("AuthService login error:", error);
       // Re-throw the error so React Query can handle it
       throw error;
     }

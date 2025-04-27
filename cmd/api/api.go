@@ -32,13 +32,12 @@ func (app *Application) Routes() http.Handler {
 
 	// Add CORS middleware
 	r.Use(cors.Handler(cors.Options{
-		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin
 		AllowedOrigins:   []string{"http://localhost:5173", "http://127.0.0.1:5173"}, // Allow frontend dev server
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
+		MaxAge:           300,
 	}))
 
 	r.Use(middleware.RequestID)
@@ -46,40 +45,46 @@ func (app *Application) Routes() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	r.Route("/api/v1", func(r chi.Router) {
-		r.Get("/healthz", app.healthCheckHandler)
+	r.Route("/api", func(apiRouter chi.Router) {
+		apiRouter.Get("/healthz", app.healthCheckHandler)
 
-		r.Route("/auth", func(r chi.Router) {
-			r.Post("/login", app.loginHandler)
-			r.Post("/signup", app.signupHandler)
-			r.Post("/logout", app.logoutHandler)
-			r.Post("/refresh", app.refreshHandler)
-		})
+		// Versioned resource routes under /api/v1
+		apiRouter.Route("/v1", func(v1Router chi.Router) {
+			// Auth routes
+			v1Router.Route("/auth", func(authRouter chi.Router) {
+				authRouter.Post("/login", app.loginHandler)
+				authRouter.Post("/signup", app.signupHandler)
+				authRouter.Post("/logout", app.logoutHandler)
+				authRouter.Post("/refresh", app.refreshHandler)
+			})
 
-		r.Route("/users", func(r chi.Router) {
-			r.Use(middlewares.AuthMiddleware)
-			r.Put("/", app.updateUserHandler)
-			r.Get("/", app.getUserProfileHandler)
-		})
+			// User routes
+			v1Router.Route("/users", func(userRouter chi.Router) {
+				userRouter.Use(middlewares.AuthMiddleware)
+				userRouter.Put("/", app.updateUserHandler)
+				userRouter.Get("/", app.getUserProfileHandler)
+			})
 
-		r.Route("/posts", func(r chi.Router) {
-			r.Use(middlewares.AuthMiddleware)
+			// Post routes
+			v1Router.Route("/posts", func(postRouter chi.Router) {
+				postRouter.Use(middlewares.AuthMiddleware)
+				postRouter.Post("/", app.createPostHandler)
+				postRouter.Delete("/{id}", app.deletePostHandler)
+				postRouter.Put("/{id}", app.updatePostHandler)
+				postRouter.Get("/{id}", app.getPostByIdHandler)
+				postRouter.Get("/", app.listPostsHandler)
 
-			r.Post("/", app.createPostHandler)
-			r.Delete("/{id}", app.deletePostHandler)
-			r.Put("/{id}", app.updatePostHandler)
-			r.Get("/{id}", app.getPostByIdHandler)
-			r.Get("/", app.listPostsHandler)
-
-			r.Route("/{postId}/comments", func(r chi.Router) {
-				r.Post("/", app.createCommentHandler)
-				r.Put("/{id}", app.updateCommentHandler)
-				r.Delete("/{id}", app.deleteCommentHandler)
-				r.Get("/{id}", app.getCommentByIdHandler)
-				r.Get("/", app.listByPostIdHandler)
+				// Comments sub-route
+				postRouter.Route("/{postId}/comments", func(commentRouter chi.Router) {
+					// Auth middleware is already applied by the parent /posts route
+					commentRouter.Post("/", app.createCommentHandler)
+					commentRouter.Put("/{id}", app.updateCommentHandler)
+					commentRouter.Delete("/{id}", app.deleteCommentHandler)
+					commentRouter.Get("/{id}", app.getCommentByIdHandler)
+					commentRouter.Get("/", app.listByPostIdHandler)
+				})
 			})
 		})
-
 	})
 
 	return r
@@ -96,11 +101,7 @@ func writeJSONResponse(w http.ResponseWriter, status int, data any) {
 	if data == nil {
 		return
 	}
-
-	response := map[string]any{
-		"data": data,
-	}
-
+	response := map[string]any{"data": data}
 	err := json.NewEncoder(w).Encode(response)
 
 	if err != nil {
@@ -110,26 +111,17 @@ func writeJSONResponse(w http.ResponseWriter, status int, data any) {
 }
 
 func readJSON(source io.Reader, dest any) error {
-	// TODO: this could be extract into a middleware to specific routes if we need more fine-tuned control
 	maxBytes := int64(1 << 20) // 1MB
-	// Prevent reading too much data from the request body
-	// to avoid potential denial of service attacks
 	source = io.LimitReader(source, maxBytes)
 	decoder := json.NewDecoder(source)
-
-	// Ensure that the request body does not contain unknown fields
 	decoder.DisallowUnknownFields()
-
 	return decoder.Decode(dest)
 }
 
 func writeJSONError(w http.ResponseWriter, status int, message string) {
-	errors := []domain.ErrorDetail{
-		{Message: message},
-	}
-	errorResponse := errorResponse{
-		Errors: errors,
-	}
+	errors := []domain.ErrorDetail{{Message: message}}
+	errorResponse := errorResponse{Errors: errors}
+	// Use writeJSONResponse to ensure consistent { "data": { "errors": [...] } } structure for errors too
 	writeJSONResponse(w, status, errorResponse)
 }
 
@@ -137,13 +129,13 @@ func handleErrors(w http.ResponseWriter, err error) {
 	log.Error().Err(err).Msg("error")
 	switch e := err.(type) {
 	case *domain.ValidationError:
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		writeJSONError(w, http.StatusBadRequest, e.Error())
 	case *domain.InternalServerError:
-		writeJSONError(w, e.StatusCode, err.Error())
+		writeJSONError(w, e.StatusCode, e.Error())
 	case *domain.BadRequestError:
-		writeJSONError(w, e.StatusCode, err.Error())
+		writeJSONError(w, e.StatusCode, e.Error())
 	case *domain.NotFoundError:
-		writeJSONError(w, e.StatusCode, err.Error())
+		writeJSONError(w, e.StatusCode, e.Error())
 	default:
 		writeJSONError(w, http.StatusInternalServerError, "internal server error")
 	}
