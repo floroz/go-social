@@ -10,14 +10,7 @@ jobs:
   backend-checks:
     name: Backend Checks
     runs-on: ubuntu-latest
-    services:
-      # Add Docker-in-Docker service
-      dind:
-        image: docker:23.0-dind # Using standard dind image
-        # privileged: true # May be needed depending on runner environment
-        options: --add-host=host.docker.internal:host-gateway # Helps container connect to host if needed, though not strictly for dockertest here
-        ports:
-          - 2375:2375 # Expose Docker daemon port
+    # Removed the services block - will use host Docker daemon
 
     steps:
       - name: Checkout code
@@ -50,9 +43,6 @@ jobs:
 
       - name: Run Go Tests
         env:
-          # Tell dockertest to use the DinD service container via mapped port
-          DOCKER_HOST: tcp://localhost:2375 # Use localhost and the mapped port
-          # Keep JWT_SECRET needed by the application logic
           JWT_SECRET: test-ci-jwt-secret
         run: make test
 
