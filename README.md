@@ -104,3 +104,39 @@ Alternatively, you can run them separately:
 *   **Run All Tests (Backend & Frontend):**
     ```sh
     make test-all
+    ```
+
+## API Specification & Code Generation
+
+This project uses an OpenAPI 3 specification to define the API contract. The specification files are located in the `openapi/` directory.
+
+### Structure
+
+*   `openapi/openapi.yaml`: The main entry point, defining info, servers, tags, and references to paths and shared schemas.
+*   `openapi/shared/`: Contains schemas (`common.yaml`, `user.yaml`, etc.) shared across API versions or endpoints.
+*   `openapi/v1/`: Contains definitions specific to V1 of the API, including paths (`paths/auth.yaml`, etc.) and version-specific schemas (`schemas/auth.yaml`, etc.).
+
+### Code Generation
+
+We use code generation tools to create Go types for the backend and TypeScript types for the frontend based on the OpenAPI specification. This ensures consistency between the API definition, backend implementation, and frontend usage.
+
+*   **Tools:**
+    *   `oapi-codegen`: Generates Go types (`internal/generated/types.go`).
+    *   `openapi-typescript`: Generates TypeScript types (`frontend/src/generated/api-types.ts`).
+    *   `@redocly/cli`: Used to bundle the multi-file OpenAPI spec into a single file (`openapi/openapi-bundled.yaml`) before generation.
+*   **Tool Management:**
+    *   Go tools (`oapi-codegen`, `golangci-lint`) are managed via `go.mod` using a `tools.go` file. Run `go install` for the packages listed in `tools.go` if needed (or add a `make setup-tools` target).
+    *   Node.js tools (`@redocly/cli`, `openapi-typescript`) are managed as dev dependencies in `frontend/package.json`. Run `npm install` within the `frontend` directory.
+*   **Generating Types:**
+    *   To regenerate both Go and TypeScript types after modifying the OpenAPI spec, run:
+        ```sh
+        make generate-types
+        ```
+    *   This command first bundles the spec using `redocly` and then runs `oapi-codegen` and `openapi-typescript`.
+
+### Facade Pattern
+
+To decouple the main application code from the potentially verbose or unstable generated code, we use facade modules:
+
+*   **Backend:** `internal/apitypes/types.go` re-exports the necessary types from `internal/generated`. Backend handlers should import from `internal/apitypes`, not directly from `internal/generated`.
+*   **Frontend:** `frontend/src/types/api.ts` re-exports the necessary types from `frontend/src/generated/api-types.ts`. Frontend code (services, components) should import from `frontend/src/types/api`, not directly from `frontend/src/generated`.
