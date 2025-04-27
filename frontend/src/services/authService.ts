@@ -1,5 +1,11 @@
 import apiClient from "@/lib/api";
-import { SignupRequest, LoginRequest, User, LoginResponse } from "@/types/api";
+import {
+  SignupRequest,
+  LoginRequest,
+  User,
+  LoginResponse,
+  SignupResponse,
+} from "@/types/api";
 
 const AuthService = {
   /**
@@ -10,14 +16,16 @@ const AuthService = {
   signup: async (signupData: SignupRequest): Promise<User> => {
     // eslint-disable-next-line no-useless-catch
     try {
-      const response = await apiClient.post<User>(
+      const response = await apiClient.post<SignupResponse>(
         "/v1/auth/signup",
         signupData
       );
-      return response.data; // Return the user data directly
+
+      const userData = response.data.data;
+      return userData;
     } catch (error) {
       // TODO: Improve error handling/logging
-      // console.error("AuthService signup error:", error);
+      // console.error("AuthService signup error:", error); // Log any error during the process
       // Re-throw the error so React Query can handle it
       throw error;
     }

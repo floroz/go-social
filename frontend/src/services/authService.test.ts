@@ -3,7 +3,7 @@ import { http, HttpResponse } from "msw";
 import { server } from "@/mocks/server";
 import AuthService from "./authService";
 import { SignupRequest, LoginRequest, LoginResponse } from "@/types/api";
-import { mockUser } from "@/mocks/handlers";
+import { mockUser } from "@/mocks/data/user";
 import config from "@/config";
 
 const API_BASE_URL = config.apiBaseUrl;

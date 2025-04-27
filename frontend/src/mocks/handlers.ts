@@ -1,20 +1,8 @@
 import { http, HttpResponse } from "msw";
-import { User } from "@/domain/user";
 import config from "@/config";
+import { mockUser } from "@/mocks/data/user";
 
 const API_BASE_URL = config.apiBaseUrl;
-
-// Mock user data for successful responses
-const mockUser: User = {
-  id: 1,
-  first_name: "Mock",
-  last_name: "User",
-  username: "mockuser",
-  email: "mock@example.com",
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  last_login: null, // Or new Date().toISOString() if needed
-};
 
 export const handlers = [
   // Mock the POST /v1/auth/signup endpoint
