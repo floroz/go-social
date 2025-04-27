@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/floroz/go-social/cmd/middlewares"
 	"github.com/floroz/go-social/internal/domain"
@@ -47,6 +49,10 @@ func (app *Application) Routes() http.Handler {
 
 	r.Route("/api", func(apiRouter chi.Router) {
 		apiRouter.Get("/healthz", app.healthCheckHandler)
+
+		// Serve Swagger UI and OpenAPI spec
+		apiRouter.Get("/docs", app.serveDocsHandler)
+		apiRouter.Get("/openapi.yaml", app.serveOpenapiHandler)
 
 		// Versioned resource routes under /api/v1
 		apiRouter.Route("/v1", func(v1Router chi.Router) {
@@ -144,4 +150,49 @@ func handleErrors(w http.ResponseWriter, err error) {
 func getUserClaimFromContext(ctx context.Context) (*domain.UserClaims, bool) {
 	claims, ok := ctx.Value(middlewares.ContextKeyUser).(*domain.UserClaims)
 	return claims, ok
+}
+
+// serveDocsHandler serves the Swagger UI HTML page.
+func (app *Application) serveDocsHandler(w http.ResponseWriter, r *http.Request) {
+	// Construct the absolute path to docs/index.html relative to the project root
+	// Assuming the executable runs from the project root. Adjust if needed.
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get current working directory")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	filePath := filepath.Join(cwd, "docs", "index.html")
+
+	// Check if file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		log.Error().Str("path", filePath).Msg("Swagger UI HTML file not found")
+		http.NotFound(w, r)
+		return
+	}
+
+	http.ServeFile(w, r, filePath)
+}
+
+// serveOpenapiHandler serves the bundled OpenAPI specification file.
+func (app *Application) serveOpenapiHandler(w http.ResponseWriter, r *http.Request) {
+	// Construct the absolute path to openapi/openapi-bundled.yaml
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get current working directory")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	filePath := filepath.Join(cwd, "openapi", "openapi-bundled.yaml")
+
+	// Check if file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		log.Error().Str("path", filePath).Msg("OpenAPI spec file not found")
+		http.NotFound(w, r)
+		return
+	}
+
+	// Set appropriate content type
+	w.Header().Set("Content-Type", "application/vnd.oai.openapi+yaml;charset=utf-8")
+	http.ServeFile(w, r, filePath)
 }

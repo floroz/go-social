@@ -2,12 +2,7 @@ import { describe, it, expect } from "vitest";
 import { http, HttpResponse } from "msw";
 import { server } from "@/mocks/server";
 import AuthService from "./authService";
-import {
-  SignupRequest,
-  LoginRequest,
-  LoginResponse,
-  LoginSuccessResponse,
-} from "@/types/api";
+import { SignupRequest, LoginRequest, LoginSuccessResponse } from "@/types/api";
 import { mockUser } from "@/mocks/data/user";
 import config from "@/config";
 
@@ -80,7 +75,7 @@ describe("AuthService", () => {
   });
 
   describe("login", () => {
-    const mockLoginResponse: LoginResponse = { token: "mock-jwt-token" };
+    const mockLoginResponse = { token: "mock-jwt-token" };
     const loginSuccessHandler = http.post(
       `${API_BASE_URL}/v1/auth/login`,
       () => {

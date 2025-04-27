@@ -106,19 +106,75 @@ Alternatively, you can run them separately:
     make test-all
     ```
 
-## API Specification & Code Generation
+## API Spec
 
-This project uses an OpenAPI 3 specification to define the API contract. The specification files are located in the `openapi/` directory.
+This project uses an OpenAPI 3 specification as the single source of truth for the API contract. This drives code generation for both backend and frontend types, ensuring consistency.
 
-### Structure
+### Response Structure Convention
+
+To maintain consistency across all endpoints, API responses adhere to the following structure:
+
+*   **Success Responses:** Contain a top-level `data` key holding the actual response payload.
+    ```json
+    // Example: 201 Created from /v1/auth/signup
+    {
+      "data": {
+        "id": 1,
+        "first_name": "John",
+        "last_name": "Doe",
+        // ... other user fields
+      }
+    }
+    ```
+    ```json
+    // Example: 200 OK from /v1/auth/login
+    {
+      "data": {
+        "token": "eyJ..."
+      }
+    }
+    ```
+*   **Error Responses:** Contain a top-level `errors` key holding an array of error objects. Each error object includes a `code` and `message`, and optionally a `field` for validation errors.
+    ```json
+    // Example: 400 Bad Request
+    {
+      "errors": [
+        {
+          "code": "VALIDATION_ERROR",
+          "message": "Email format is invalid.",
+          "field": "email"
+        },
+        {
+          "code": "VALIDATION_ERROR",
+          "message": "Password must be at least 8 characters.",
+          "field": "password"
+        }
+      ]
+    }
+    ```
+    ```json
+    // Example: 401 Unauthorized
+    {
+      "errors": [
+        {
+          "code": "UNAUTHORIZED",
+          "message": "Invalid email or password."
+        }
+      ]
+    }
+    ```
+
+### Specification Files Structure
+
+The OpenAPI specification files are located in the `openapi/` directory:
 
 *   `openapi/openapi.yaml`: The main entry point, defining info, servers, tags, and references to paths and shared schemas.
-*   `openapi/shared/`: Contains schemas (`common.yaml`, `user.yaml`, etc.) shared across API versions or endpoints.
-*   `openapi/v1/`: Contains definitions specific to V1 of the API, including paths (`paths/auth.yaml`, etc.) and version-specific schemas (`schemas/auth.yaml`, etc.).
+*   `openapi/shared/`: Contains schemas (`common.yaml`, `user.yaml`, etc.) shared across API versions or endpoints. This includes the standard `ApiError` and `ApiErrorResponse` schemas.
+*   `openapi/v1/`: Contains definitions specific to V1 of the API, including paths (`paths/auth.yaml`, etc.) and version-specific schemas (`schemas/auth.yaml`, etc.). This includes success response wrappers like `SignupSuccessResponse` and `LoginSuccessResponse`.
 
 ### Code Generation
 
-We use code generation tools to create Go types for the backend and TypeScript types for the frontend based on the OpenAPI specification. This ensures consistency between the API definition, backend implementation, and frontend usage.
+We use code generation tools to create Go types for the backend and TypeScript types for the frontend based on the OpenAPI specification.
 
 *   **Tools:**
     *   `oapi-codegen`: Generates Go types (`internal/generated/types.go`).
@@ -140,3 +196,11 @@ To decouple the main application code from the potentially verbose or unstable g
 
 *   **Backend:** `internal/apitypes/types.go` re-exports the necessary types from `internal/generated`. Backend handlers should import from `internal/apitypes`, not directly from `internal/generated`.
 *   **Frontend:** `frontend/src/types/api.ts` re-exports the necessary types from `frontend/src/generated/api-types.ts`. Frontend code (services, components) should import from `frontend/src/types/api`, not directly from `frontend/src/generated`.
+
+### Accessing API Documentation (Swagger UI)
+
+The backend serves an interactive Swagger UI for exploring the API based on the OpenAPI specification. Once the backend server is running (e.g., via `make dev` or `make dev-be`), you can access the documentation at:
+
+[http://localhost:8080/api/docs](http://localhost:8080/api/docs)
+
+(Adjust the port if your backend runs on a different one).
