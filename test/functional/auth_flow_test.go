@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
@@ -24,7 +25,7 @@ var testServer *httptest.Server // Store the test server instance
 var testServerURL string        // Store the test server URL
 
 func TestMain(m *testing.M) {
-	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
+	log.Println("Setting up test database via dockertest...")
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Fatalf("Could not construct pool: %s", err)
@@ -35,7 +36,6 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not connect to Docker: %s", err)
 	}
 
-	// pulls an image, creates a container based on it and runs it
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Repository: "postgres",
 		Tag:        "16.3",
@@ -59,7 +59,10 @@ func TestMain(m *testing.M) {
 
 	log.Println("Connecting to database on url: ", databaseUrl)
 
-	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds
+	if err := resource.Expire(120); err != nil {
+		log.Fatalf("Could not set resource expiration: %s", err)
+	}
+	log.Println("Docker container expiration set to 120 seconds.")
 
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 120 * time.Second
@@ -70,27 +73,35 @@ func TestMain(m *testing.M) {
 		}
 		return db.Ping()
 	}); err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
+		log.Fatalf("Could not connect to docker database: %s", err)
 	}
+
+	// Schedule cleanup for the container
+	defer func() {
+		if err := pool.Purge(resource); err != nil {
+			log.Fatalf("Could not purge resource: %s", err)
+		}
+		log.Println("Docker container purged.")
+	}()
 
 	// Run migrations
 	migrationsDir := "../../cmd/migrate/migrations"
 	if err := runMigrations(db, migrationsDir); err != nil {
 		log.Fatalf("Could not run migrations: %s", err)
 	}
+	log.Println("Migrations applied successfully.")
 
-	defer func() {
-		if err := pool.Purge(resource); err != nil {
-			log.Fatalf("Could not purge resource: %s", err)
-		}
-	}()
-
+	// Start the test API server (using the established db connection)
 	testServer = startTestAPIServer(db)
-	testServerURL = testServer.URL // Store the URL globally
+	testServerURL = testServer.URL
 	defer testServer.Close()
 
-	// run tests
-	m.Run()
+	exitCode := m.Run()
+
+	// --- Teardown (handled by defers) ---
+
+	// Use os.Exit to exit with the test result code
+	os.Exit(exitCode)
 }
 
 func TestHealthCheck(t *testing.T) {
@@ -105,26 +116,25 @@ func TestHealthCheck(t *testing.T) {
 	defer resp.Body.Close()
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-
 }
 
 func TestUserSignup(t *testing.T) {
+	// Arrange: Prepare the signup request
 	// Generate unique suffix for email and username
-	uniqueSuffix := fmt.Sprintf("ts%d", time.Now().UnixNano()) // Removed underscore
+	uniqueSuffix := fmt.Sprintf("ts%d", time.Now().UnixNano())
 	createUserDTO := &domain.CreateUserDTO{
 		EditableUserField: domain.EditableUserField{
 			FirstName: "John",
 			LastName:  "Doe",
-			Email:     fmt.Sprintf("john.doe%s@example.com", uniqueSuffix), // Email can have special chars, keep suffix as is for uniqueness
-			Username:  fmt.Sprintf("johndoets%d", time.Now().UnixNano()),   // Ensure username is purely alphanumeric
+			Email:     fmt.Sprintf("john.doe%s@example.com", uniqueSuffix),
+			Username:  fmt.Sprintf("johndoets%d", time.Now().UnixNano()),
 		},
 		Password: "password123",
 	}
-
 	_, err := json.Marshal(createUserDTO)
 	assert.NoError(t, err)
 
-	// Use testServerURL and testServer.Client() for signup helper
+	// Act: Perform signup request
 	user, _ := signupAndGetCookies(t, testServer.Client(), testServerURL, createUserDTO)
 
 	// Assert
@@ -133,62 +143,52 @@ func TestUserSignup(t *testing.T) {
 	assert.NotZero(t, user.ID)
 	assert.NotZero(t, user.CreatedAt)
 	assert.NotZero(t, user.UpdatedAt)
-	assert.Empty(t, user.Password)
+	assert.Empty(t, user.Password) // Ensure password hash is not returned
 }
 
 func TestUserLogin(t *testing.T) {
-	// Generate unique suffix for email and username
-	uniqueSuffix := fmt.Sprintf("ts%d", time.Now().UnixNano()) // Removed underscore
+	// Arrange: Sign up a user first to get credentials and cookies
+	uniqueSuffix := fmt.Sprintf("ts%d", time.Now().UnixNano())
 	createUserDTO := &domain.CreateUserDTO{
 		EditableUserField: domain.EditableUserField{
 			FirstName: "John",
 			LastName:  "Doe",
-			Email:     fmt.Sprintf("john.doe%s@example.com", uniqueSuffix), // Email can have special chars, keep suffix as is for uniqueness
-			Username:  fmt.Sprintf("johndoets%d", time.Now().UnixNano()),   // Ensure username is purely alphanumeric
+			Email:     fmt.Sprintf("john.doe%s@example.com", uniqueSuffix),
+			Username:  fmt.Sprintf("johndoets%d", time.Now().UnixNano()),
 		},
 		Password: "password123",
 	}
-
-	// Use testServerURL and testServer.Client() for signup helper
 	_, cookies := signupAndGetCookies(t, testServer.Client(), testServerURL, createUserDTO)
 
+	// Prepare login request
 	loginUserDTO := &domain.LoginUserDTO{
 		Email:    createUserDTO.Email,
 		Password: createUserDTO.Password,
 	}
-
-	body, err := json.Marshal(map[string]any{
-		"data": loginUserDTO,
-	})
+	body, err := json.Marshal(map[string]any{"data": loginUserDTO})
 	assert.NoError(t, err)
-
-	// Use testServerURL for the login request path
 	req, err := http.NewRequest(http.MethodPost, testServerURL+loginEndpoint, bytes.NewBuffer(body))
-
 	assert.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
-	// Add cookies if they exist (handle potential nil slice from failed signup)
+	// Add cookies obtained from signup
 	if len(cookies) >= 2 {
 		req.AddCookie(cookies[0])
 		req.AddCookie(cookies[1])
 	}
-
-	// Use the test server's client
 	client := testServer.Client()
+
+	// Act: Perform login request
 	resp, err := client.Do(req)
 	assert.NoError(t, err)
 	defer resp.Body.Close()
 
+	// Assert: Check status code and response body
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-	// Define a struct matching the response structure {"data": User}
 	var responseData struct {
 		Data domain.User `json:"data"`
 	}
 	err = json.NewDecoder(resp.Body).Decode(&responseData)
 	assert.NoError(t, err)
-
-	// Assert against the user data inside the "data" key
 	userResponse := responseData.Data
 	assert.Equal(t, createUserDTO.Email, userResponse.Email)
 	assert.Equal(t, createUserDTO.Username, userResponse.Username)
@@ -197,5 +197,4 @@ func TestUserLogin(t *testing.T) {
 	assert.NotZero(t, userResponse.UpdatedAt)
 	assert.NotZero(t, userResponse.LastLogin)
 	assert.Empty(t, userResponse.Password)
-
 }

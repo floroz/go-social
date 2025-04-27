@@ -1,5 +1,7 @@
 # Go-Social
 
+[![CI Pipeline](https://github.com/floroz/go-social/actions/workflows/ci.yml/badge.svg)](https://github.com/floroz/go-social/actions/workflows/ci.yml)
+
 Go-Social is a social media application built with Go (backend) and React (frontend). It provides features for users to create posts, comment on posts, and interact with each other. The backend uses PostgreSQL as the database and follows a clean architecture.
 
 ## Tech Stack

@@ -20,6 +20,17 @@ migrate-down:
 migrate-seed:
 	@go run ./cmd/migrate/seed_db/main.go
 
+.PHONY: build
+build: ## Build the Go application
+	@echo "Building Go application..."
+	@go build ./...
+
+.PHONY: lint
+lint: ## Run Go linter (golangci-lint)
+	@echo "Running Go linter..."
+	@# Ensure golangci-lint is installed or handle installation if needed
+	@golangci-lint run ./...
+
 .PHONY: test
 test: ## Run Go backend tests
 	@go test -cover ./...
