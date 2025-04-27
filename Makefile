@@ -19,10 +19,20 @@ migrate-down:
 .PHONY: generate-go-types
 generate-go-types: ## Bundle OpenAPI spec and generate Go types
 	@echo "Bundling OpenAPI spec..."
-	@redocly bundle openapi/openapi.yaml -o openapi/openapi-bundled.yaml
+	@npx --prefix frontend redocly bundle openapi/openapi.yaml -o openapi/openapi-bundled.yaml
 	@echo "Generating Go types from bundled spec..."
 	@mkdir -p internal/generated # Ensure the directory exists
 	@oapi-codegen -package generated -o internal/generated/types.go openapi/openapi-bundled.yaml
+
+.PHONY: generate-fe-types
+generate-fe-types: ## Generate Frontend TypeScript types from bundled spec
+	@echo "Generating Frontend TypeScript types..."
+	@mkdir -p frontend/src/generated # Ensure the directory exists
+	@npx --prefix frontend openapi-typescript openapi/openapi-bundled.yaml -o frontend/src/generated/api-types.ts
+
+# Update generate-go-types to also generate frontend types
+.PHONY: generate-types
+generate-types: generate-go-types generate-fe-types ## Generate both Go and Frontend types
 
 .PHONY: migrate-seed
 migrate-seed:
