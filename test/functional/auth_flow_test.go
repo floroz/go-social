@@ -59,7 +59,11 @@ func TestMain(m *testing.M) {
 
 	log.Println("Connecting to database on url: ", databaseUrl)
 
-	resource.Expire(120) // Kill container after 2 minutes
+	if err := resource.Expire(120); err != nil {
+		log.Fatalf("Could not set resource expiration: %s", err)
+	}
+	log.Println("Docker container expiration set to 120 seconds.")
+
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 120 * time.Second
 	if err = pool.Retry(func() error {
