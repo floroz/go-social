@@ -99,10 +99,10 @@ func writeJSONResponse(w http.ResponseWriter, status int, data any) {
 	w.WriteHeader(status)
 
 	if data == nil {
+		// If data is nil, we've already set the status code, just return.
 		return
 	}
-	response := map[string]any{"data": data}
-	err := json.NewEncoder(w).Encode(response)
+	err := json.NewEncoder(w).Encode(data)
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to write response")

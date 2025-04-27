@@ -6,16 +6,15 @@ import { components } from "../generated/api-types";
 
 // --- Schemas ---
 export type User = components["schemas"]["User"];
-export type ErrorResponse = components["schemas"]["ErrorResponse"];
 export type LoginRequest = components["schemas"]["LoginRequest"];
-export type LoginResponse = components["schemas"]["LoginResponse"];
 export type SignupRequest = components["schemas"]["SignupRequest"];
-// Define a generic wrapper for successful data responses
-export type ApiResponse<T> = {
-  data: T;
-};
-// Define the specific response type for signup
-export type SignupResponse = ApiResponse<User>;
+
+export type ApiError = components["schemas"]["ApiError"];
+export type ApiErrorResponse = components["schemas"]["ApiErrorResponse"];
+export type SignupSuccessResponse =
+  components["schemas"]["SignupSuccessResponse"];
+export type LoginSuccessResponse =
+  components["schemas"]["LoginSuccessResponse"];
 
 // Add other schema exports as needed
 // export type Post = components["schemas"]["Post"];

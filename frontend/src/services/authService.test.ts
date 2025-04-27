@@ -2,7 +2,12 @@ import { describe, it, expect } from "vitest";
 import { http, HttpResponse } from "msw";
 import { server } from "@/mocks/server";
 import AuthService from "./authService";
-import { SignupRequest, LoginRequest, LoginResponse } from "@/types/api";
+import {
+  SignupRequest,
+  LoginRequest,
+  LoginResponse,
+  LoginSuccessResponse,
+} from "@/types/api";
 import { mockUser } from "@/mocks/data/user";
 import config from "@/config";
 
@@ -79,7 +84,10 @@ describe("AuthService", () => {
     const loginSuccessHandler = http.post(
       `${API_BASE_URL}/v1/auth/login`,
       () => {
-        return HttpResponse.json(mockLoginResponse, { status: 200 });
+        return HttpResponse.json(
+          { data: mockLoginResponse } satisfies LoginSuccessResponse,
+          { status: 200 }
+        );
       }
     );
 

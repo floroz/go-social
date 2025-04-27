@@ -137,13 +137,22 @@ func TestUserSignup(t *testing.T) {
 	// Act: Perform signup request
 	user, _ := signupAndGetCookies(t, testServer.Client(), testServerURL, createUserDTO)
 
-	// Assert
-	assert.Equal(t, createUserDTO.Email, user.Email)
+	// Assert using the apitypes.User structure
+	assert.Equal(t, createUserDTO.Email, string(user.Email)) // Cast apitypes.Email to string for comparison
 	assert.Equal(t, createUserDTO.Username, user.Username)
-	assert.NotZero(t, user.ID)
-	assert.NotZero(t, user.CreatedAt)
-	assert.NotZero(t, user.UpdatedAt)
-	assert.Empty(t, user.Password) // Ensure password hash is not returned
+	assert.NotNil(t, user.Id, "User ID should not be nil") // Check pointer is not nil
+	if user.Id != nil {
+		assert.NotZero(t, *user.Id, "User ID should not be zero") // Dereference pointer for zero check
+	}
+	assert.NotNil(t, user.CreatedAt, "CreatedAt should not be nil")
+	if user.CreatedAt != nil {
+		assert.False(t, (*user.CreatedAt).IsZero(), "CreatedAt should not be zero time") // Dereference and check time is not zero
+	}
+	assert.NotNil(t, user.UpdatedAt, "UpdatedAt should not be nil")
+	if user.UpdatedAt != nil {
+		assert.False(t, (*user.UpdatedAt).IsZero(), "UpdatedAt should not be zero time") // Dereference and check time is not zero
+	}
+	// Password field is not expected in the response, so no assertion needed for it.
 }
 
 func TestUserLogin(t *testing.T) {
@@ -182,19 +191,15 @@ func TestUserLogin(t *testing.T) {
 	assert.NoError(t, err)
 	defer resp.Body.Close()
 
-	// Assert: Check status code and response body
+	// Assert: Check status code and response body for the token
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	var responseData struct {
-		Data domain.User `json:"data"`
+		Data struct {
+			Token string `json:"token"`
+		} `json:"data"`
 	}
 	err = json.NewDecoder(resp.Body).Decode(&responseData)
-	assert.NoError(t, err)
-	userResponse := responseData.Data
-	assert.Equal(t, createUserDTO.Email, userResponse.Email)
-	assert.Equal(t, createUserDTO.Username, userResponse.Username)
-	assert.NotZero(t, userResponse.ID)
-	assert.NotZero(t, userResponse.CreatedAt)
-	assert.NotZero(t, userResponse.UpdatedAt)
-	assert.NotZero(t, userResponse.LastLogin)
-	assert.Empty(t, userResponse.Password)
+	assert.NoError(t, err, "Failed to decode login response body")
+	assert.NotEmpty(t, responseData.Data.Token, "Expected token in login response")
+	// Optionally, add more checks for the token format if needed
 }

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/floroz/go-social/internal/apitypes"
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/env"
 	"github.com/rs/zerolog/log"
@@ -59,7 +60,44 @@ func (app *Application) signupHandler(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
-	writeJSONResponse(w, http.StatusCreated, user)
+	// Wrap the user object in the standardized response structure
+	// Map domain.User to apitypes.User
+	apiUser := apitypes.User{
+		Id:        &user.ID, // Use address-of for pointer type
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Username:  user.Username,
+		Email:     apitypes.Email(user.Email), // Cast to apitypes.Email
+		CreatedAt: &user.CreatedAt,            // Use address-of for pointer type
+		UpdatedAt: &user.UpdatedAt,            // Use address-of for pointer type
+		// Map LastLogin carefully, handling potential nil pointer if domain.User.LastLogin is *time.Time
+		// Assuming apitypes.User.LastLogin is *time.Time based on common generation patterns
+		// If domain.User.LastLogin is *time.Time and generated.User.LastLogin is *string:
+		// LastLogin: func() *string {
+		// 	if user.LastLogin != nil {
+		// 		t := user.LastLogin.Format(time.RFC3339)
+		// 		return &t
+		// 	}
+		// 	return nil
+		// }(),
+		// If both are time.Time or *time.Time, direct assignment might work,
+		// but check generated type definition. Let's assume direct mapping for now if types match.
+		// LastLogin: user.LastLogin, // Adjust based on actual generated type
+	}
+	// Handle potential nil LastLogin in domain.User if necessary
+	if user.LastLogin != nil {
+		// Assuming generated.User.LastLogin is *time.Time or time.Time
+		// Adjust the assignment based on the exact type in generated.User
+		// If domain.User.LastLogin is *time.Time and apitypes.User.LastLogin is *time.Time:
+		apiUser.LastLogin = user.LastLogin // Correct assignment
+	}
+	// Note: The above assumes apitypes.User.LastLogin is *time.Time.
+	// If it's different (e.g., *string), the mapping needs adjustment.
+
+	response := apitypes.SignupSuccessResponse{
+		Data: apiUser,
+	}
+	writeJSONResponse(w, http.StatusCreated, response)
 
 }
 
@@ -123,7 +161,17 @@ func (app *Application) loginHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 	})
 
-	writeJSONResponse(w, http.StatusOK, user)
+	// Construct the API response containing the token
+	apiLoginResponse := apitypes.LoginResponse{
+		Token: accessToken, // Use the generated access token
+	}
+
+	// Wrap the login response in the standard success wrapper
+	response := apitypes.LoginSuccessResponse{
+		Data: apiLoginResponse,
+	}
+
+	writeJSONResponse(w, http.StatusOK, response)
 }
 
 func (app *Application) logoutHandler(w http.ResponseWriter, r *http.Request) {

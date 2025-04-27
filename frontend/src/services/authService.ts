@@ -4,7 +4,8 @@ import {
   LoginRequest,
   User,
   LoginResponse,
-  SignupResponse,
+  LoginSuccessResponse,
+  SignupSuccessResponse,
 } from "@/types/api";
 
 const AuthService = {
@@ -16,11 +17,13 @@ const AuthService = {
   signup: async (signupData: SignupRequest): Promise<User> => {
     // eslint-disable-next-line no-useless-catch
     try {
-      const response = await apiClient.post<SignupResponse>(
+      // apiClient should infer the response type from the endpoint definition now
+      // Let's assume the generated types provide SignupSuccessResponse implicitly
+      // or adjust if apiClient needs explicit typing like post<SignupSuccessResponse>
+      const response = await apiClient.post<SignupSuccessResponse>(
         "/v1/auth/signup",
         signupData
       );
-
       const userData = response.data.data;
       return userData;
     } catch (error) {
@@ -39,11 +42,11 @@ const AuthService = {
   login: async (loginData: LoginRequest): Promise<LoginResponse> => {
     // eslint-disable-next-line no-useless-catch
     try {
-      const response = await apiClient.post<LoginResponse>(
+      const response = await apiClient.post<LoginSuccessResponse>(
         "/v1/auth/login",
         loginData
       );
-      return response.data; // Return the full login response (e.g., { token: "..." })
+      return response.data.data;
     } catch (error) {
       // TODO: Improve error handling/logging
       // console.error("AuthService login error:", error);

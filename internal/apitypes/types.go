@@ -9,11 +9,15 @@ import (
 // This acts as a facade over the raw generated types.
 
 // Schemas
-type ErrorResponse = generated.ErrorResponse
 type LoginRequest = generated.LoginRequest
 type LoginResponse = generated.LoginResponse
 type SignupRequest = generated.SignupRequest
 type User = generated.User
+
+type ApiError = generated.ApiError
+type ApiErrorResponse = generated.ApiErrorResponse
+type SignupSuccessResponse = generated.SignupSuccessResponse
+type LoginSuccessResponse = generated.LoginSuccessResponse
 
 // Runtime Types (if needed directly, like Email)
 type Email = types.Email

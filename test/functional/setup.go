@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/floroz/go-social/cmd/api"
+	"github.com/floroz/go-social/internal/apitypes"
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/env"
 	"github.com/floroz/go-social/internal/repositories"
@@ -80,9 +81,9 @@ func startTestAPIServer(db *sql.DB) *httptest.Server {
 	return testServer
 }
 
-// signupAndGetCookies signs up a user and returns the cookies
+// signupAndGetCookies signs up a user and returns the user data (as apitypes.User) and cookies
 // It now uses the baseURL provided by the httptest server
-func signupAndGetCookies(t *testing.T, client *http.Client, baseURL string, createUserDTO *domain.CreateUserDTO) (*domain.User, []*http.Cookie) {
+func signupAndGetCookies(t *testing.T, client *http.Client, baseURL string, createUserDTO *domain.CreateUserDTO) (*apitypes.User, []*http.Cookie) {
 	body, err := json.Marshal(map[string]any{
 		"data": createUserDTO,
 	})
@@ -112,8 +113,9 @@ func signupAndGetCookies(t *testing.T, client *http.Client, baseURL string, crea
 		assert.Contains(t, cookieNames, "access_token", "Expected access_token cookie")
 	}
 
+	// Decode into the API response structure which contains apitypes.User
 	var signupResponse struct {
-		Data domain.User `json:"data"`
+		Data apitypes.User `json:"data"` // Use apitypes.User here
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&signupResponse)
