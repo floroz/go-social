@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: Go Social API
+  version: 1.0.0 
+  description: API specification for the Go Social application.
+servers:
+  - url: /api 
+    description: Development server
+
+tags: 
+  - name: Authentication V1
+    description: Operations related to user authentication (Version 1)
+  - name: Users V1
+    description: Operations related to users (Version 1)
+  - name: Posts V1
+    description: Operations related to posts (Version 1)
+  - name: Comments V1
+    description: Operations related to comments (Version 1)
+
+paths:
+  # References to path definitions in ./v1/paths/ will go here
+  /v1/auth/signup: # Renamed path
+    $ref: './v1/paths/auth.yaml#/paths/~1v1~1auth~1signup' # Updated reference path
+  /v1/auth/login:
+    $ref: './v1/paths/auth.yaml#/paths/~1v1~1auth~1login'
+
+components:
+  schemas:
+    # References to shared schemas will go here
+    ErrorResponse:
+      $ref: './shared/schemas/common.yaml#/components/schemas/ErrorResponse'
+    User:
+      $ref: './shared/schemas/user.yaml#/components/schemas/User'
+    SignupRequest:
+      $ref: './v1/schemas/auth.yaml#/components/schemas/SignupRequest'
+    LoginRequest:
+      $ref: './v1/schemas/auth.yaml#/components/schemas/LoginRequest'
+    LoginResponse:
+       $ref: './v1/schemas/auth.yaml#/components/schemas/LoginResponse'
+
+  securitySchemes: # Define security schemes if needed (e.g., JWT)
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,57 @@
+# This file defines the shared User schema.
+components:
+  schemas:
+    User:
+      type: object
+      description: Represents a user in the system.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the user.
+          readOnly: true # Typically IDs are not changed via API input
+          example: 101
+        first_name:
+          type: string
+          description: User's first name.
+          example: "John"
+        last_name:
+          type: string
+          description: User's last name.
+          example: "Doe"
+        username:
+          type: string
+          description: User's unique username.
+          example: "johndoe"
+        email:
+          type: string
+          format: email
+          description: User's email address.
+          example: "john.doe@example.com"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the user was created.
+          readOnly: true
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the user was last updated.
+          readOnly: true
+          example: "2024-01-16T12:45:00Z"
+        last_login:
+          type: string
+          format: date-time
+          nullable: true # Use nullable for pointer types that can be nil
+          description: Timestamp of the user's last login.
+          readOnly: true
+          example: "2024-01-17T09:00:00Z"
+      required:
+        - id
+        - first_name
+        - last_name
+        - username
+        - email
+        - created_at
+        - updated_at

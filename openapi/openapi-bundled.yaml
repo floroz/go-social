@@ -1,0 +1,247 @@
+openapi: 3.0.3
+info:
+  title: Go Social API
+  version: 1.0.0
+  description: API specification for the Go Social application.
+servers:
+  - url: /api
+    description: Development server
+tags:
+  - name: Authentication V1
+    description: Operations related to user authentication (Version 1)
+  - name: Users V1
+    description: Operations related to users (Version 1)
+  - name: Posts V1
+    description: Operations related to posts (Version 1)
+  - name: Comments V1
+    description: Operations related to comments (Version 1)
+paths:
+  /v1/auth/signup:
+    post:
+      tags:
+        - Authentication V1
+      summary: Sign up a new user
+      description: Creates a new user account.
+      operationId: signupUserV1
+      requestBody:
+        description: User signup details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '201':
+          description: User successfully registered. Returns the created user object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input data (e.g., validation errors).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Username or email already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error during registration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/auth/login:
+    post:
+      tags:
+        - Authentication V1
+      summary: Log in a user
+      description: Authenticates a user and returns a JWT.
+      operationId: loginUserV1
+      requestBody:
+        description: User login credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful. Returns a JWT token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid input data (e.g., validation errors).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid email or password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error during login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: A human-readable error message.
+          example: Invalid credentials provided.
+        details:
+          type: object
+          description: Optional additional details or validation errors.
+          additionalProperties: true
+          example:
+            email: Invalid email format
+      required:
+        - error
+    User:
+      type: object
+      description: Represents a user in the system.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the user.
+          readOnly: true
+          example: 101
+        first_name:
+          type: string
+          description: User's first name.
+          example: John
+        last_name:
+          type: string
+          description: User's last name.
+          example: Doe
+        username:
+          type: string
+          description: User's unique username.
+          example: johndoe
+        email:
+          type: string
+          format: email
+          description: User's email address.
+          example: john.doe@example.com
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the user was created.
+          readOnly: true
+          example: '2024-01-15T10:30:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the user was last updated.
+          readOnly: true
+          example: '2024-01-16T12:45:00Z'
+        last_login:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp of the user's last login.
+          readOnly: true
+          example: '2024-01-17T09:00:00Z'
+      required:
+        - id
+        - first_name
+        - last_name
+        - username
+        - email
+        - created_at
+        - updated_at
+    SignupRequest:
+      type: object
+      description: Data required for user signup.
+      properties:
+        first_name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: User's first name.
+          example: Jane
+        last_name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: User's last name.
+          example: Doe
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: ^[a-zA-Z0-9]+$
+          description: Desired username (alphanumeric).
+          example: janedoe
+        email:
+          type: string
+          format: email
+          minLength: 3
+          maxLength: 50
+          description: User's email address.
+          example: jane.doe@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 50
+          description: Desired password.
+          example: s3cr3tp@ssw0rd
+      required:
+        - first_name
+        - last_name
+        - username
+        - email
+        - password
+    LoginRequest:
+      type: object
+      description: Data required for user login.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 3
+          maxLength: 50
+          description: User's email address.
+          example: jane.doe@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 50
+          description: User's password.
+          example: s3cr3tp@ssw0rd
+      required:
+        - email
+        - password
+    LoginResponse:
+      type: object
+      description: Response containing the JWT upon successful login.
+      properties:
+        token:
+          type: string
+          format: jwt
+          description: JSON Web Token for authenticated sessions.
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+      required:
+        - token
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

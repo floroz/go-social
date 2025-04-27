@@ -1,0 +1,17 @@
+# This file defines common, reusable schemas shared across API versions.
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: A human-readable error message.
+          example: "Invalid credentials provided."
+        details:
+          type: object
+          description: Optional additional details or validation errors.
+          additionalProperties: true # Allows for flexible error details
+          example: { "email": "Invalid email format" }
+      required:
+        - error

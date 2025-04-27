@@ -1,0 +1,80 @@
+# This file defines schemas specific to V1 authentication operations.
+components:
+  schemas:
+    SignupRequest: 
+      type: object
+      description: Data required for user signup.
+      properties:
+        first_name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: User's first name.
+          example: "Jane"
+        last_name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: User's last name.
+          example: "Doe"
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: '^[a-zA-Z0-9]+$' # Corresponds to alphanum
+          description: Desired username (alphanumeric).
+          example: "janedoe"
+        email:
+          type: string
+          format: email
+          minLength: 3
+          maxLength: 50
+          description: User's email address.
+          example: "jane.doe@example.com"
+        password:
+          type: string
+          format: password # Hint for UI tools
+          minLength: 8
+          maxLength: 50
+          description: Desired password.
+          example: "s3cr3tp@ssw0rd"
+      required:
+        - first_name
+        - last_name
+        - username
+        - email
+        - password
+
+    LoginRequest:
+      type: object
+      description: Data required for user login.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 3
+          maxLength: 50
+          description: User's email address.
+          example: "jane.doe@example.com"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 50
+          description: User's password.
+          example: "s3cr3tp@ssw0rd"
+      required:
+        - email
+        - password
+
+    LoginResponse:
+      type: object
+      description: Response containing the JWT upon successful login.
+      properties:
+        token:
+          type: string
+          format: jwt
+          description: JSON Web Token for authenticated sessions.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+      required:
+        - token
