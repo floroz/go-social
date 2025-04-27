@@ -1,10 +1,8 @@
 import axios from "axios";
-
-// TODO: Make base URL configurable via environment variables
-const API_BASE_URL = "http://localhost:8080/api/v1";
+import config from "@/config"; // Import the centralized config
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: config.apiBaseUrl,
   // We can configure interceptors here later for auth tokens, etc.
   headers: {
     "Content-Type": "application/json",
@@ -31,4 +29,4 @@ apiClient.interceptors.response.use(response => {
 });
 */
 
-export { apiClient };
+export default apiClient;

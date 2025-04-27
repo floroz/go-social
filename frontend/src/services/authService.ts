@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api";
+import apiClient from "@/lib/api";
 import { User } from "@/domain/user";
 import { LoginRequestDTO, SignupRequestDTO } from "@/domain/auth.dto";
 

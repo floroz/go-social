@@ -1,10 +1,8 @@
 import { http, HttpResponse } from "msw";
-import { User } from "@/domain/user"; // Import User type
-// Removed unused SignupRequestDTO import
-// import { SignupRequestDTO } from "@/domain/auth.dto";
+import { User } from "@/domain/user";
+import config from "@/config";
 
-// Define a base URL for the API (should match apiClient config)
-const API_BASE_URL = "http://localhost:8080/api/v1";
+const API_BASE_URL = config.apiBaseUrl;
 
 // Mock user data for successful responses
 const mockUser: User = {
