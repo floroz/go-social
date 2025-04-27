@@ -2,13 +2,12 @@ package integration_tests
 
 import (
 	"bytes"
-	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/floroz/go-social/cmd/api"
 	"github.com/floroz/go-social/internal/domain"
@@ -23,9 +22,10 @@ import (
 )
 
 const (
-	signupEndpoint = "/api/v1/auth/signup"
-	loginEndpoint  = "/api/v1/auth/login"
-	logoutEndpoint = "/api/v1/auth/logout"
+	signupEndpoint  = "/api/v1/auth/signup"
+	loginEndpoint   = "/api/v1/auth/login"
+	logoutEndpoint  = "/api/v1/auth/logout"
+	healthzEndpoint = "/api/healthz"
 )
 
 func runMigrations(db *sql.DB, migrationsDir string) error {
@@ -48,7 +48,7 @@ func runMigrations(db *sql.DB, migrationsDir string) error {
 	return nil
 }
 
-func startAPIServer(db *sql.DB) func() {
+func startTestAPIServer(db *sql.DB) *httptest.Server {
 	env.MustLoadEnv("../../.env.local")
 
 	userRepo := repositories.NewUserRepository(db)
@@ -62,57 +62,38 @@ func startAPIServer(db *sql.DB) func() {
 
 	authService := services.NewAuthService(userRepo)
 
-	config := &api.Config{
-		Port: env.GetEnvValue("PORT"),
-	}
-
+	// Create the application instance (Config is not strictly needed by httptest)
+	// If your app initialization *requires* config, load it here.
+	// For now, assuming it's not critical for route setup.
 	app := &api.Application{
-		Config:         config,
+		// Config:         &api.Config{}, // Pass empty or load if needed
 		UserService:    userService,
 		PostService:    postService,
 		CommentService: commentService,
 		AuthService:    authService,
 	}
 
-	server := &http.Server{
-		Addr:         fmt.Sprintf(":%s", app.Config.Port),
-		Handler:      app.Routes(),
-		WriteTimeout: time.Second * 30,
-		ReadTimeout:  time.Second * 15,
-		IdleTimeout:  time.Minute,
-	}
+	testServer := httptest.NewServer(app.Routes())
 
-	log.Info().Msgf("Started server on %s", app.Config.Port)
+	log.Info().Msgf("Started test server on %s", testServer.URL)
 
-	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Error().Err(err).Msg("server error")
-		}
-	}()
-
-	time.Sleep(2 * time.Second)
-
-	return func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		if err := server.Shutdown(ctx); err != nil {
-			log.Error().Err(err).Msg("server shutdown error")
-		}
-		log.Info().Msg("Server gracefully stopped")
-	}
+	return testServer
 }
 
 // signupAndGetCookies signs up a user and returns the cookies
+// It now uses the baseURL provided by the httptest server
 func signupAndGetCookies(t *testing.T, client *http.Client, baseURL string, createUserDTO *domain.CreateUserDTO) (*domain.User, []*http.Cookie) {
 	body, err := json.Marshal(map[string]any{
 		"data": createUserDTO,
 	})
 	assert.NoError(t, err)
 
+	// Construct full URL using baseURL and the specific endpoint constant
 	req, err := http.NewRequest(http.MethodPost, baseURL+signupEndpoint, bytes.NewBuffer(body))
 	assert.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
 
+	// Use the provided client (which might be testServer.Client() or a custom one)
 	resp, err := client.Do(req)
 	assert.NoError(t, err)
 	defer resp.Body.Close()
@@ -124,20 +105,19 @@ func signupAndGetCookies(t *testing.T, client *http.Client, baseURL string, crea
 		}
 	}
 
-	// status code
-	assert.Equal(t, http.StatusCreated, resp.StatusCode)
-	// cookies
-	assert.NotEmpty(t, resp.Cookies())
-	assert.Len(t, resp.Cookies(), 2)
-	assert.Contains(t, cookieNames, "refresh_token")
-	assert.Contains(t, cookieNames, "access_token")
+	assert.Equal(t, http.StatusCreated, resp.StatusCode, "Expected status 201 Created for signup")
+	assert.NotEmpty(t, resp.Cookies(), "Expected cookies to be set on signup")
+	if assert.Len(t, resp.Cookies(), 2, "Expected 2 cookies (access & refresh)") {
+		assert.Contains(t, cookieNames, "refresh_token", "Expected refresh_token cookie")
+		assert.Contains(t, cookieNames, "access_token", "Expected access_token cookie")
+	}
 
 	var signupResponse struct {
 		Data domain.User `json:"data"`
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&signupResponse)
-	assert.NoError(t, err)
+	assert.NoError(t, err, "Failed to decode signup response body")
 
 	return &signupResponse.Data, resp.Cookies()
 }

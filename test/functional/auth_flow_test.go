@@ -10,8 +10,9 @@ import (
 	"testing"
 	"time"
 
+	"net/http/httptest"
+
 	"github.com/floroz/go-social/internal/domain"
-	"github.com/floroz/go-social/internal/env"
 	_ "github.com/lib/pq"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
@@ -19,6 +20,8 @@ import (
 )
 
 var db *sql.DB
+var testServer *httptest.Server // Store the test server instance
+var testServerURL string        // Store the test server URL
 
 func TestMain(m *testing.M) {
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
@@ -82,18 +85,21 @@ func TestMain(m *testing.M) {
 		}
 	}()
 
-	shutdown := startAPIServer(db)
-	defer shutdown()
+	testServer = startTestAPIServer(db)
+	testServerURL = testServer.URL // Store the URL globally
+	defer testServer.Close()
 
 	// run tests
 	m.Run()
 }
 
 func TestHealthCheck(t *testing.T) {
-	req, err := http.NewRequest(http.MethodGet, env.GetEnvValue("API_URL")+"/api/v1/healthz", nil)
+	// Use the dynamic URL from the test server started in TestMain
+	req, err := http.NewRequest(http.MethodGet, testServerURL+healthzEndpoint, nil)
 	assert.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
+	// Use the test server's client for direct requests
+	client := testServer.Client()
 	resp, err := client.Do(req)
 	assert.NoError(t, err)
 	defer resp.Body.Close()
@@ -118,7 +124,8 @@ func TestUserSignup(t *testing.T) {
 	_, err := json.Marshal(createUserDTO)
 	assert.NoError(t, err)
 
-	user, _ := signupAndGetCookies(t, &http.Client{}, env.GetEnvValue("API_URL"), createUserDTO)
+	// Use testServerURL and testServer.Client() for signup helper
+	user, _ := signupAndGetCookies(t, testServer.Client(), testServerURL, createUserDTO)
 
 	// Assert
 	assert.Equal(t, createUserDTO.Email, user.Email)
@@ -142,7 +149,8 @@ func TestUserLogin(t *testing.T) {
 		Password: "password123",
 	}
 
-	_, cookies := signupAndGetCookies(t, &http.Client{}, env.GetEnvValue("API_URL"), createUserDTO)
+	// Use testServerURL and testServer.Client() for signup helper
+	_, cookies := signupAndGetCookies(t, testServer.Client(), testServerURL, createUserDTO)
 
 	loginUserDTO := &domain.LoginUserDTO{
 		Email:    createUserDTO.Email,
@@ -154,14 +162,19 @@ func TestUserLogin(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodPost, env.GetEnvValue("API_URL")+loginEndpoint, bytes.NewBuffer(body))
+	// Use testServerURL for the login request path
+	req, err := http.NewRequest(http.MethodPost, testServerURL+loginEndpoint, bytes.NewBuffer(body))
 
 	assert.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(cookies[0])
-	req.AddCookie(cookies[1])
+	// Add cookies if they exist (handle potential nil slice from failed signup)
+	if len(cookies) >= 2 {
+		req.AddCookie(cookies[0])
+		req.AddCookie(cookies[1])
+	}
 
-	client := &http.Client{}
+	// Use the test server's client
+	client := testServer.Client()
 	resp, err := client.Do(req)
 	assert.NoError(t, err)
 	defer resp.Body.Close()
