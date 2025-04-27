@@ -1,10 +1,5 @@
 import apiClient from "@/lib/api";
-import { User } from "@/domain/user";
-import { LoginRequestDTO, SignupRequestDTO } from "@/domain/auth.dto";
-
-interface UserApiResponse {
-  data: User;
-}
+import { SignupRequest, LoginRequest, User, LoginResponse } from "@/types/api";
 
 const AuthService = {
   /**
@@ -12,17 +7,14 @@ const AuthService = {
    * @param signupData - The user signup data.
    * @returns A promise that resolves with the created User object.
    */
-  signup: async (signupData: SignupRequestDTO): Promise<User> => {
+  signup: async (signupData: SignupRequest): Promise<User> => {
     // eslint-disable-next-line no-useless-catch
     try {
-      const response = await apiClient.post<UserApiResponse>(
+      const response = await apiClient.post<User>(
         "/v1/auth/signup",
-        {
-          data: signupData,
-        }
+        signupData
       );
-      // Return only the user data from the response
-      return response.data.data;
+      return response.data; // Return the user data directly
     } catch (error) {
       // TODO: Improve error handling/logging
       // console.error("AuthService signup error:", error);
@@ -34,16 +26,16 @@ const AuthService = {
   /**
    * Sends a login request to the backend.
    * @param loginData - The user login credentials.
-   * @returns A promise that resolves with the logged-in User object.
+   * @returns A promise that resolves with the login response containing the token.
    */
-  login: async (loginData: LoginRequestDTO): Promise<User> => {
+  login: async (loginData: LoginRequest): Promise<LoginResponse> => {
     // eslint-disable-next-line no-useless-catch
     try {
-      const response = await apiClient.post<UserApiResponse>("/v1/auth/login", {
-        data: loginData,
-      });
-      // Return only the user data from the response
-      return response.data.data;
+      const response = await apiClient.post<LoginResponse>(
+        "/v1/auth/login",
+        loginData
+      );
+      return response.data; // Return the full login response (e.g., { token: "..." })
     } catch (error) {
       // TODO: Improve error handling/logging
       // console.error("AuthService login error:", error);

@@ -1,19 +1,17 @@
 import { create } from "zustand";
-import { User } from "@/domain/user"; // Assuming we'll create a domain types file
+import { User } from "@/types/api";
 
-// Define the shape of the store's state
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   setUser: (user: User | null) => void;
   logout: () => void;
-  // We might add loading/error states later if needed for initial auth check
 }
 
 // Create the store
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  isAuthenticated: false, // Initially not authenticated
+  isAuthenticated: false,
   setUser: (user) => set({ user, isAuthenticated: !!user }),
   logout: () => set({ user: null, isAuthenticated: false }),
   // TODO: Add logic here or elsewhere to check initial auth status

@@ -20,8 +20,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LoginRequestDTO } from "@/domain/auth.dto";
-import { useLogin } from "@/hooks/useLogin"; 
+import { LoginRequest, LoginResponse } from "@/types/api";
+import { useLogin } from "@/hooks/useLogin";
 
 // Define Zod schema for login
 const formSchema = z.object({
@@ -34,10 +34,12 @@ const LoginPage = () => {
 
   // Use the custom hook for login logic
   const { login, isLoading, error } = useLogin({
-    onSuccess: (user) => {
+    // Update onSuccess to handle LoginResponse
+    onSuccess: (loginResponse: LoginResponse) => {
       // Side effect specific to this page: navigate after successful login
-      console.log("Login successful on page:", user);
-      navigate('/'); 
+      console.log("Login successful on page", loginResponse);
+      // TODO: Potentially trigger fetching user details here or rely on store update
+      navigate('/');
       // TODO: Show success toast
     },
     onError: (error) => {
@@ -55,11 +57,11 @@ const LoginPage = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const loginData: LoginRequestDTO = {
+    const loginData: LoginRequest = {
       email: values.email,
       password: values.password,
     };
-    login(loginData); 
+    login(loginData);
   }
 
   return (

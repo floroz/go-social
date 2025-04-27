@@ -20,8 +20,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { SignupRequestDTO } from "@/domain/auth.dto"; 
-import { useSignup } from "@/hooks/useSignup"; 
+import { SignupRequest } from "@/types/api";
+import { useSignup } from "@/hooks/useSignup";
 
 // Define Zod schema based on backend validation rules
 // (Schema remains the same)
@@ -60,7 +60,7 @@ const SignupPage = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const backendData: SignupRequestDTO = {
+    const backendData: SignupRequest = {
       first_name: values.firstName,
       last_name: values.lastName,
       username: values.username,
