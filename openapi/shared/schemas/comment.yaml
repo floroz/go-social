@@ -1,0 +1,44 @@
+# This file defines the shared Comment schema.
+components:
+  schemas:
+    Comment:
+      type: object
+      description: Represents a comment on a post.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the comment.
+          readOnly: true
+        post_id:
+          type: integer
+          format: int64
+          description: ID of the post this comment belongs to.
+          readOnly: true
+        user_id:
+          type: integer
+          format: int64
+          description: ID of the user who created the comment.
+          readOnly: true
+        content:
+          type: string
+          description: The text content of the comment.
+          example: "Great post!"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the comment was created.
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the comment was last updated.
+          readOnly: true
+        # Add other fields as needed, e.g., author username?
+      required:
+        - id
+        - post_id
+        - user_id
+        - content
+        - created_at
+        - updated_at

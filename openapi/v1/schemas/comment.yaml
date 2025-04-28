@@ -1,0 +1,77 @@
+# This file defines schemas specific to V1 comment operations.
+components:
+  schemas:
+    # Request body for creating a comment
+    CreateCommentRequest:
+      type: object
+      description: Data required to create a new comment on a post.
+      properties:
+        content:
+          type: string
+          description: The text content of the comment.
+          example: "I agree!"
+          minLength: 1
+          maxLength: 500 # Example validation
+      required:
+        - content
+
+    # Request body for updating a comment
+    UpdateCommentRequest:
+      type: object
+      description: Data required to update an existing comment.
+      properties:
+        content:
+          type: string
+          description: The updated text content of the comment.
+          example: "I strongly agree!"
+          minLength: 1
+          maxLength: 500
+      required:
+        - content
+
+    # Standard wrapper for the Create Comment success response
+    CreateCommentSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful comment creation response.
+      properties:
+        data:
+          description: Contains the created comment object.
+          $ref: '../../shared/schemas/comment.yaml#/components/schemas/Comment'
+      required:
+        - data
+
+    # Standard wrapper for the Get Comment success response
+    GetCommentSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful comment retrieval response.
+      properties:
+        data:
+          description: Contains the retrieved comment object.
+          $ref: '../../shared/schemas/comment.yaml#/components/schemas/Comment'
+      required:
+        - data
+
+    # Standard wrapper for the Update Comment success response
+    UpdateCommentSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful comment update response.
+      properties:
+        data:
+          description: Contains the updated comment object.
+          $ref: '../../shared/schemas/comment.yaml#/components/schemas/Comment'
+      required:
+        - data
+
+    # Standard wrapper for the List Comments success response
+    ListCommentsSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful comment list retrieval response.
+      properties:
+        data:
+          type: array
+          description: An array of comment objects.
+          items:
+            $ref: '../../shared/schemas/comment.yaml#/components/schemas/Comment'
+        # Add pagination metadata if needed later
+      required:
+        - data

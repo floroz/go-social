@@ -1,0 +1,86 @@
+# This file defines schemas specific to V1 post operations.
+components:
+  schemas:
+    # Request body for creating a post
+    CreatePostRequest:
+      type: object
+      description: Data required to create a new post.
+      properties:
+        content:
+          type: string
+          description: The text content of the post.
+          example: "Just setting up my Go-Social account!"
+          minLength: 1 # Example validation
+          maxLength: 1000 # Example validation
+      required:
+        - content
+
+    # Request body for updating a post
+    UpdatePostRequest:
+      type: object
+      description: Data required to update an existing post.
+      properties:
+        content:
+          type: string
+          description: The updated text content of the post.
+          example: "Updated my first post!"
+          minLength: 1
+          maxLength: 1000
+      required:
+        - content
+
+    # Standard wrapper for the Create Post success response
+    CreatePostSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful post creation response.
+      properties:
+        data:
+          description: Contains the created post object.
+          $ref: '../../shared/schemas/post.yaml#/components/schemas/Post'
+      required:
+        - data
+
+    # Standard wrapper for the Get Post success response
+    GetPostSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful post retrieval response.
+      properties:
+        data:
+          description: Contains the retrieved post object.
+          $ref: '../../shared/schemas/post.yaml#/components/schemas/Post'
+      required:
+        - data
+
+    # Standard wrapper for the Update Post success response
+    UpdatePostSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful post update response.
+      properties:
+        data:
+          description: Contains the updated post object.
+          $ref: '../../shared/schemas/post.yaml#/components/schemas/Post'
+      required:
+        - data
+
+    # Standard wrapper for the List Posts success response
+    ListPostsSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful post list retrieval response.
+      properties:
+        data:
+          type: array
+          description: An array of post objects.
+          items:
+            $ref: '../../shared/schemas/post.yaml#/components/schemas/Post'
+        # Add pagination metadata if needed later
+        # metadata:
+        #   type: object
+        #   properties:
+        #     page:
+        #       type: integer
+        #     per_page:
+        #       type: integer
+        #     total_count:
+        #       type: integer
+      required:
+        - data
