@@ -4,42 +4,84 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/floroz/go-social/internal/apitypes"
 	"github.com/floroz/go-social/internal/domain"
+	// Error codes used via handleErrors in api.go
 )
 
 func (app *Application) createCommentHandler(w http.ResponseWriter, r *http.Request) {
 	postId, err := strconv.Atoi(r.PathValue("postId"))
 	if err != nil {
-		handleErrors(w, domain.NewBadRequestError("invalid id"))
+		handleErrors(w, domain.NewBadRequestError("invalid post id"))
 		return
 	}
 
 	userClaim, ok := getUserClaimFromContext(r.Context())
-	userId := userClaim.ID
 	if !ok {
-		handleErrors(w, domain.NewBadRequestError("invalid user claim"))
+		handleErrors(w, domain.NewUnauthorizedError("unauthorized"))
+		return
+	}
+	userId := userClaim.ID // Get user ID after checking claim
+
+	// Read request body into API type
+	apiRequest := &apitypes.CreateCommentRequest{}
+	if err := readJSON(r.Body, apiRequest); err != nil {
+		handleErrors(w, domain.NewBadRequestError("failed to read request body: "+err.Error()))
 		return
 	}
 
-	createCommentDTO := &domain.CreateCommentDTO{}
-	if err := readJSON(r.Body, createCommentDTO); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	// Correctly map API request to domain DTO using embedded struct initialization
+	domainDTO := &domain.CreateCommentDTO{
+		EditableCommentFields: domain.EditableCommentFields{
+			Content: apiRequest.Content,
+		},
 	}
 
-	comment, err := app.CommentService.Create(r.Context(), userId, int64(postId), createCommentDTO)
+	// Call service
+	comment, err := app.CommentService.Create(r.Context(), userId, int64(postId), domainDTO)
 	if err != nil {
 		handleErrors(w, err)
 		return
 	}
 
-	writeJSONResponse(w, http.StatusCreated, comment)
+	// Map domain.Comment to apitypes.Comment
+	apiComment := mapDomainToApiComment(comment) // Use helper function
+
+	// Wrap in success response
+	response := apitypes.CreateCommentSuccessResponse{
+		Data: apiComment,
+	}
+
+	writeJSONResponse(w, http.StatusCreated, response)
+}
+
+// Helper function to map domain.Comment to apitypes.Comment
+func mapDomainToApiComment(comment *domain.Comment) apitypes.Comment {
+	apiComment := apitypes.Comment{
+		Id:        &comment.ID,     // Pointer
+		PostId:    &comment.PostID, // Pointer, assuming generated type uses PostId
+		UserId:    &comment.UserID, // Pointer, assuming generated type uses UserId
+		Content:   comment.Content,
+		CreatedAt: &comment.CreatedAt, // Pointer
+		UpdatedAt: &comment.UpdatedAt, // Pointer
+	}
+	// Add mapping for other fields if they exist in apitypes.Comment
+	return apiComment
+}
+
+// Helper function to map slice of domain.Comment to slice of apitypes.Comment
+func mapDomainToApiComments(comments []domain.Comment) []apitypes.Comment {
+	apiComments := make([]apitypes.Comment, len(comments))
+	for i, c := range comments {
+		apiComments[i] = mapDomainToApiComment(&c)
+	}
+	return apiComments
 }
 
 func (app *Application) updateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	commentId, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		handleErrors(w, domain.NewBadRequestError("invalid id"))
+		handleErrors(w, domain.NewBadRequestError("invalid comment id"))
 		return
 	}
 
@@ -50,27 +92,43 @@ func (app *Application) updateCommentHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	userClaim, ok := getUserClaimFromContext(r.Context())
-	userId := userClaim.ID
 	if !ok {
-		handleErrors(w, domain.NewBadRequestError("invalid user claim"))
+		handleErrors(w, domain.NewUnauthorizedError("unauthorized"))
+		return
+	}
+	userId := userClaim.ID // Get user ID after check
+
+	// Read request body into API type
+	apiRequest := &apitypes.UpdateCommentRequest{}
+	if err := readJSON(r.Body, apiRequest); err != nil {
+		handleErrors(w, domain.NewBadRequestError("failed to read request body: "+err.Error()))
 		return
 	}
 
-	updateCommentDTO := &domain.UpdateCommentDTO{
-		ID: int64(commentId),
-	}
-	if err := readJSON(r.Body, updateCommentDTO); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	// Map API request to domain DTO
+	domainDTO := &domain.UpdateCommentDTO{
+		ID: int64(commentId), // ID comes from path param, not body
+		EditableCommentFields: domain.EditableCommentFields{
+			Content: apiRequest.Content,
+		},
 	}
 
-	comment, err := app.CommentService.Update(r.Context(), userId, int64(postId), int64(commentId), updateCommentDTO)
+	// Call service
+	comment, err := app.CommentService.Update(r.Context(), userId, int64(postId), int64(commentId), domainDTO)
 	if err != nil {
 		handleErrors(w, err)
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, comment)
+	// Map domain.Comment to apitypes.Comment
+	apiComment := mapDomainToApiComment(comment)
+
+	// Wrap in success response
+	response := apitypes.UpdateCommentSuccessResponse{
+		Data: apiComment,
+	}
+
+	writeJSONResponse(w, http.StatusOK, response)
 }
 
 func (app *Application) getCommentByIdHandler(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +146,15 @@ func (app *Application) getCommentByIdHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, comment)
+	// Map domain.Comment to apitypes.Comment
+	apiComment := mapDomainToApiComment(comment)
+
+	// Wrap in success response
+	response := apitypes.GetCommentSuccessResponse{
+		Data: apiComment,
+	}
+
+	writeJSONResponse(w, http.StatusOK, response)
 }
 
 func (app *Application) listByPostIdHandler(w http.ResponseWriter, r *http.Request) {
@@ -125,19 +191,28 @@ func (app *Application) listByPostIdHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, comments)
+	// Map domain comments to API comments
+	apiComments := mapDomainToApiComments(comments)
+
+	// Wrap in success response
+	response := apitypes.ListCommentsSuccessResponse{
+		Data: apiComments,
+		// Add metadata here if implementing pagination
+	}
+
+	writeJSONResponse(w, http.StatusOK, response)
 }
 
 func (app *Application) deleteCommentHandler(w http.ResponseWriter, r *http.Request) {
 	commentId, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		handleErrors(w, domain.NewBadRequestError("invalid id"))
+		handleErrors(w, domain.NewBadRequestError("invalid comment id"))
 		return
 	}
 
 	userClaim, ok := getUserClaimFromContext(r.Context())
 	if !ok {
-		handleErrors(w, domain.NewBadRequestError("invalid user claim"))
+		handleErrors(w, domain.NewUnauthorizedError("unauthorized"))
 		return
 	}
 

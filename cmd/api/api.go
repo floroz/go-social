@@ -3,17 +3,20 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 
 	"github.com/floroz/go-social/cmd/middlewares"
+	"github.com/floroz/go-social/internal/apitypes"
 	"github.com/floroz/go-social/internal/domain"
+	"github.com/floroz/go-social/internal/errorcodes"
 	"github.com/floroz/go-social/internal/interfaces"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors" // Import cors package
+	"github.com/go-chi/cors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -96,10 +99,6 @@ func (app *Application) Routes() http.Handler {
 	return r
 }
 
-type errorResponse struct {
-	Errors []domain.ErrorDetail `json:"errors"`
-}
-
 func writeJSONResponse(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -112,7 +111,7 @@ func writeJSONResponse(w http.ResponseWriter, status int, data any) {
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to write response")
-		writeJSONError(w, http.StatusInternalServerError, "failed to write response")
+		writeJSONError(w, http.StatusInternalServerError, "failed to write response", errorcodes.CodeInternalServerError)
 	}
 }
 
@@ -124,26 +123,48 @@ func readJSON(source io.Reader, dest any) error {
 	return decoder.Decode(dest)
 }
 
-func writeJSONError(w http.ResponseWriter, status int, message string) {
-	errors := []domain.ErrorDetail{{Message: message}}
-	errorResponse := errorResponse{Errors: errors}
-	// Use writeJSONResponse to ensure consistent { "data": { "errors": [...] } } structure for errors too
-	writeJSONResponse(w, status, errorResponse)
+func writeJSONError(w http.ResponseWriter, status int, message string, code errorcodes.ApiErrorCode) {
+	apiErr := apitypes.ApiError{
+		Code:    string(code),
+		Message: message,
+	}
+	errorResponse := apitypes.ApiErrorResponse{
+		Errors: []apitypes.ApiError{apiErr},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(errorResponse); err != nil {
+		log.Error().Err(err).Msg("failed to write error response")
+	}
 }
 
 func handleErrors(w http.ResponseWriter, err error) {
-	log.Error().Err(err).Msg("error")
+	log.Error().Err(err).Msg("handling error")
+
+	// Check for specific sentinel errors first
+	if errors.Is(err, domain.ErrNotFound) {
+		// Directly use StatusNotFound and the error message/code
+		writeJSONError(w, http.StatusNotFound, err.Error(), errorcodes.CodeNotFound)
+		return
+	}
+
+	// Then check for custom error types
 	switch e := err.(type) {
 	case *domain.ValidationError:
-		writeJSONError(w, http.StatusBadRequest, e.Error())
+		// TODO: Enhance this to return multiple validation errors if needed
+		// For now, return the first error message with a generic code.
+		writeJSONError(w, http.StatusBadRequest, e.Error(), errorcodes.CodeValidationError)
 	case *domain.InternalServerError:
-		writeJSONError(w, e.StatusCode, e.Error())
+		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeInternalServerError)
 	case *domain.BadRequestError:
-		writeJSONError(w, e.StatusCode, e.Error())
+		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeBadRequest)
 	case *domain.NotFoundError:
-		writeJSONError(w, e.StatusCode, e.Error())
+		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeNotFound)
+	case *domain.ForbiddenError:
+		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeForbidden)
 	default:
-		writeJSONError(w, http.StatusInternalServerError, "internal server error")
+		writeJSONError(w, http.StatusInternalServerError, "An unexpected internal server error occurred.", errorcodes.CodeInternalServerError)
 	}
 }
 

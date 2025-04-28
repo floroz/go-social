@@ -8,6 +8,7 @@ import (
 	"github.com/floroz/go-social/internal/apitypes"
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/env"
+	"github.com/floroz/go-social/internal/errorcodes"
 	"github.com/rs/zerolog/log"
 )
 
@@ -24,7 +25,7 @@ func (app *Application) signupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := readJSON(r.Body, &requestBody); err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		writeJSONError(w, http.StatusBadRequest, err.Error(), errorcodes.CodeBadRequest)
 		return
 	}
 
@@ -107,7 +108,7 @@ func (app *Application) loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := readJSON(r.Body, &requestBody); err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		writeJSONError(w, http.StatusBadRequest, err.Error(), errorcodes.CodeBadRequest)
 		return
 	}
 
@@ -197,7 +198,7 @@ func (app *Application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 func (app *Application) refreshHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("refresh_token")
 	if err != nil {
-		writeJSONError(w, http.StatusUnauthorized, "missing refresh token")
+		writeJSONError(w, http.StatusUnauthorized, "missing refresh token", errorcodes.CodeUnauthorized)
 		return
 	}
 
@@ -209,14 +210,14 @@ func (app *Application) refreshHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil || !token.Valid {
-		writeJSONError(w, http.StatusUnauthorized, "invalid refresh token")
+		writeJSONError(w, http.StatusUnauthorized, "invalid refresh token", errorcodes.CodeUnauthorized)
 		return
 	}
 
 	claims, ok := token.Claims.(*domain.UserClaims)
 
 	if !ok || !token.Valid {
-		writeJSONError(w, http.StatusUnauthorized, "invalid refresh token claims")
+		writeJSONError(w, http.StatusUnauthorized, "invalid refresh token claims", errorcodes.CodeUnauthorized)
 		return
 	}
 
@@ -232,7 +233,7 @@ func (app *Application) refreshHandler(w http.ResponseWriter, r *http.Request) {
 
 	accessToken, err := app.AuthService.GenerateJWTToken(user, accessTokenMaxDuration)
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "failed to generate access token")
+		writeJSONError(w, http.StatusInternalServerError, "failed to generate access token", errorcodes.CodeInternalServerError)
 		return
 	}
 
