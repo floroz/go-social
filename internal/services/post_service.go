@@ -81,13 +81,17 @@ func (r *postService) Update(ctx context.Context, userId, postId int64, updatedP
 		return nil, domain.NewBadRequestError(err.Error())
 	}
 
-	switch existingPost, err := r.postRepo.GetByID(ctx, postId); {
-	case err != nil && err == domain.ErrNotFound:
-		return nil, domain.NewNotFoundError("comment not found")
-	case err != nil:
-		return nil, domain.NewInternalServerError("failed to delete comment")
-	case existingPost.UserID != userId:
-		return nil, domain.NewForbiddenError("not allowed to delete comment")
+	// Check existence and ownership first
+	existingPost, err := r.postRepo.GetByID(ctx, postId)
+	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.NewNotFoundError("post not found")
+		}
+		log.Error().Err(err).Int64("postId", postId).Msg("Failed to get post for update check")
+		return nil, domain.NewInternalServerError("failed to check post existence")
+	}
+	if existingPost.UserID != userId {
+		return nil, domain.NewForbiddenError("not allowed to update post")
 	}
 
 	post, err := r.postRepo.Update(ctx, userId, postId, updatedPost)

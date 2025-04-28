@@ -125,8 +125,8 @@ func (r *PostRepositoryImpl) Update(ctx context.Context, userId, postId int64, p
 		ctx,
 		query,
 		post.Content,
-		userId,
 		postId,
+		userId,
 	).Scan(
 		&updatedPost.ID,
 		&updatedPost.UserID,
