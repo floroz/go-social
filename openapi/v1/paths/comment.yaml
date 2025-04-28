@@ -1,0 +1,228 @@
+# This file defines the V1 comment API endpoints (nested under posts).
+paths:
+  /v1/posts/{postId}/comments:
+    parameters:
+      - name: postId
+        in: path
+        required: true
+        description: The ID of the post to retrieve comments for or add a comment to.
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - Comments V1
+      summary: List comments for a post
+      description: Retrieves a list of comments for a specific post.
+      operationId: listCommentsForPostV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      # Add pagination query parameters later if needed
+      responses:
+        '200': # OK
+          description: A list of comments retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/comment.yaml#/components/schemas/ListCommentsSuccessResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error retrieving comments.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+    post:
+      tags:
+        - Comments V1
+      summary: Create a new comment on a post
+      description: Creates a new comment on a specific post for the authenticated user.
+      operationId: createCommentV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      requestBody:
+        description: Comment content.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/comment.yaml#/components/schemas/CreateCommentRequest'
+      responses:
+        '201': # Created
+          description: Comment created successfully. Returns the created comment object.
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/comment.yaml#/components/schemas/CreateCommentSuccessResponse'
+        '400': # Bad Request
+          description: Invalid input data (e.g., validation errors).
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error creating comment.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+
+  /v1/posts/{postId}/comments/{id}:
+    parameters:
+      - name: postId
+        in: path
+        required: true
+        description: The ID of the post the comment belongs to.
+        schema:
+          type: integer
+          format: int64
+      - name: id
+        in: path
+        required: true
+        description: The ID of the comment to operate on.
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - Comments V1
+      summary: Get a specific comment by ID
+      description: Retrieves details of a specific comment.
+      operationId: getCommentByIdV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      responses:
+        '200': # OK
+          description: Comment retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/comment.yaml#/components/schemas/GetCommentSuccessResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post or Comment with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error retrieving comment.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+    put:
+      tags:
+        - Comments V1
+      summary: Update a specific comment by ID
+      description: Updates the content of a specific comment owned by the authenticated user.
+      operationId: updateCommentV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      requestBody:
+        description: Updated comment content.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/comment.yaml#/components/schemas/UpdateCommentRequest'
+      responses:
+        '200': # OK
+          description: Comment updated successfully. Returns the updated comment object.
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/comment.yaml#/components/schemas/UpdateCommentSuccessResponse'
+        '400': # Bad Request
+          description: Invalid input data (e.g., validation errors).
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '403': # Forbidden
+          description: User is not authorized to update this comment.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post or Comment with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error updating comment.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+    delete:
+      tags:
+        - Comments V1
+      summary: Delete a specific comment by ID
+      description: Deletes a specific comment owned by the authenticated user.
+      operationId: deleteCommentV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      responses:
+        '204': # No Content
+          description: Comment deleted successfully. No content returned.
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '403': # Forbidden
+          description: User is not authorized to delete this comment.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post or Comment with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error deleting comment.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'

@@ -1,0 +1,201 @@
+# This file defines the V1 post API endpoints.
+paths:
+  /v1/posts:
+    get:
+      tags:
+        - Posts V1
+      summary: List posts
+      description: Retrieves a list of posts, potentially with pagination.
+      operationId: listPostsV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      # Add query parameters for pagination later if needed (e.g., page, limit)
+      responses:
+        '200': # OK
+          description: A list of posts retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/post.yaml#/components/schemas/ListPostsSuccessResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error retrieving posts.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+    post:
+      tags:
+        - Posts V1
+      summary: Create a new post
+      description: Creates a new post for the authenticated user.
+      operationId: createPostV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      requestBody:
+        description: Post content.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/post.yaml#/components/schemas/CreatePostRequest'
+      responses:
+        '201': # Created
+          description: Post created successfully. Returns the created post object.
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/post.yaml#/components/schemas/CreatePostSuccessResponse'
+        '400': # Bad Request
+          description: Invalid input data (e.g., validation errors).
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error creating post.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+
+  /v1/posts/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The ID of the post to operate on.
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - Posts V1
+      summary: Get a specific post by ID
+      description: Retrieves details of a specific post.
+      operationId: getPostByIdV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      responses:
+        '200': # OK
+          description: Post retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/post.yaml#/components/schemas/GetPostSuccessResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error retrieving post.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+    put:
+      tags:
+        - Posts V1
+      summary: Update a specific post by ID
+      description: Updates the content of a specific post owned by the authenticated user.
+      operationId: updatePostV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      requestBody:
+        description: Updated post content.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/post.yaml#/components/schemas/UpdatePostRequest'
+      responses:
+        '200': # OK
+          description: Post updated successfully. Returns the updated post object.
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/post.yaml#/components/schemas/UpdatePostSuccessResponse'
+        '400': # Bad Request
+          description: Invalid input data (e.g., validation errors).
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '403': # Forbidden
+          description: User is not authorized to update this post.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error updating post.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+    delete:
+      tags:
+        - Posts V1
+      summary: Delete a specific post by ID
+      description: Deletes a specific post owned by the authenticated user.
+      operationId: deletePostV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      responses:
+        '204': # No Content
+          description: Post deleted successfully. No content returned.
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '403': # Forbidden
+          description: User is not authorized to delete this post.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error deleting post.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
