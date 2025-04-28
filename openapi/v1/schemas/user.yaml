@@ -1,0 +1,57 @@
+# This file defines schemas specific to V1 user operations.
+components:
+  schemas:
+    # Request body for updating user profile
+    UpdateUserProfileRequest:
+      type: object
+      description: Fields allowed for updating a user profile.
+      properties:
+        first_name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: User's first name.
+          example: "Jane"
+        last_name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: User's last name.
+          example: "Doe"
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: '^[a-zA-Z0-9]+$'
+          description: Desired username (alphanumeric).
+          example: "janedoe"
+        email:
+          type: string
+          format: email
+          minLength: 3
+          maxLength: 50
+          description: User's email address.
+          example: "jane.doe@example.com"
+      # Note: No required fields, as updates are partial. Validation happens in handler.
+
+    # Standard wrapper for the Get User Profile success response
+    GetUserProfileSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful user profile retrieval response.
+      properties:
+        data:
+          description: Contains the user profile object.
+          $ref: '../../shared/schemas/user.yaml#/components/schemas/User' # Reference shared User
+      required:
+        - data
+
+    # Standard wrapper for the Update User Profile success response
+    UpdateUserProfileSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful user profile update response.
+      properties:
+        data:
+          description: Contains the updated user profile object.
+          $ref: '../../shared/schemas/user.yaml#/components/schemas/User' # Reference shared User
+      required:
+        - data

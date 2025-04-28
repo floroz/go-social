@@ -1,0 +1,79 @@
+# This file defines the V1 user API endpoints.
+paths:
+  /v1/users:
+    get:
+      tags:
+        - Users V1
+      summary: Get current user profile
+      description: Retrieves the profile information for the currently authenticated user.
+      operationId: getUserProfileV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      responses:
+        '200': # OK
+          description: User profile retrieved successfully.
+          content:
+            application/json:
+              schema:
+                # Reference a success wrapper for User (to be defined in schemas)
+                $ref: '../schemas/user.yaml#/components/schemas/GetUserProfileSuccessResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: User not found (should not typically happen if authenticated).
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error retrieving profile.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+    put:
+      tags:
+        - Users V1
+      summary: Update current user profile
+      description: Updates the profile information for the currently authenticated user.
+      operationId: updateUserProfileV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      requestBody:
+        description: User profile fields to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              # Reference the update request schema (to be defined)
+              $ref: '../schemas/user.yaml#/components/schemas/UpdateUserProfileRequest'
+      responses:
+        '200': # OK
+          description: User profile updated successfully. Returns the updated user object.
+          content:
+            application/json:
+              schema:
+                # Reference a success wrapper for User (to be defined in schemas)
+                $ref: '../schemas/user.yaml#/components/schemas/UpdateUserProfileSuccessResponse' # Reuse GetUserProfileSuccessResponse?
+        '400': # Bad Request
+          description: Invalid input data (e.g., validation errors).
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error updating profile.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
