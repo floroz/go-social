@@ -25,7 +25,7 @@ func TestCreateUser_ExistingEmail(t *testing.T) {
 		Password: "password",
 	}
 	mockUserRepo := new(mocks.MockedUserRepository)
-	mockUserRepo.On("GetByEmail", context.Background(), createUserDTO.Email).Return(&domain.User{}, nil)
+	mockUserRepo.On("GetByEmail", context.Background(), createUserDTO.Email).Return(&domain.User{}, nil) // Simulate existing email
 	userService := services.NewUserService(mockUserRepo)
 
 	// Act
@@ -56,9 +56,8 @@ func TestCreateUser_ExistingUsername(t *testing.T) {
 	userService := services.NewUserService(mockUserRepo)
 
 	var existingUserWithEmail *domain.User
-	mockUserRepo.On("GetByEmail", mock.Anything, createUserDTO.Email).Return(existingUserWithEmail, domain.ErrNotFound)
-
-	mockUserRepo.On("GetByUsername", mock.Anything, createUserDTO.Username).Return(&domain.User{}, nil)
+	mockUserRepo.On("GetByEmail", mock.Anything, createUserDTO.Email).Return(existingUserWithEmail, domain.ErrNotFound) // Simulate email not found
+	mockUserRepo.On("GetByUsername", mock.Anything, createUserDTO.Username).Return(&domain.User{}, nil)                 // Simulate username found
 
 	// Act
 	_, err := userService.Create(context.Background(), createUserDTO)
@@ -91,7 +90,7 @@ func TestCreateUser_ErrorCreating(t *testing.T) {
 
 	mockUserRepo.On("GetByEmail", mock.Anything, createUserDTO.Email).Return(nullptr, domain.ErrNotFound)
 	mockUserRepo.On("GetByUsername", mock.Anything, createUserDTO.Username).Return(nullptr, domain.ErrNotFound)
-	mockUserRepo.On("Create", mock.Anything, mock.Anything).Return(nullptr, errors.New("something went wrong"))
+	mockUserRepo.On("Create", mock.Anything, mock.Anything).Return(nullptr, errors.New("something went wrong")) // Simulate DB error on Create
 
 	// Act
 	_, err := userService.Create(context.Background(), createUserDTO)
@@ -123,13 +122,10 @@ func TestCreateUser_Success(t *testing.T) {
 
 	var existingUser *domain.User
 	mockUserRepo.On("GetByEmail", mock.Anything, createUserDTO.Email).Return(existingUser, domain.ErrNotFound)
-
 	mockUserRepo.On("GetByUsername", mock.Anything, createUserDTO.Username).Return(existingUser, domain.ErrNotFound)
 
 	mockUserRepo.On("Create", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
 		user := args.Get(1).(*domain.CreateUserDTO)
-
-		// Assert password is hashed
 		assert.NotNil(t, user)
 		assert.NotEmpty(t, user.Password)
 		assert.NotEqual(t, originalPassword, user.Password)
@@ -139,7 +135,7 @@ func TestCreateUser_Success(t *testing.T) {
 		LastName:  createUserDTO.LastName,
 		Email:     createUserDTO.Email,
 		Username:  createUserDTO.Username,
-		Password:  createUserDTO.Password,
+		Password:  createUserDTO.Password, // This will be the hashed one in reality, but fine for mock
 	}, nil)
 
 	// Act
@@ -157,7 +153,6 @@ func TestCreateUser_Success(t *testing.T) {
 	assert.Equal(t, createUserDTO.LastName, user.LastName)
 	assert.Equal(t, createUserDTO.Email, user.Email)
 	assert.Equal(t, createUserDTO.Username, user.Username)
-
 }
 
 func TestUpdateUser_NotExisting(t *testing.T) {
@@ -176,7 +171,7 @@ func TestUpdateUser_NotExisting(t *testing.T) {
 	const userId int64 = 1
 
 	var nullptr *domain.User
-	mockUserRepo.On("GetByID", mock.Anything, userId).Return(nullptr, domain.ErrNotFound)
+	mockUserRepo.On("GetByID", mock.Anything, userId).Return(nullptr, domain.ErrNotFound) // Simulate user not found
 
 	// Act
 	user, err := userService.Update(context.Background(), 1, updateUserDTO)
@@ -194,21 +189,33 @@ func TestUpdateUser_Success(t *testing.T) {
 	// Arrange
 	updateUserDTO := &domain.UpdateUserDTO{
 		EditableUserField: domain.EditableUserField{
-			FirstName: "Test",
-			LastName:  "User",
-			Email:     "test@test.com",
-			Username:  "test",
+			FirstName: "UpdatedFirst",
+			LastName:  "UpdatedLast",
+			Email:     "update@test.com",
+			Username:  "updateduser",
 		},
 	}
 	mockUserRepo := new(mocks.MockedUserRepository)
 	userService := services.NewUserService(mockUserRepo)
 
 	const userId int64 = 1
+	existingUser := &domain.User{ // Simulate the user fetched by GetByID
+		ID:        userId,
+		FirstName: "OriginalFirst",
+		LastName:  "OriginalLast",
+		Email:     "original@test.com",
+		Username:  "originaluser",
+	}
 
-	mockUserRepo.On("GetByID", mock.Anything, userId).Return(&domain.User{}, nil)
-	mockUserRepo.On("Update", mock.Anything, userId, mock.Anything).Return(&domain.User{
+	mockUserRepo.On("GetByID", mock.Anything, userId).Return(existingUser, nil) // Expect GetByID first
+	// Corrected: No GetByEmail/GetByUsername checks in the reverted Update logic
+	// Expect the Update call directly with the input DTO
+	mockUserRepo.On("Update", mock.Anything, userId, updateUserDTO).Return(&domain.User{ // Return the updated user data
+		ID:        userId,
 		FirstName: updateUserDTO.FirstName,
 		LastName:  updateUserDTO.LastName,
+		Email:     updateUserDTO.Email,
+		Username:  updateUserDTO.Username,
 	}, nil)
 
 	// Act
@@ -217,11 +224,16 @@ func TestUpdateUser_Success(t *testing.T) {
 	// Assert
 	assert.Nil(t, err)
 	mockUserRepo.AssertCalled(t, "GetByID", mock.Anything, userId)
-	mockUserRepo.AssertCalled(t, "Update", mock.Anything, userId, mock.Anything)
+	// Corrected: Assert GetByEmail/GetByUsername are NOT called
+	mockUserRepo.AssertNotCalled(t, "GetByEmail")
+	mockUserRepo.AssertNotCalled(t, "GetByUsername")
+	mockUserRepo.AssertCalled(t, "Update", mock.Anything, userId, updateUserDTO) // Assert Update is called with correct DTO
 	mockUserRepo.AssertExpectations(t)
 	assert.NotNil(t, user)
 	assert.Equal(t, updateUserDTO.FirstName, user.FirstName)
 	assert.Equal(t, updateUserDTO.LastName, user.LastName)
+	assert.Equal(t, updateUserDTO.Email, user.Email)
+	assert.Equal(t, updateUserDTO.Username, user.Username)
 }
 
 func TestCreateUser_Validation(t *testing.T) {
@@ -236,7 +248,7 @@ func TestCreateUser_Validation(t *testing.T) {
 				EditableUserField: domain.EditableUserField{
 					FirstName: "Test",
 					LastName:  "User",
-					Email:     "test@test",
+					Email:     "test@test", // Invalid format
 					Username:  "test",
 				},
 				Password: "password",
@@ -249,7 +261,7 @@ func TestCreateUser_Validation(t *testing.T) {
 				EditableUserField: domain.EditableUserField{
 					FirstName: "Test",
 					LastName:  "User",
-					Email:     strings.Repeat("A", 51) + "@test.com",
+					Email:     strings.Repeat("A", 51) + "@test.com", // Too long
 					Username:  "test",
 				},
 				Password: "password",
@@ -259,7 +271,7 @@ func TestCreateUser_Validation(t *testing.T) {
 		{
 			name: "InvalidEmail - missing",
 			createUserDTO: &domain.CreateUserDTO{
-				EditableUserField: domain.EditableUserField{
+				EditableUserField: domain.EditableUserField{ // Email is missing (zero value "")
 					FirstName: "Test",
 					LastName:  "User",
 					Username:  "test",
@@ -275,7 +287,7 @@ func TestCreateUser_Validation(t *testing.T) {
 					FirstName: "Test",
 					LastName:  "User",
 					Email:     "test@test.com",
-					Username:  "test^^&",
+					Username:  "test^^&", // Invalid chars
 				},
 				Password: "password",
 			},
@@ -284,7 +296,7 @@ func TestCreateUser_Validation(t *testing.T) {
 		{
 			name: "InvalidUsername - missing",
 			createUserDTO: &domain.CreateUserDTO{
-				EditableUserField: domain.EditableUserField{
+				EditableUserField: domain.EditableUserField{ // Username is missing
 					FirstName: "Test",
 					LastName:  "User",
 					Email:     "test@test.com",
@@ -302,9 +314,9 @@ func TestCreateUser_Validation(t *testing.T) {
 					Email:     "test@test.com",
 					Username:  "test",
 				},
-				Password: "pass",
+				Password: "pass", // Too short
 			},
-			expectedError: "",
+			expectedError: "CreateUserDTO.Password", // Expect error on Password field now
 		},
 		{
 			name: "InvalidPassword - missing",
@@ -315,8 +327,9 @@ func TestCreateUser_Validation(t *testing.T) {
 					Email:     "test@test.com",
 					Username:  "test",
 				},
+				// Password missing
 			},
-			expectedError: "",
+			expectedError: "CreateUserDTO.Password",
 		},
 		{
 			name: "InvalidPassword - too long",
@@ -327,15 +340,15 @@ func TestCreateUser_Validation(t *testing.T) {
 					Email:     "test@test.com",
 					Username:  "test",
 				},
-				Password: strings.Repeat("A", 51),
+				Password: strings.Repeat("A", 51), // Too long
 			},
-			expectedError: "",
+			expectedError: "CreateUserDTO.Password",
 		},
 		{
 			name: "InvalidFirstName",
 			createUserDTO: &domain.CreateUserDTO{
 				EditableUserField: domain.EditableUserField{
-					FirstName: "A",
+					FirstName: "A", // Too short
 					LastName:  "User",
 					Email:     "test@test.com",
 					Username:  "test",
@@ -348,7 +361,7 @@ func TestCreateUser_Validation(t *testing.T) {
 			name: "InvalidFirstName - too long",
 			createUserDTO: &domain.CreateUserDTO{
 				EditableUserField: domain.EditableUserField{
-					FirstName: strings.Repeat("A", 51),
+					FirstName: strings.Repeat("A", 51), // Too long
 					LastName:  "User",
 					Email:     "test@test.com",
 					Username:  "test",
@@ -360,7 +373,7 @@ func TestCreateUser_Validation(t *testing.T) {
 		{
 			name: "InvalidFirstName - missing",
 			createUserDTO: &domain.CreateUserDTO{
-				EditableUserField: domain.EditableUserField{
+				EditableUserField: domain.EditableUserField{ // FirstName missing
 					LastName: "User",
 					Email:    "test@test.com",
 					Username: "test",
@@ -374,7 +387,7 @@ func TestCreateUser_Validation(t *testing.T) {
 			createUserDTO: &domain.CreateUserDTO{
 				EditableUserField: domain.EditableUserField{
 					FirstName: "Antony",
-					LastName:  "U",
+					LastName:  "U", // Too short
 					Email:     "test@test.com",
 					Username:  "test",
 				},
@@ -387,7 +400,7 @@ func TestCreateUser_Validation(t *testing.T) {
 			createUserDTO: &domain.CreateUserDTO{
 				EditableUserField: domain.EditableUserField{
 					FirstName: "Antony",
-					LastName:  strings.Repeat("U", 51),
+					LastName:  strings.Repeat("U", 51), // Too long
 					Email:     "test@test.com",
 					Username:  "test",
 				},
@@ -398,7 +411,7 @@ func TestCreateUser_Validation(t *testing.T) {
 		{
 			name: "InvalidLastName - missing",
 			createUserDTO: &domain.CreateUserDTO{
-				EditableUserField: domain.EditableUserField{
+				EditableUserField: domain.EditableUserField{ // LastName missing
 					FirstName: "Antony",
 					Email:     "test@test.com",
 					Username:  "test",
@@ -414,6 +427,24 @@ func TestCreateUser_Validation(t *testing.T) {
 			mockUserRepo := new(mocks.MockedUserRepository)
 			userService := services.NewUserService(mockUserRepo)
 
+			// Corrected Mock Setup: Expect GetByEmail/GetByUsername BEFORE validation
+			var nullptr *domain.User
+			// Only mock GetByEmail if the DTO actually has an email to check
+			// Use specific email value from DTO for the mock expectation
+			if tt.createUserDTO.Email != "" {
+				mockUserRepo.On("GetByEmail", mock.Anything, tt.createUserDTO.Email).Return(nullptr, domain.ErrNotFound).Maybe()
+			} else {
+				// If email is missing, expect GetByEmail("")
+				mockUserRepo.On("GetByEmail", mock.Anything, "").Return(nullptr, domain.ErrNotFound).Maybe()
+			}
+			// Only mock GetByUsername if the DTO actually has a username to check
+			if tt.createUserDTO.Username != "" {
+				mockUserRepo.On("GetByUsername", mock.Anything, tt.createUserDTO.Username).Return(nullptr, domain.ErrNotFound).Maybe()
+			} else {
+				// If username is missing, expect GetByUsername("")
+				mockUserRepo.On("GetByUsername", mock.Anything, "").Return(nullptr, domain.ErrNotFound).Maybe()
+			}
+
 			_, err := userService.Create(context.Background(), tt.createUserDTO)
 
 			assert.NotNil(t, err)
@@ -422,6 +453,8 @@ func TestCreateUser_Validation(t *testing.T) {
 			if tt.expectedError != "" {
 				assert.ErrorContains(t, err, tt.expectedError)
 			}
+			// Verify mocks were called as expected (or not called if skipped)
+			mockUserRepo.AssertExpectations(t)
 		})
 	}
 }
@@ -467,6 +500,7 @@ func TestGetUserByID_NotFound(t *testing.T) {
 	// Assert
 	assert.Nil(t, user)
 	assert.NotNil(t, err)
+	// Corrected: GetByID service layer returns InternalServerError if repo returns ErrNotFound
 	assert.IsType(t, &domain.InternalServerError{}, err)
 	mockUserRepo.AssertCalled(t, "GetByID", mock.Anything, userId)
 	mockUserRepo.AssertExpectations(t)

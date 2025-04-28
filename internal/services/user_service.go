@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -76,15 +77,27 @@ func (s *userService) Update(ctx context.Context, userId int64, updateUser *doma
 		return nil, domain.NewBadRequestError(err.Error())
 	}
 
-	// check a user exists
-	if existingUser, err := s.userRepo.GetByID(ctx, userId); existingUser == nil {
-		return nil, domain.NewNotFoundError("user not found")
-	} else if err != nil {
-		log.Error().Err(err).Msg("failed to get user by id")
+	// check a user exists first (original logic before partial update attempt)
+	if _, err := s.userRepo.GetByID(ctx, userId); err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.NewNotFoundError("user not found")
+		}
+		log.Error().Err(err).Msg("failed to get user by id before update")
 		return nil, domain.NewInternalServerError("failed to get user by id")
 	}
+
+	// TODO: Add checks for existing email/username if they are being updated,
+	// similar to the Create method, but only if the DTO values differ from the existing ones.
+	// This requires fetching the user data again or modifying the GetByID check above.
+	// For now, we rely on database constraints for uniqueness.
+
+	// Call repository update directly with the validated DTO
 	updatedUser, err := s.userRepo.Update(ctx, userId, updateUser)
 	if err != nil {
+		// Handle potential ErrNotFound from the repo update itself
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.NewNotFoundError("user not found during update")
+		}
 		log.Error().Err(err).Msg("failed to update user")
 		return nil, domain.NewInternalServerError("failed to update user")
 	}
