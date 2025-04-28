@@ -19,6 +19,29 @@ type ApiErrorResponse = generated.ApiErrorResponse
 type SignupSuccessResponse = generated.SignupSuccessResponse
 type LoginSuccessResponse = generated.LoginSuccessResponse
 
+// User endpoint types
+type UpdateUserProfileRequest = generated.UpdateUserProfileRequest
+type GetUserProfileSuccessResponse = generated.GetUserProfileSuccessResponse
+type UpdateUserProfileSuccessResponse = generated.UpdateUserProfileSuccessResponse
+
+// Post endpoint types
+type Post = generated.Post // Shared Post schema
+type CreatePostRequest = generated.CreatePostRequest
+type UpdatePostRequest = generated.UpdatePostRequest
+type CreatePostSuccessResponse = generated.CreatePostSuccessResponse
+type GetPostSuccessResponse = generated.GetPostSuccessResponse
+type UpdatePostSuccessResponse = generated.UpdatePostSuccessResponse
+type ListPostsSuccessResponse = generated.ListPostsSuccessResponse
+
+// Comment endpoint types
+type Comment = generated.Comment // Shared Comment schema
+type CreateCommentRequest = generated.CreateCommentRequest
+type UpdateCommentRequest = generated.UpdateCommentRequest
+type CreateCommentSuccessResponse = generated.CreateCommentSuccessResponse
+type GetCommentSuccessResponse = generated.GetCommentSuccessResponse
+type UpdateCommentSuccessResponse = generated.UpdateCommentSuccessResponse
+type ListCommentsSuccessResponse = generated.ListCommentsSuccessResponse
+
 // Runtime Types (if needed directly, like Email)
 type Email = types.Email
 
