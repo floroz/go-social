@@ -23,6 +23,21 @@ paths:
     $ref: './v1/paths/auth.yaml#/paths/~1v1~1auth~1signup' # Updated reference path
   /v1/auth/login:
     $ref: './v1/paths/auth.yaml#/paths/~1v1~1auth~1login'
+  /v1/auth/logout:
+    $ref: './v1/paths/auth.yaml#/paths/~1v1~1auth~1logout'
+  /v1/auth/refresh:
+    $ref: './v1/paths/auth.yaml#/paths/~1v1~1auth~1refresh'
+  /v1/users: # Add reference to the user path definition
+    $ref: './v1/paths/user.yaml#/paths/~1v1~1users'
+  /v1/posts: # Add reference to the posts collection path
+    $ref: './v1/paths/post.yaml#/paths/~1v1~1posts'
+  /v1/posts/{id}: # Add reference to the single post path
+    $ref: './v1/paths/post.yaml#/paths/~1v1~1posts~1{id}'
+  /v1/posts/{postId}/comments: # Add reference to the comments collection path
+    $ref: './v1/paths/comment.yaml#/paths/~1v1~1posts~1{postId}~1comments'
+  /v1/posts/{postId}/comments/{id}: # Add reference to the single comment path
+    $ref: './v1/paths/comment.yaml#/paths/~1v1~1posts~1{postId}~1comments~1{id}'
+
 
 components:
   schemas:
@@ -37,6 +52,44 @@ components:
       $ref: './v1/schemas/auth.yaml#/components/schemas/LoginRequest'
     LoginResponse:
        $ref: './v1/schemas/auth.yaml#/components/schemas/LoginResponse'
+    # User schemas
+    UpdateUserProfileRequest:
+      $ref: './v1/schemas/user.yaml#/components/schemas/UpdateUserProfileRequest'
+    GetUserProfileSuccessResponse:
+      $ref: './v1/schemas/user.yaml#/components/schemas/GetUserProfileSuccessResponse'
+    UpdateUserProfileSuccessResponse:
+      $ref: './v1/schemas/user.yaml#/components/schemas/UpdateUserProfileSuccessResponse'
+    # Post schemas
+    Post:
+      $ref: './shared/schemas/post.yaml#/components/schemas/Post'
+    CreatePostRequest:
+      $ref: './v1/schemas/post.yaml#/components/schemas/CreatePostRequest'
+    UpdatePostRequest:
+      $ref: './v1/schemas/post.yaml#/components/schemas/UpdatePostRequest'
+    CreatePostSuccessResponse:
+      $ref: './v1/schemas/post.yaml#/components/schemas/CreatePostSuccessResponse'
+    GetPostSuccessResponse:
+      $ref: './v1/schemas/post.yaml#/components/schemas/GetPostSuccessResponse'
+    UpdatePostSuccessResponse:
+       $ref: './v1/schemas/post.yaml#/components/schemas/UpdatePostSuccessResponse'
+    ListPostsSuccessResponse:
+      $ref: './v1/schemas/post.yaml#/components/schemas/ListPostsSuccessResponse'
+    # Comment schemas
+    Comment:
+      $ref: './shared/schemas/comment.yaml#/components/schemas/Comment'
+    CreateCommentRequest:
+      $ref: './v1/schemas/comment.yaml#/components/schemas/CreateCommentRequest'
+    UpdateCommentRequest:
+      $ref: './v1/schemas/comment.yaml#/components/schemas/UpdateCommentRequest'
+    CreateCommentSuccessResponse:
+      $ref: './v1/schemas/comment.yaml#/components/schemas/CreateCommentSuccessResponse'
+    GetCommentSuccessResponse:
+      $ref: './v1/schemas/comment.yaml#/components/schemas/GetCommentSuccessResponse'
+    UpdateCommentSuccessResponse:
+      $ref: './v1/schemas/comment.yaml#/components/schemas/UpdateCommentSuccessResponse'
+    ListCommentsSuccessResponse:
+      $ref: './v1/schemas/comment.yaml#/components/schemas/ListCommentsSuccessResponse'
+
 
   securitySchemes: # Define security schemes if needed (e.g., JWT)
     bearerAuth:

@@ -44,6 +44,185 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Log out a user
+         * @description Clears authentication cookies.
+         */
+        post: operations["logoutUserV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh access token
+         * @description Uses the refresh token (from cookie) to issue a new access token (in cookie).
+         */
+        post: operations["refreshAccessTokenV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get current user profile
+         * @description Retrieves the profile information for the currently authenticated user.
+         */
+        get: operations["getUserProfileV1"];
+        /**
+         * Update current user profile
+         * @description Updates the profile information for the currently authenticated user.
+         */
+        put: operations["updateUserProfileV1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List posts
+         * @description Retrieves a list of posts, potentially with pagination.
+         */
+        get: operations["listPostsV1"];
+        put?: never;
+        /**
+         * Create a new post
+         * @description Creates a new post for the authenticated user.
+         */
+        post: operations["createPostV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/posts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post to operate on. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        /**
+         * Get a specific post by ID
+         * @description Retrieves details of a specific post.
+         */
+        get: operations["getPostByIdV1"];
+        /**
+         * Update a specific post by ID
+         * @description Updates the content of a specific post owned by the authenticated user.
+         */
+        put: operations["updatePostV1"];
+        post?: never;
+        /**
+         * Delete a specific post by ID
+         * @description Deletes a specific post owned by the authenticated user.
+         */
+        delete: operations["deletePostV1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/posts/{postId}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post to retrieve comments for or add a comment to. */
+                postId: number;
+            };
+            cookie?: never;
+        };
+        /**
+         * List comments for a post
+         * @description Retrieves a list of comments for a specific post.
+         */
+        get: operations["listCommentsForPostV1"];
+        put?: never;
+        /**
+         * Create a new comment on a post
+         * @description Creates a new comment on a specific post for the authenticated user.
+         */
+        post: operations["createCommentV1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/posts/{postId}/comments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post the comment belongs to. */
+                postId: number;
+                /** @description The ID of the comment to operate on. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        /**
+         * Get a specific comment by ID
+         * @description Retrieves details of a specific comment.
+         */
+        get: operations["getCommentByIdV1"];
+        /**
+         * Update a specific comment by ID
+         * @description Updates the content of a specific comment owned by the authenticated user.
+         */
+        put: operations["updateCommentV1"];
+        post?: never;
+        /**
+         * Delete a specific comment by ID
+         * @description Deletes a specific comment owned by the authenticated user.
+         */
+        delete: operations["deleteCommentV1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -153,6 +332,173 @@ export interface components {
              * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
              */
             token: string;
+        };
+        /** @description Fields allowed for updating a user profile. */
+        UpdateUserProfileRequest: {
+            /**
+             * @description User's first name.
+             * @example Jane
+             */
+            first_name?: string;
+            /**
+             * @description User's last name.
+             * @example Doe
+             */
+            last_name?: string;
+            /**
+             * @description Desired username (alphanumeric).
+             * @example janedoe
+             */
+            username?: string;
+            /**
+             * Format: email
+             * @description User's email address.
+             * @example jane.doe@example.com
+             */
+            email?: string;
+        };
+        /** @description Standard wrapper for the successful user profile retrieval response. */
+        GetUserProfileSuccessResponse: {
+            /** @description Contains the user profile object. */
+            data: components["schemas"]["User"];
+        };
+        /** @description Standard wrapper for the successful user profile update response. */
+        UpdateUserProfileSuccessResponse: {
+            /** @description Contains the updated user profile object. */
+            data: components["schemas"]["User"];
+        };
+        /** @description Represents a post in the system. */
+        Post: {
+            /**
+             * Format: int64
+             * @description Unique identifier for the post.
+             */
+            readonly id: number;
+            /**
+             * Format: int64
+             * @description ID of the user who created the post.
+             */
+            readonly user_id: number;
+            /**
+             * @description The text content of the post.
+             * @example This is my first post!
+             */
+            content: string;
+            /**
+             * Format: date-time
+             * @description Timestamp when the post was created.
+             */
+            readonly created_at: string;
+            /**
+             * Format: date-time
+             * @description Timestamp when the post was last updated.
+             */
+            readonly updated_at: string;
+        };
+        /** @description Data required to create a new post. */
+        CreatePostRequest: {
+            /**
+             * @description The text content of the post.
+             * @example Just setting up my Go-Social account!
+             */
+            content: string;
+        };
+        /** @description Data required to update an existing post. */
+        UpdatePostRequest: {
+            /**
+             * @description The updated text content of the post.
+             * @example Updated my first post!
+             */
+            content: string;
+        };
+        /** @description Standard wrapper for the successful post creation response. */
+        CreatePostSuccessResponse: {
+            /** @description Contains the created post object. */
+            data: components["schemas"]["Post"];
+        };
+        /** @description Standard wrapper for the successful post retrieval response. */
+        GetPostSuccessResponse: {
+            /** @description Contains the retrieved post object. */
+            data: components["schemas"]["Post"];
+        };
+        /** @description Standard wrapper for the successful post update response. */
+        UpdatePostSuccessResponse: {
+            /** @description Contains the updated post object. */
+            data: components["schemas"]["Post"];
+        };
+        /** @description Standard wrapper for the successful post list retrieval response. */
+        ListPostsSuccessResponse: {
+            /** @description An array of post objects. */
+            data: components["schemas"]["Post"][];
+        };
+        /** @description Represents a comment on a post. */
+        Comment: {
+            /**
+             * Format: int64
+             * @description Unique identifier for the comment.
+             */
+            readonly id: number;
+            /**
+             * Format: int64
+             * @description ID of the post this comment belongs to.
+             */
+            readonly post_id: number;
+            /**
+             * Format: int64
+             * @description ID of the user who created the comment.
+             */
+            readonly user_id: number;
+            /**
+             * @description The text content of the comment.
+             * @example Great post!
+             */
+            content: string;
+            /**
+             * Format: date-time
+             * @description Timestamp when the comment was created.
+             */
+            readonly created_at: string;
+            /**
+             * Format: date-time
+             * @description Timestamp when the comment was last updated.
+             */
+            readonly updated_at: string;
+        };
+        /** @description Data required to create a new comment on a post. */
+        CreateCommentRequest: {
+            /**
+             * @description The text content of the comment.
+             * @example I agree!
+             */
+            content: string;
+        };
+        /** @description Data required to update an existing comment. */
+        UpdateCommentRequest: {
+            /**
+             * @description The updated text content of the comment.
+             * @example I strongly agree!
+             */
+            content: string;
+        };
+        /** @description Standard wrapper for the successful comment creation response. */
+        CreateCommentSuccessResponse: {
+            /** @description Contains the created comment object. */
+            data: components["schemas"]["Comment"];
+        };
+        /** @description Standard wrapper for the successful comment retrieval response. */
+        GetCommentSuccessResponse: {
+            /** @description Contains the retrieved comment object. */
+            data: components["schemas"]["Comment"];
+        };
+        /** @description Standard wrapper for the successful comment update response. */
+        UpdateCommentSuccessResponse: {
+            /** @description Contains the updated comment object. */
+            data: components["schemas"]["Comment"];
+        };
+        /** @description Standard wrapper for the successful comment list retrieval response. */
+        ListCommentsSuccessResponse: {
+            /** @description An array of comment objects. */
+            data: components["schemas"]["Comment"][];
         };
         /** @description Standard wrapper for the successful signup response. */
         SignupSuccessResponse: {
@@ -284,6 +630,738 @@ export interface operations {
                 };
             };
             /** @description Server error during login. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    logoutUserV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Logout successful. No content returned. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Server error during logout. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    refreshAccessTokenV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Access token refreshed successfully. No content returned in body. New access_token cookie set. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid or missing refresh token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error during token refresh. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    getUserProfileV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User profile retrieved successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetUserProfileSuccessResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description User not found (should not typically happen if authenticated). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error retrieving profile. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    updateUserProfileV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description User profile fields to update. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description User profile updated successfully. Returns the updated user object. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdateUserProfileSuccessResponse"];
+                };
+            };
+            /** @description Invalid input data (e.g., validation errors). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error updating profile. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    listPostsV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A list of posts retrieved successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListPostsSuccessResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error retrieving posts. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    createPostV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Post content. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePostRequest"];
+            };
+        };
+        responses: {
+            /** @description Post created successfully. Returns the created post object. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatePostSuccessResponse"];
+                };
+            };
+            /** @description Invalid input data (e.g., validation errors). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error creating post. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    getPostByIdV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post to operate on. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Post retrieved successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetPostSuccessResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post with the specified ID not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error retrieving post. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    updatePostV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post to operate on. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        /** @description Updated post content. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePostRequest"];
+            };
+        };
+        responses: {
+            /** @description Post updated successfully. Returns the updated post object. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdatePostSuccessResponse"];
+                };
+            };
+            /** @description Invalid input data (e.g., validation errors). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description User is not authorized to update this post. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post with the specified ID not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error updating post. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    deletePostV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post to operate on. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Post deleted successfully. No content returned. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description User is not authorized to delete this post. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post with the specified ID not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error deleting post. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    listCommentsForPostV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post to retrieve comments for or add a comment to. */
+                postId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A list of comments retrieved successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListCommentsSuccessResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post with the specified ID not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error retrieving comments. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    createCommentV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post to retrieve comments for or add a comment to. */
+                postId: number;
+            };
+            cookie?: never;
+        };
+        /** @description Comment content. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCommentRequest"];
+            };
+        };
+        responses: {
+            /** @description Comment created successfully. Returns the created comment object. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateCommentSuccessResponse"];
+                };
+            };
+            /** @description Invalid input data (e.g., validation errors). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post with the specified ID not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error creating comment. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    getCommentByIdV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post the comment belongs to. */
+                postId: number;
+                /** @description The ID of the comment to operate on. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Comment retrieved successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetCommentSuccessResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post or Comment with the specified ID not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error retrieving comment. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    updateCommentV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post the comment belongs to. */
+                postId: number;
+                /** @description The ID of the comment to operate on. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        /** @description Updated comment content. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCommentRequest"];
+            };
+        };
+        responses: {
+            /** @description Comment updated successfully. Returns the updated comment object. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdateCommentSuccessResponse"];
+                };
+            };
+            /** @description Invalid input data (e.g., validation errors). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description User is not authorized to update this comment. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post or Comment with the specified ID not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error updating comment. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteCommentV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post the comment belongs to. */
+                postId: number;
+                /** @description The ID of the comment to operate on. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Comment deleted successfully. No content returned. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description User is not authorized to delete this comment. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post or Comment with the specified ID not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error deleting comment. */
             500: {
                 headers: {
                     [name: string]: unknown;
