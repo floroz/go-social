@@ -79,3 +79,43 @@ paths:
             application/json:
               schema:
                 $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+
+  /v1/auth/logout:
+    post:
+      tags:
+        - Authentication V1
+      summary: Log out a user
+      description: Clears authentication cookies.
+      operationId: logoutUserV1
+      responses:
+        '200': # OK
+          description: Logout successful. No content returned.
+        '500': # Internal Server Error
+          description: Server error during logout.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+
+  /v1/auth/refresh:
+    post:
+      tags:
+        - Authentication V1
+      summary: Refresh access token
+      description: Uses the refresh token (from cookie) to issue a new access token (in cookie).
+      operationId: refreshAccessTokenV1
+      responses:
+        '200': # OK
+          description: Access token refreshed successfully. No content returned in body. New access_token cookie set.
+        '401': # Unauthorized
+          description: Invalid or missing refresh token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error during token refresh.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
