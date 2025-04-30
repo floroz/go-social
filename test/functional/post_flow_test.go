@@ -485,4 +485,64 @@ func TestDeletePost(t *testing.T) {
 
 }
 
+func TestCreatePost_ValidationErrors(t *testing.T) {
+	// Arrange: Sign up a user first
+	uniqueSuffix := fmt.Sprintf("%d", time.Now().UnixNano())
+	createUserDTO := &domain.CreateUserDTO{
+		EditableUserField: domain.EditableUserField{
+			FirstName: "Validation", LastName: "User",
+			Email:    fmt.Sprintf("validation.user%s@example.com", uniqueSuffix),
+			Username: fmt.Sprintf("valusr%s", uniqueSuffix[len(uniqueSuffix)-10:]), // Shorten username
+		},
+		Password: "password123",
+	}
+	_, cookies := signupAndGetCookies(t, testServer.Client(), testServerURL, createUserDTO)
+	assert.NotEmpty(t, cookies)
+	client := testServer.Client()
+
+	// --- Test Case 1: Empty Content ---
+	createPostReqEmpty := apitypes.CreatePostRequest{
+		Content: "", // Invalid: Empty content
+	}
+	bodyEmpty, err := json.Marshal(createPostReqEmpty)
+	assert.NoError(t, err)
+
+	reqEmpty, err := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(bodyEmpty))
+	assert.NoError(t, err)
+	reqEmpty.Header.Set("Content-Type", "application/json")
+	for _, cookie := range cookies {
+		reqEmpty.AddCookie(cookie)
+	}
+
+	// Act: Perform create post request with empty content
+	respEmpty, err := client.Do(reqEmpty)
+	assert.NoError(t, err)
+	defer respEmpty.Body.Close()
+
+	// Assert: Check status code (expect 400 Bad Request or 422 Unprocessable Entity)
+	// Using 400 as a common choice for validation errors
+	assert.Equal(t, http.StatusBadRequest, respEmpty.StatusCode, "Expected status 400 Bad Request for empty post content")
+
+	// Assert: Check error response body
+	var errorRespData apitypes.ApiErrorResponse
+	err = json.NewDecoder(respEmpty.Body).Decode(&errorRespData)
+	assert.NoError(t, err, "Failed to decode error response body for empty content")
+	assert.NotEmpty(t, errorRespData.Errors, "Expected errors array in response")
+	if len(errorRespData.Errors) > 0 {
+		// Check for the specific validation error code
+		foundValidationCode := false
+		for _, apiErr := range errorRespData.Errors {
+			if apiErr.Code == string(errorcodes.CodeValidationError) { // Compare string representation
+				foundValidationCode = true
+				// Optionally, check the 'Detail' or 'Source' field if your API provides them
+				// assert.Contains(t, apiErr.Detail, "content", "Error detail should mention 'content'")
+				break
+			}
+		}
+		assert.True(t, foundValidationCode, "Expected validation error code '%s' in response", errorcodes.CodeValidationError)
+	}
+
+	// TODO: Add test cases for other validation rules (e.g., content too long)
+}
+
 // TODO: Add tests for validation errors, authorization errors (e.g., updating/deleting others' posts)

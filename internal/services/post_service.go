@@ -23,7 +23,9 @@ func (s *postService) Create(ctx context.Context, userId int64, createPost *doma
 	err := validation.Validate.Struct(createPost)
 
 	if err != nil {
-		return nil, domain.NewBadRequestError(err.Error())
+		// Return the specific ValidationError type
+		// TODO: Consider parsing the 'err' from validator to provide more detailed field errors
+		return nil, domain.NewValidationError("request", err.Error()) // Provide a placeholder field name
 	}
 
 	post, err := s.postRepo.Create(ctx, userId, createPost)
