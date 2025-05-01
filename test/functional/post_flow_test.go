@@ -539,10 +539,55 @@ func TestCreatePost_ValidationErrors(t *testing.T) {
 				break
 			}
 		}
-		assert.True(t, foundValidationCode, "Expected validation error code '%s' in response", errorcodes.CodeValidationError)
+		assert.True(t, foundValidationCode, "Expected validation error code '%s' in response for empty content", errorcodes.CodeValidationError)
 	}
 
-	// TODO: Add test cases for other validation rules (e.g., content too long)
+	// --- Test Case 2: Content Too Long ---
+	// Generate string longer than 1000 chars
+	longContent := ""
+	for i := 0; i < 1001; i++ {
+		longContent += "a"
+	}
+
+	createPostReqLong := apitypes.CreatePostRequest{
+		Content: longContent, // Invalid: Too long
+	}
+	bodyLong, err := json.Marshal(createPostReqLong)
+	assert.NoError(t, err)
+
+	reqLong, err := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(bodyLong))
+	assert.NoError(t, err)
+	reqLong.Header.Set("Content-Type", "application/json")
+	for _, cookie := range cookies { // Reuse cookies from setup
+		reqLong.AddCookie(cookie)
+	}
+
+	// Act: Perform create post request with long content
+	respLong, err := client.Do(reqLong)
+	assert.NoError(t, err)
+	defer respLong.Body.Close()
+
+	// Assert: Check status code (expect 400 Bad Request)
+	assert.Equal(t, http.StatusBadRequest, respLong.StatusCode, "Expected status 400 Bad Request for long post content")
+
+	// Assert: Check error response body
+	var errorRespDataLong apitypes.ApiErrorResponse
+	err = json.NewDecoder(respLong.Body).Decode(&errorRespDataLong)
+	assert.NoError(t, err, "Failed to decode error response body for long content")
+	assert.NotEmpty(t, errorRespDataLong.Errors, "Expected errors array in response for long content")
+	if len(errorRespDataLong.Errors) > 0 {
+		// Check for the specific validation error code
+		foundValidationCodeLong := false
+		for _, apiErr := range errorRespDataLong.Errors {
+			if apiErr.Code == string(errorcodes.CodeValidationError) {
+				foundValidationCodeLong = true
+				// Optionally, check the 'Detail' or 'Source' field
+				// assert.Contains(t, apiErr.Detail, "max=1000", "Error detail should mention max length")
+				break
+			}
+		}
+		assert.True(t, foundValidationCodeLong, "Expected validation error code '%s' in response for long content", errorcodes.CodeValidationError)
+	}
 }
 
 // TODO: Add tests for validation errors, authorization errors (e.g., updating/deleting others' posts)
