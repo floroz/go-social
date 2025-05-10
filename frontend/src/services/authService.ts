@@ -1,11 +1,11 @@
 import apiClient from "@/lib/api";
-import {
+import type {
+  User,
   SignupRequest,
   LoginRequest,
-  User,
   LoginResponse,
-  LoginSuccessResponse,
   SignupSuccessResponse,
+  LoginSuccessResponse,
 } from "@/types/api";
 
 const AuthService = {

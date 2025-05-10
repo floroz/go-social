@@ -331,8 +331,11 @@ func TestUpdatePost(t *testing.T) {
 	}
 
 	// Act & Assert
-	updateNonExistentResp, _ := client.Do(updateNonExistentHttpReq)
-	defer updateNonExistentResp.Body.Close()
+	updateNonExistentResp, err := client.Do(updateNonExistentHttpReq)
+	assert.NoError(t, err)
+	if updateNonExistentResp != nil {
+		defer updateNonExistentResp.Body.Close()
+	}
 	assert.Equal(t, http.StatusNotFound, updateNonExistentResp.StatusCode, "Expected 404 for updating non-existent post")
 
 	// --- Test Case 3: Update another user's post (Forbidden) ---
@@ -362,8 +365,11 @@ func TestUpdatePost(t *testing.T) {
 	} // Use OTHER user's cookies
 
 	// Assert
-	updateOtherResp, _ := client.Do(updateOtherHttpReq)
-	defer updateOtherResp.Body.Close()
+	updateOtherResp, err := client.Do(updateOtherHttpReq)
+	assert.NoError(t, err)
+	if updateOtherResp != nil {
+		defer updateOtherResp.Body.Close()
+	}
 	assert.Equal(t, http.StatusForbidden, updateOtherResp.StatusCode, "Expected 403 Forbidden for updating another user's post")
 
 }
@@ -422,12 +428,16 @@ func TestDeletePost(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, deleteResp.StatusCode, "Expected status 204 No Content for delete post")
 
 	// Assert: Verify post is actually deleted (GET should return 404)
-	getReq, _ := http.NewRequest(http.MethodGet, deleteUrl, nil)
+	getReq, err := http.NewRequest(http.MethodGet, deleteUrl, nil)
+	assert.NoError(t, err)
 	for _, cookie := range cookies {
 		getReq.AddCookie(cookie)
 	}
-	getResp, _ := client.Do(getReq)
-	defer getResp.Body.Close()
+	getResp, err := client.Do(getReq)
+	assert.NoError(t, err)
+	if getResp != nil {
+		defer getResp.Body.Close()
+	}
 	assert.Equal(t, http.StatusNotFound, getResp.StatusCode, "Expected status 404 Not Found after deleting post")
 
 	// --- Test Case 2: Delete non-existent post ---
@@ -439,8 +449,11 @@ func TestDeletePost(t *testing.T) {
 	}
 
 	// Act & Assert
-	deleteNonExistentResp, _ := client.Do(deleteNonExistentReq)
-	defer deleteNonExistentResp.Body.Close()
+	deleteNonExistentResp, err := client.Do(deleteNonExistentReq)
+	assert.NoError(t, err)
+	if deleteNonExistentResp != nil {
+		defer deleteNonExistentResp.Body.Close()
+	}
 	assert.Equal(t, http.StatusNotFound, deleteNonExistentResp.StatusCode, "Expected 404 for deleting non-existent post")
 
 	// --- Test Case 3: Delete another user's post (Forbidden) ---
@@ -479,8 +492,11 @@ func TestDeletePost(t *testing.T) {
 	} // Use OTHER user's cookies
 
 	// Assert
-	deleteOtherResp, _ := client.Do(deleteOtherHttpReq)
-	defer deleteOtherResp.Body.Close()
+	deleteOtherResp, err := client.Do(deleteOtherHttpReq)
+	assert.NoError(t, err)
+	if deleteOtherResp != nil {
+		defer deleteOtherResp.Body.Close()
+	}
 	assert.Equal(t, http.StatusForbidden, deleteOtherResp.StatusCode, "Expected 403 Forbidden for deleting another user's post")
 
 }
