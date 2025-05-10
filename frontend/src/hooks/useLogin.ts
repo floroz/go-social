@@ -1,8 +1,6 @@
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import AuthService from "@/services/authService";
-import useAuthStore from "@/stores/authStore";
-import { User } from "@/domain/user";
-import { LoginRequestDTO } from "@/domain/auth.dto";
+import type { LoginResponse, LoginRequest } from "@/types/api";
 
 /**
  * Custom hook for handling user login.
@@ -14,23 +12,24 @@ import { LoginRequestDTO } from "@/domain/auth.dto";
  */
 export function useLogin(
   options?: Pick<
-    UseMutationOptions<User, Error, LoginRequestDTO>,
+    UseMutationOptions<LoginResponse, Error, LoginRequest>,
     "onSuccess" | "onError"
   >
 ) {
-  const { setUser } = useAuthStore();
+  // const { setUser } = useAuthStore(); // setUser is not used here anymore
 
   const { mutate, isPending, error, data } = useMutation<
-    User,
+    LoginResponse,
     Error,
-    LoginRequestDTO
+    LoginRequest
   >({
     mutationFn: AuthService.login,
-    onSuccess: (user, variables, context) => {
+    onSuccess: (loginResponse, variables, context) => {
       // Core side effect: Update global auth state
-      setUser(user);
-      console.log("Login successful:", user);
-      options?.onSuccess?.(user, variables, context);
+      // setUser(user); // This is incorrect here as loginResponse is not a User object.
+      // Token handling and user fetching should be managed by the component or another service.
+      console.log("Login successful, token received:", loginResponse);
+      options?.onSuccess?.(loginResponse, variables, context);
     },
     // Pass through the onError callback directly
     onError: (error, variables, context) => {

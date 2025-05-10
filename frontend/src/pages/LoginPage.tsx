@@ -20,7 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LoginRequest, LoginResponse } from "@/types/api";
+import type { LoginResponse, LoginRequest } from "@/types/api";
 import { useLogin } from "@/hooks/useLogin";
 
 // Define Zod schema for login

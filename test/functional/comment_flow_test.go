@@ -325,8 +325,11 @@ func TestUpdateComment(t *testing.T) {
 	}
 
 	// Act & Assert
-	updateNonExistentResp, _ := client.Do(updateNonExistentHttpReq)
-	defer updateNonExistentResp.Body.Close()
+	updateNonExistentResp, err := client.Do(updateNonExistentHttpReq)
+	assert.NoError(t, err)
+	if updateNonExistentResp != nil {
+		defer updateNonExistentResp.Body.Close()
+	}
 	assert.Equal(t, http.StatusNotFound, updateNonExistentResp.StatusCode, "Expected 404 for updating non-existent comment")
 	// Assert error response structure
 	var errorRespDataNotFound apitypes.ApiErrorResponse
@@ -360,8 +363,11 @@ func TestUpdateComment(t *testing.T) {
 	} // Use OTHER user's cookies
 
 	// Assert
-	updateOtherResp, _ := client.Do(updateOtherHttpReq)
-	defer updateOtherResp.Body.Close()
+	updateOtherResp, err := client.Do(updateOtherHttpReq)
+	assert.NoError(t, err)
+	if updateOtherResp != nil {
+		defer updateOtherResp.Body.Close()
+	}
 	assert.Equal(t, http.StatusForbidden, updateOtherResp.StatusCode, "Expected 403 Forbidden for updating another user's comment")
 	// Assert error response structure
 	var errorRespDataForbidden apitypes.ApiErrorResponse
@@ -432,8 +438,11 @@ func TestDeleteComment(t *testing.T) {
 	}
 
 	// Act & Assert
-	deleteNonExistentResp, _ := client.Do(deleteNonExistentReq)
-	defer deleteNonExistentResp.Body.Close()
+	deleteNonExistentResp, err := client.Do(deleteNonExistentReq)
+	assert.NoError(t, err)
+	if deleteNonExistentResp != nil {
+		defer deleteNonExistentResp.Body.Close()
+	}
 	assert.Equal(t, http.StatusNotFound, deleteNonExistentResp.StatusCode, "Expected 404 for deleting non-existent comment")
 	// Assert error response structure
 	var errorRespDataNotFound apitypes.ApiErrorResponse
@@ -467,8 +476,11 @@ func TestDeleteComment(t *testing.T) {
 	} // Use OTHER user's cookies
 
 	// Assert
-	deleteOtherResp, _ := client.Do(deleteOtherHttpReq)
-	defer deleteOtherResp.Body.Close()
+	deleteOtherResp, err := client.Do(deleteOtherHttpReq)
+	assert.NoError(t, err)
+	if deleteOtherResp != nil {
+		defer deleteOtherResp.Body.Close()
+	}
 	assert.Equal(t, http.StatusForbidden, deleteOtherResp.StatusCode, "Expected 403 Forbidden for deleting another user's comment")
 	// Assert error response structure
 	var errorRespDataForbidden apitypes.ApiErrorResponse

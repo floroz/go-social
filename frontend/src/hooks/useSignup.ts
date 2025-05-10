@@ -1,8 +1,7 @@
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import AuthService from "@/services/authService";
 import useAuthStore from "@/stores/authStore";
-import { User } from "@/domain/user";
-import { SignupRequestDTO } from "@/domain/auth.dto";
+import type { User, SignupRequest } from "@/types/api";
 
 /**
  * Custom hook for handling user signup.
@@ -13,16 +12,16 @@ import { SignupRequestDTO } from "@/domain/auth.dto";
  */
 export function useSignup(
   options?: Pick<
-    UseMutationOptions<User, Error, SignupRequestDTO>,
+    UseMutationOptions<User, Error, SignupRequest>,
     "onSuccess" | "onError"
   >
 ) {
-  const { setUser } = useAuthStore(); // Get setUser from the store
+  const { setUser } = useAuthStore();
 
   const { mutate, isPending, error, data } = useMutation<
     User,
     Error,
-    SignupRequestDTO
+    SignupRequest
   >({
     mutationFn: AuthService.signup,
     onSuccess: (user, variables, context) => {

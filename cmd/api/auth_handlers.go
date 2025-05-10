@@ -134,17 +134,11 @@ func (app *Application) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		// Log the error but continue, as failing to update last_login shouldn't block login
+		// The primary goal of login is to issue tokens; last_login update is a secondary effect.
 		log.Error().Err(err).Msg("failed to update last login")
-	} else {
-		// Re-fetch user data to get the updated LastLogin timestamp
-		updatedUser, fetchErr := app.UserService.GetByID(r.Context(), user.ID)
-		if fetchErr != nil {
-			// Log error but proceed with the original user data if re-fetch fails
-			log.Error().Err(fetchErr).Msg("failed to re-fetch user after updating last login")
-		} else {
-			user = updatedUser // Use the updated user data for the response
-		}
 	}
+	// The updated LastLogin will be reflected in subsequent requests for user profile.
+	// It's not part of the LoginResponse, so no need to re-fetch user here for this response.
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "access_token",
