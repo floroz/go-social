@@ -276,17 +276,18 @@ components:
       $ref: './v1/schemas/like.yaml#/components/schemas/ListLikesSuccessResponse'
   
   # responses: # Common responses should be defined centrally
-  #   UnauthorizedError: ...
-  #   NotFoundError: ...
-  #   ConflictError: ...
-  #   InternalServerError: ...
+  # responses:
+  #   Common response components like UnauthorizedError, NotFoundError etc. are not explicitly defined here.
+  #   Instead, individual operations directly reference #/components/schemas/ApiErrorResponse for their error states,
+  #   with the expectation that the backend will populate the 'code' and 'message' fields appropriately for each error type.
+  #   If more specific, reusable error response components are desired later, they can be added here or in shared/schemas/common.yaml.
 # ...
 ```
 
-**Discussion Points for this Proposal:**
-1.  **ID Types:** Confirm if `Like` related IDs (`id`, `user_id`, `post_id`, `comment_id`) should be `string` (as per Go struct) or `integer` (like other entities).
-2.  **Listing Likes Content:** Is an array of full `Like` objects suitable for `GET` requests, or would a list of user IDs/count be preferred in some cases?
-3.  **Common Error Responses:** Ensure `#/components/responses/*` refs point to correctly defined shared responses.
+**Summary of Changes Based on Feedback:**
+1.  **ID Types:** All `Like` related IDs (`id`, `user_id`, `post_id`, `comment_id`) and path parameters (`postId`, `commentId`) are now `type: integer`, `format: int64`. Examples updated.
+2.  **Listing Likes Content:** Remains as an array of full `Like` objects.
+3.  **Common Error Responses:** Error responses now directly reference `#/components/schemas/ApiErrorResponse`. Descriptions have been added to each error status code for clarity.
 
 ## Important Patterns and Preferences
 
