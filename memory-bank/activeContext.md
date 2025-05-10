@@ -2,30 +2,30 @@
 
 ## Current Work Focus
 
-- Updating the Memory Bank with initial project context.
-- Preparing to discuss and plan the implementation of a new "likes" endpoint.
+- Refining project scope in Memory Bank and planning the OpenAPI specification for a new 'likes' endpoint.
 
 ## Recent Changes
 
 - Initialized the Memory Bank with placeholder files.
-- Updated `projectbrief.md` and `productContext.md` with information from `README.md` and user input.
+- Updated `projectbrief.md`, `productContext.md`, `systemPatterns.md`, and `techContext.md` with information from `README.md` and user input.
 
 ## Next Steps
 
-- Complete updates for `systemPatterns.md`, `techContext.md`, and `progress.md`.
-- Discuss the requirements and design for the new "likes" endpoint.
-- Define the OpenAPI specification for the "likes" endpoint.
-- Implement the backend logic for "likes".
-- Implement the frontend UI and logic for "likes".
+1.  Finalize scope adjustments in Memory Bank files (`activeContext.md`, `projectbrief.md`, `progress.md`).
+2.  Discuss and define the requirements and design for the new "likes" endpoint (e.g., what can be liked, data structure for a like).
+3.  Create/update the necessary OpenAPI partial files (e.g., new schemas in `openapi/shared/schemas/` or `openapi/v1/schemas/`, new paths in `openapi/v1/paths/`).
+4.  Update `openapi/openapi.yaml` to reference the new "likes" paths and schemas.
+5.  Run `make generate-types` (or at least the `redocly bundle` part) to create an updated `openapi/openapi-bundled.yaml`.
+6.  Confirm the new "likes" endpoint is correctly represented in the Swagger UI.
 
 ## Active Decisions and Considerations
 
-- How to structure the "likes" feature:
-    - Can users like posts, comments, or both?
-    - What data needs to be stored for a "like" (e.g., user ID, liked item ID, timestamp)?
-    - How will "like" counts be efficiently retrieved and displayed?
-- Adhering to existing OpenAPI conventions when defining the new endpoint.
-- The need for a strategy to manage and version OpenAPI bundled specifications over time (a future task).
+- How to structure the "likes" feature within the OpenAPI specification:
+    - Can users like posts, comments, or both? This will determine the path structure and request/response schemas.
+    - What data needs to be represented in the "like" schema (e.g., user ID, liked item ID, timestamp)?
+- Adhering to existing OpenAPI conventions (e.g., response wrappers, error handling, naming) when defining the new endpoint.
+- The implementation of backend/frontend logic for "likes" is out of scope for the current task.
+- The need for a strategy to manage and version OpenAPI bundled specifications over time remains a future task.
 
 ## Important Patterns and Preferences
 

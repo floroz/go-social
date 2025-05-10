@@ -12,14 +12,22 @@
 - Provide a robust and scalable social media platform.
 - Maintain a clear and consistent API contract using OpenAPI.
 - Enable future expansion for client applications beyond the current frontend.
-- Implement new features such as "likes" for posts/comments.
-- Develop a strategy for producing and persisting different OpenAPI bundle snapshots.
+- Define OpenAPI specifications for new features, starting with "likes".
+- Implement new features (backend and frontend) based on defined OpenAPI specs (future work).
+- Develop a strategy for producing and persisting different OpenAPI bundle snapshots (future work).
 
 ## Scope
 
-- Backend development in Go (Chi Router, PostgreSQL).
-- Frontend development in React (TypeScript, Vite, Tailwind CSS, Shadcn/ui, Zustand, React Query).
-- Database migrations using golang-migrate.
-- API definition and code generation based on OpenAPI specs.
-- Initial focus on implementing a "likes" feature.
-- Future consideration for OpenAPI bundle snapshotting.
+- **Current Task:** Define the OpenAPI specification for a "likes" feature. This includes:
+    - Creating or updating relevant YAML partials for paths and schemas.
+    - Updating the main `openapi.yaml` file.
+    - Generating the `openapi-bundled.yaml` and verifying its correctness in Swagger UI.
+- **Out of Scope for Current Task:**
+    - Implementation of backend logic for the "likes" feature.
+    - Implementation of frontend UI/logic for the "likes" feature.
+    - Developing the strategy for OpenAPI bundle snapshotting.
+- **Overall Project Scope (includes future work):**
+    - Backend development in Go (Chi Router, PostgreSQL).
+    - Frontend development in React (TypeScript, Vite, Tailwind CSS, Shadcn/ui, Zustand, React Query).
+    - Database migrations using golang-migrate.
+    - Full API lifecycle management based on OpenAPI specs (definition, code generation, implementation).

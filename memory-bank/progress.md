@@ -15,8 +15,11 @@
 
 ## What's Left to Build
 
-- **New Features:**
-    - "Likes" functionality for posts and/or comments. This is the immediate next feature.
+- **Immediate Next Task:**
+    - Define OpenAPI specification for "likes" functionality (for posts and/or comments).
+- **Future Features (Post-Spec Definition):**
+    - Implement backend logic for "likes".
+    - Implement frontend UI and logic for "likes".
 - **Technical Improvements/Future Considerations:**
     - Strategy for producing and persisting different OpenAPI bundle snapshots over time.
     - Potentially more comprehensive testing.
@@ -25,8 +28,8 @@
 
 ## Current Status
 
-- The Memory Bank has been initialized and populated with initial project context based on `README.md` and user input.
-- The next immediate task is to discuss, plan, and implement the "likes" feature.
+- The Memory Bank has been initialized and updated to reflect the current project understanding and narrowed scope for the "likes" feature.
+- The next immediate task is to discuss, plan, and define the OpenAPI specification for the "likes" feature. Full implementation is deferred.
 
 ## Known Issues
 
