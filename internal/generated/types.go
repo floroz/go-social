@@ -78,6 +78,12 @@ type CreateCommentSuccessResponse struct {
 	Data Comment `json:"data"`
 }
 
+// CreateLikeSuccessResponse Standard wrapper for the successful like creation response.
+type CreateLikeSuccessResponse struct {
+	// Data Represents a user's like on a post or comment. One of post_id or comment_id should be populated.
+	Data Like `json:"data"`
+}
+
 // CreatePostRequest Data required to create a new post.
 type CreatePostRequest struct {
 	// Content The text content of the post.
@@ -108,10 +114,33 @@ type GetUserProfileSuccessResponse struct {
 	Data User `json:"data"`
 }
 
+// Like Represents a user's like on a post or comment. One of post_id or comment_id should be populated.
+type Like struct {
+	// CommentId ID of the comment being liked (mutually exclusive with post_id).
+	CommentId *int64 `json:"comment_id"`
+
+	// CreatedAt Timestamp when the like was created.
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// Id Unique identifier for the like.
+	Id *int64 `json:"id,omitempty"`
+
+	// PostId ID of the post being liked (mutually exclusive with comment_id).
+	PostId *int64 `json:"post_id"`
+
+	// UserId ID of the user who liked the content.
+	UserId *int64 `json:"user_id,omitempty"`
+}
+
 // ListCommentsSuccessResponse Standard wrapper for the successful comment list retrieval response.
 type ListCommentsSuccessResponse struct {
 	// Data An array of comment objects.
 	Data []Comment `json:"data"`
+}
+
+// ListLikesSuccessResponse Standard wrapper for listing likes.
+type ListLikesSuccessResponse struct {
+	Data []Like `json:"data"`
 }
 
 // ListPostsSuccessResponse Standard wrapper for the successful post list retrieval response.
@@ -365,6 +394,15 @@ type ClientInterface interface {
 
 	SignupUserV1(ctx context.Context, body SignupUserV1JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteCommentLikeV1 request
+	DeleteCommentLikeV1(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListCommentLikesV1 request
+	ListCommentLikesV1(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateCommentLikeV1 request
+	CreateCommentLikeV1(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListPostsV1 request
 	ListPostsV1(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -402,6 +440,15 @@ type ClientInterface interface {
 	UpdateCommentV1WithBody(ctx context.Context, postId int64, id int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateCommentV1(ctx context.Context, postId int64, id int64, body UpdateCommentV1JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeletePostLikeV1 request
+	DeletePostLikeV1(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListPostLikesV1 request
+	ListPostLikesV1(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreatePostLikeV1 request
+	CreatePostLikeV1(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUserProfileV1 request
 	GetUserProfileV1(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -474,6 +521,42 @@ func (c *Client) SignupUserV1WithBody(ctx context.Context, contentType string, b
 
 func (c *Client) SignupUserV1(ctx context.Context, body SignupUserV1JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSignupUserV1Request(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCommentLikeV1(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCommentLikeV1Request(c.Server, commentId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListCommentLikesV1(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCommentLikesV1Request(c.Server, commentId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCommentLikeV1(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCommentLikeV1Request(c.Server, commentId)
 	if err != nil {
 		return nil, err
 	}
@@ -652,6 +735,42 @@ func (c *Client) UpdateCommentV1(ctx context.Context, postId int64, id int64, bo
 	return c.Client.Do(req)
 }
 
+func (c *Client) DeletePostLikeV1(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeletePostLikeV1Request(c.Server, postId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListPostLikesV1(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListPostLikesV1Request(c.Server, postId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreatePostLikeV1(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreatePostLikeV1Request(c.Server, postId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetUserProfileV1(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetUserProfileV1Request(c.Server)
 	if err != nil {
@@ -818,6 +937,108 @@ func NewSignupUserV1RequestWithBody(server string, contentType string, body io.R
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteCommentLikeV1Request generates requests for DeleteCommentLikeV1
+func NewDeleteCommentLikeV1Request(server string, commentId int64) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "commentId", runtime.ParamLocationPath, commentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/comments/%s/likes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListCommentLikesV1Request generates requests for ListCommentLikesV1
+func NewListCommentLikesV1Request(server string, commentId int64) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "commentId", runtime.ParamLocationPath, commentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/comments/%s/likes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateCommentLikeV1Request generates requests for CreateCommentLikeV1
+func NewCreateCommentLikeV1Request(server string, commentId int64) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "commentId", runtime.ParamLocationPath, commentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/comments/%s/likes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -1221,6 +1442,108 @@ func NewUpdateCommentV1RequestWithBody(server string, postId int64, id int64, co
 	return req, nil
 }
 
+// NewDeletePostLikeV1Request generates requests for DeletePostLikeV1
+func NewDeletePostLikeV1Request(server string, postId int64) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "postId", runtime.ParamLocationPath, postId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/posts/%s/likes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListPostLikesV1Request generates requests for ListPostLikesV1
+func NewListPostLikesV1Request(server string, postId int64) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "postId", runtime.ParamLocationPath, postId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/posts/%s/likes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreatePostLikeV1Request generates requests for CreatePostLikeV1
+func NewCreatePostLikeV1Request(server string, postId int64) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "postId", runtime.ParamLocationPath, postId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/posts/%s/likes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetUserProfileV1Request generates requests for GetUserProfileV1
 func NewGetUserProfileV1Request(server string) (*http.Request, error) {
 	var err error
@@ -1347,6 +1670,15 @@ type ClientWithResponsesInterface interface {
 
 	SignupUserV1WithResponse(ctx context.Context, body SignupUserV1JSONRequestBody, reqEditors ...RequestEditorFn) (*SignupUserV1Response, error)
 
+	// DeleteCommentLikeV1WithResponse request
+	DeleteCommentLikeV1WithResponse(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*DeleteCommentLikeV1Response, error)
+
+	// ListCommentLikesV1WithResponse request
+	ListCommentLikesV1WithResponse(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*ListCommentLikesV1Response, error)
+
+	// CreateCommentLikeV1WithResponse request
+	CreateCommentLikeV1WithResponse(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*CreateCommentLikeV1Response, error)
+
 	// ListPostsV1WithResponse request
 	ListPostsV1WithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListPostsV1Response, error)
 
@@ -1384,6 +1716,15 @@ type ClientWithResponsesInterface interface {
 	UpdateCommentV1WithBodyWithResponse(ctx context.Context, postId int64, id int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCommentV1Response, error)
 
 	UpdateCommentV1WithResponse(ctx context.Context, postId int64, id int64, body UpdateCommentV1JSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCommentV1Response, error)
+
+	// DeletePostLikeV1WithResponse request
+	DeletePostLikeV1WithResponse(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*DeletePostLikeV1Response, error)
+
+	// ListPostLikesV1WithResponse request
+	ListPostLikesV1WithResponse(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*ListPostLikesV1Response, error)
+
+	// CreatePostLikeV1WithResponse request
+	CreatePostLikeV1WithResponse(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*CreatePostLikeV1Response, error)
 
 	// GetUserProfileV1WithResponse request
 	GetUserProfileV1WithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUserProfileV1Response, error)
@@ -1483,6 +1824,81 @@ func (r SignupUserV1Response) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r SignupUserV1Response) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCommentLikeV1Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *ApiErrorResponse
+	JSON404      *ApiErrorResponse
+	JSON500      *ApiErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCommentLikeV1Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCommentLikeV1Response) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListCommentLikesV1Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListLikesSuccessResponse
+	JSON401      *ApiErrorResponse
+	JSON404      *ApiErrorResponse
+	JSON500      *ApiErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListCommentLikesV1Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListCommentLikesV1Response) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateCommentLikeV1Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *CreateLikeSuccessResponse
+	JSON401      *ApiErrorResponse
+	JSON404      *ApiErrorResponse
+	JSON409      *ApiErrorResponse
+	JSON500      *ApiErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateCommentLikeV1Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateCommentLikeV1Response) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1743,6 +2159,81 @@ func (r UpdateCommentV1Response) StatusCode() int {
 	return 0
 }
 
+type DeletePostLikeV1Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *ApiErrorResponse
+	JSON404      *ApiErrorResponse
+	JSON500      *ApiErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r DeletePostLikeV1Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeletePostLikeV1Response) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListPostLikesV1Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListLikesSuccessResponse
+	JSON401      *ApiErrorResponse
+	JSON404      *ApiErrorResponse
+	JSON500      *ApiErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListPostLikesV1Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListPostLikesV1Response) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreatePostLikeV1Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *CreateLikeSuccessResponse
+	JSON401      *ApiErrorResponse
+	JSON404      *ApiErrorResponse
+	JSON409      *ApiErrorResponse
+	JSON500      *ApiErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreatePostLikeV1Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreatePostLikeV1Response) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetUserProfileV1Response struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1843,6 +2334,33 @@ func (c *ClientWithResponses) SignupUserV1WithResponse(ctx context.Context, body
 		return nil, err
 	}
 	return ParseSignupUserV1Response(rsp)
+}
+
+// DeleteCommentLikeV1WithResponse request returning *DeleteCommentLikeV1Response
+func (c *ClientWithResponses) DeleteCommentLikeV1WithResponse(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*DeleteCommentLikeV1Response, error) {
+	rsp, err := c.DeleteCommentLikeV1(ctx, commentId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCommentLikeV1Response(rsp)
+}
+
+// ListCommentLikesV1WithResponse request returning *ListCommentLikesV1Response
+func (c *ClientWithResponses) ListCommentLikesV1WithResponse(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*ListCommentLikesV1Response, error) {
+	rsp, err := c.ListCommentLikesV1(ctx, commentId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListCommentLikesV1Response(rsp)
+}
+
+// CreateCommentLikeV1WithResponse request returning *CreateCommentLikeV1Response
+func (c *ClientWithResponses) CreateCommentLikeV1WithResponse(ctx context.Context, commentId int64, reqEditors ...RequestEditorFn) (*CreateCommentLikeV1Response, error) {
+	rsp, err := c.CreateCommentLikeV1(ctx, commentId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCommentLikeV1Response(rsp)
 }
 
 // ListPostsV1WithResponse request returning *ListPostsV1Response
@@ -1965,6 +2483,33 @@ func (c *ClientWithResponses) UpdateCommentV1WithResponse(ctx context.Context, p
 		return nil, err
 	}
 	return ParseUpdateCommentV1Response(rsp)
+}
+
+// DeletePostLikeV1WithResponse request returning *DeletePostLikeV1Response
+func (c *ClientWithResponses) DeletePostLikeV1WithResponse(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*DeletePostLikeV1Response, error) {
+	rsp, err := c.DeletePostLikeV1(ctx, postId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeletePostLikeV1Response(rsp)
+}
+
+// ListPostLikesV1WithResponse request returning *ListPostLikesV1Response
+func (c *ClientWithResponses) ListPostLikesV1WithResponse(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*ListPostLikesV1Response, error) {
+	rsp, err := c.ListPostLikesV1(ctx, postId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListPostLikesV1Response(rsp)
+}
+
+// CreatePostLikeV1WithResponse request returning *CreatePostLikeV1Response
+func (c *ClientWithResponses) CreatePostLikeV1WithResponse(ctx context.Context, postId int64, reqEditors ...RequestEditorFn) (*CreatePostLikeV1Response, error) {
+	rsp, err := c.CreatePostLikeV1(ctx, postId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreatePostLikeV1Response(rsp)
 }
 
 // GetUserProfileV1WithResponse request returning *GetUserProfileV1Response
@@ -2126,6 +2671,147 @@ func ParseSignupUserV1Response(rsp *http.Response) (*SignupUserV1Response, error
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCommentLikeV1Response parses an HTTP response from a DeleteCommentLikeV1WithResponse call
+func ParseDeleteCommentLikeV1Response(rsp *http.Response) (*DeleteCommentLikeV1Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCommentLikeV1Response{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListCommentLikesV1Response parses an HTTP response from a ListCommentLikesV1WithResponse call
+func ParseListCommentLikesV1Response(rsp *http.Response) (*ListCommentLikesV1Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListCommentLikesV1Response{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListLikesSuccessResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateCommentLikeV1Response parses an HTTP response from a CreateCommentLikeV1WithResponse call
+func ParseCreateCommentLikeV1Response(rsp *http.Response) (*CreateCommentLikeV1Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateCommentLikeV1Response{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CreateLikeSuccessResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
 		var dest ApiErrorResponse
@@ -2644,6 +3330,147 @@ func ParseUpdateCommentV1Response(rsp *http.Response) (*UpdateCommentV1Response,
 	return response, nil
 }
 
+// ParseDeletePostLikeV1Response parses an HTTP response from a DeletePostLikeV1WithResponse call
+func ParseDeletePostLikeV1Response(rsp *http.Response) (*DeletePostLikeV1Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeletePostLikeV1Response{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListPostLikesV1Response parses an HTTP response from a ListPostLikesV1WithResponse call
+func ParseListPostLikesV1Response(rsp *http.Response) (*ListPostLikesV1Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListPostLikesV1Response{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListLikesSuccessResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreatePostLikeV1Response parses an HTTP response from a CreatePostLikeV1WithResponse call
+func ParseCreatePostLikeV1Response(rsp *http.Response) (*CreatePostLikeV1Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreatePostLikeV1Response{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CreateLikeSuccessResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApiErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetUserProfileV1Response parses an HTTP response from a GetUserProfileV1WithResponse call
 func ParseGetUserProfileV1Response(rsp *http.Response) (*GetUserProfileV1Response, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -2752,6 +3579,15 @@ type ServerInterface interface {
 	// Sign up a new user
 	// (POST /v1/auth/signup)
 	SignupUserV1(ctx echo.Context) error
+	// Unlike a comment
+	// (DELETE /v1/comments/{commentId}/likes)
+	DeleteCommentLikeV1(ctx echo.Context, commentId int64) error
+	// List likes for a comment
+	// (GET /v1/comments/{commentId}/likes)
+	ListCommentLikesV1(ctx echo.Context, commentId int64) error
+	// Like a comment
+	// (POST /v1/comments/{commentId}/likes)
+	CreateCommentLikeV1(ctx echo.Context, commentId int64) error
 	// List posts
 	// (GET /v1/posts)
 	ListPostsV1(ctx echo.Context) error
@@ -2782,6 +3618,15 @@ type ServerInterface interface {
 	// Update a specific comment by ID
 	// (PUT /v1/posts/{postId}/comments/{id})
 	UpdateCommentV1(ctx echo.Context, postId int64, id int64) error
+	// Unlike a post
+	// (DELETE /v1/posts/{postId}/likes)
+	DeletePostLikeV1(ctx echo.Context, postId int64) error
+	// List likes for a post
+	// (GET /v1/posts/{postId}/likes)
+	ListPostLikesV1(ctx echo.Context, postId int64) error
+	// Like a post
+	// (POST /v1/posts/{postId}/likes)
+	CreatePostLikeV1(ctx echo.Context, postId int64) error
 	// Get current user profile
 	// (GET /v1/users)
 	GetUserProfileV1(ctx echo.Context) error
@@ -2828,6 +3673,60 @@ func (w *ServerInterfaceWrapper) SignupUserV1(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.SignupUserV1(ctx)
+	return err
+}
+
+// DeleteCommentLikeV1 converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteCommentLikeV1(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "commentId" -------------
+	var commentId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "commentId", ctx.Param("commentId"), &commentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter commentId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteCommentLikeV1(ctx, commentId)
+	return err
+}
+
+// ListCommentLikesV1 converts echo context to params.
+func (w *ServerInterfaceWrapper) ListCommentLikesV1(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "commentId" -------------
+	var commentId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "commentId", ctx.Param("commentId"), &commentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter commentId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.ListCommentLikesV1(ctx, commentId)
+	return err
+}
+
+// CreateCommentLikeV1 converts echo context to params.
+func (w *ServerInterfaceWrapper) CreateCommentLikeV1(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "commentId" -------------
+	var commentId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "commentId", ctx.Param("commentId"), &commentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter commentId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.CreateCommentLikeV1(ctx, commentId)
 	return err
 }
 
@@ -3021,6 +3920,60 @@ func (w *ServerInterfaceWrapper) UpdateCommentV1(ctx echo.Context) error {
 	return err
 }
 
+// DeletePostLikeV1 converts echo context to params.
+func (w *ServerInterfaceWrapper) DeletePostLikeV1(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "postId" -------------
+	var postId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "postId", ctx.Param("postId"), &postId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter postId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeletePostLikeV1(ctx, postId)
+	return err
+}
+
+// ListPostLikesV1 converts echo context to params.
+func (w *ServerInterfaceWrapper) ListPostLikesV1(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "postId" -------------
+	var postId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "postId", ctx.Param("postId"), &postId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter postId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.ListPostLikesV1(ctx, postId)
+	return err
+}
+
+// CreatePostLikeV1 converts echo context to params.
+func (w *ServerInterfaceWrapper) CreatePostLikeV1(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "postId" -------------
+	var postId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "postId", ctx.Param("postId"), &postId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter postId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.CreatePostLikeV1(ctx, postId)
+	return err
+}
+
 // GetUserProfileV1 converts echo context to params.
 func (w *ServerInterfaceWrapper) GetUserProfileV1(ctx echo.Context) error {
 	var err error
@@ -3075,6 +4028,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/v1/auth/logout", wrapper.LogoutUserV1)
 	router.POST(baseURL+"/v1/auth/refresh", wrapper.RefreshAccessTokenV1)
 	router.POST(baseURL+"/v1/auth/signup", wrapper.SignupUserV1)
+	router.DELETE(baseURL+"/v1/comments/:commentId/likes", wrapper.DeleteCommentLikeV1)
+	router.GET(baseURL+"/v1/comments/:commentId/likes", wrapper.ListCommentLikesV1)
+	router.POST(baseURL+"/v1/comments/:commentId/likes", wrapper.CreateCommentLikeV1)
 	router.GET(baseURL+"/v1/posts", wrapper.ListPostsV1)
 	router.POST(baseURL+"/v1/posts", wrapper.CreatePostV1)
 	router.DELETE(baseURL+"/v1/posts/:id", wrapper.DeletePostV1)
@@ -3085,6 +4041,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.DELETE(baseURL+"/v1/posts/:postId/comments/:id", wrapper.DeleteCommentV1)
 	router.GET(baseURL+"/v1/posts/:postId/comments/:id", wrapper.GetCommentByIdV1)
 	router.PUT(baseURL+"/v1/posts/:postId/comments/:id", wrapper.UpdateCommentV1)
+	router.DELETE(baseURL+"/v1/posts/:postId/likes", wrapper.DeletePostLikeV1)
+	router.GET(baseURL+"/v1/posts/:postId/likes", wrapper.ListPostLikesV1)
+	router.POST(baseURL+"/v1/posts/:postId/likes", wrapper.CreatePostLikeV1)
 	router.GET(baseURL+"/v1/users", wrapper.GetUserProfileV1)
 	router.PUT(baseURL+"/v1/users", wrapper.UpdateUserProfileV1)
 
@@ -3093,60 +4052,68 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

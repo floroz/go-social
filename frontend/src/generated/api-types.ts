@@ -223,6 +223,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/posts/{postId}/likes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post. */
+                postId: number;
+            };
+            cookie?: never;
+        };
+        /**
+         * List likes for a post
+         * @description Retrieves a list of likes for a specific post.
+         */
+        get: operations["listPostLikesV1"];
+        put?: never;
+        /**
+         * Like a post
+         * @description Creates a new like on a specific post for the authenticated user.
+         */
+        post: operations["createPostLikeV1"];
+        /**
+         * Unlike a post
+         * @description Removes the authenticated user's like from a specific post.
+         */
+        delete: operations["deletePostLikeV1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/comments/{commentId}/likes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the comment. */
+                commentId: number;
+            };
+            cookie?: never;
+        };
+        /**
+         * List likes for a comment
+         * @description Retrieves a list of likes for a specific comment.
+         */
+        get: operations["listCommentLikesV1"];
+        put?: never;
+        /**
+         * Like a comment
+         * @description Creates a new like on a specific comment for the authenticated user.
+         */
+        post: operations["createCommentLikeV1"];
+        /**
+         * Unlike a comment
+         * @description Removes the authenticated user's like from a specific comment.
+         */
+        delete: operations["deleteCommentLikeV1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1403,6 +1465,320 @@ export interface operations {
                 };
             };
             /** @description Server error deleting comment. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    listPostLikesV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post. */
+                postId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A list of likes retrieved successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListLikesSuccessResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error retrieving likes. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    createPostLikeV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post. */
+                postId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Post liked successfully. Returns the created like object. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateLikeSuccessResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post already liked by the user or other conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error creating like. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    deletePostLikeV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the post. */
+                postId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Post unliked successfully. No content returned. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Post not found or like not found for the user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error deleting like. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    listCommentLikesV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the comment. */
+                commentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A list of likes retrieved successfully. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListLikesSuccessResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Comment not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error retrieving likes. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    createCommentLikeV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the comment. */
+                commentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Comment liked successfully. Returns the created like object. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateLikeSuccessResponse"];
+                };
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Comment not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Comment already liked by the user or other conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error creating like. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteCommentLikeV1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The ID of the comment. */
+                commentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Comment unliked successfully. No content returned. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required or invalid token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Comment not found or like not found for the user. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description Server error deleting like. */
             500: {
                 headers: {
                     [name: string]: unknown;

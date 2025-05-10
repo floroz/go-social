@@ -7,8 +7,8 @@ paths:
         required: true
         description: The ID of the post.
         schema:
-          type: integer # Changed from string
-          format: int64  # Added format
+          type: integer
+          format: int64
     get:
       tags:
         - Likes V1
@@ -23,25 +23,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListLikesSuccessResponse'
+                $ref: '../schemas/like.yaml#/components/schemas/ListLikesSuccessResponse'
         '401':
           description: Authentication required or invalid token.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
           description: Post not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
           description: Server error retrieving likes.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
     post:
       tags:
         - Likes V1
@@ -56,31 +56,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateLikeSuccessResponse'
+                $ref: '../schemas/like.yaml#/components/schemas/CreateLikeSuccessResponse'
         '401':
           description: Authentication required or invalid token.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
           description: Post not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '409':
           description: Post already liked by the user or other conflict.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
           description: Server error creating like.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
     delete:
       tags:
         - Likes V1
@@ -97,19 +97,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
           description: Post not found or like not found for the user.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
           description: Server error deleting like.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
 
   /v1/comments/{commentId}/likes:
     parameters:
@@ -118,8 +118,8 @@ paths:
         required: true
         description: The ID of the comment.
         schema:
-          type: integer # Changed from string
-          format: int64  # Added format
+          type: integer
+          format: int64
     get:
       tags:
         - Likes V1
@@ -134,25 +134,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListLikesSuccessResponse'
+                $ref: '../schemas/like.yaml#/components/schemas/ListLikesSuccessResponse'
         '401':
           description: Authentication required or invalid token.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
           description: Comment not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
           description: Server error retrieving likes.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
     post:
       tags:
         - Likes V1
@@ -167,31 +167,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateLikeSuccessResponse'
+                $ref: '../schemas/like.yaml#/components/schemas/CreateLikeSuccessResponse'
         '401':
           description: Authentication required or invalid token.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
           description: Comment not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '409':
           description: Comment already liked by the user or other conflict.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
           description: Server error creating like.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
     delete:
       tags:
         - Likes V1
@@ -208,16 +208,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
           description: Comment not found or like not found for the user.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
           description: Server error deleting like.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'

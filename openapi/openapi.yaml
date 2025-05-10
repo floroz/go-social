@@ -16,6 +16,8 @@ tags:
     description: Operations related to posts (Version 1)
   - name: Comments V1
     description: Operations related to comments (Version 1)
+  - name: Likes V1 # New Tag
+    description: Operations related to likes on posts and comments (Version 1)
 
 paths:
   # References to path definitions in ./v1/paths/ will go here
