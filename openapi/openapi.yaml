@@ -89,6 +89,13 @@ components:
       $ref: './v1/schemas/comment.yaml#/components/schemas/UpdateCommentSuccessResponse'
     ListCommentsSuccessResponse:
       $ref: './v1/schemas/comment.yaml#/components/schemas/ListCommentsSuccessResponse'
+    # New Schema References for Likes
+    Like:
+      $ref: './v1/schemas/like.yaml#/components/schemas/Like'
+    CreateLikeSuccessResponse:
+      $ref: './v1/schemas/like.yaml#/components/schemas/CreateLikeSuccessResponse'
+    ListLikesSuccessResponse:
+      $ref: './v1/schemas/like.yaml#/components/schemas/ListLikesSuccessResponse'
 
 
   securitySchemes: # Define security schemes if needed (e.g., JWT)

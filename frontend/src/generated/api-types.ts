@@ -500,6 +500,47 @@ export interface components {
             /** @description An array of comment objects. */
             data: components["schemas"]["Comment"][];
         };
+        /** @description Represents a user's like on a post or comment. One of post_id or comment_id should be populated. */
+        Like: {
+            /**
+             * Format: int64
+             * @description Unique identifier for the like.
+             * @example 1001
+             */
+            readonly id: number;
+            /**
+             * Format: int64
+             * @description ID of the user who liked the content.
+             * @example 101
+             */
+            readonly user_id: number;
+            /**
+             * Format: int64
+             * @description ID of the post being liked (mutually exclusive with comment_id).
+             * @example 201
+             */
+            post_id?: number | null;
+            /**
+             * Format: int64
+             * @description ID of the comment being liked (mutually exclusive with post_id).
+             * @example 301
+             */
+            comment_id?: number | null;
+            /**
+             * Format: date-time
+             * @description Timestamp when the like was created.
+             * @example 2024-03-10T10:30:00Z
+             */
+            readonly created_at: string;
+        };
+        /** @description Standard wrapper for the successful like creation response. */
+        CreateLikeSuccessResponse: {
+            data: components["schemas"]["Like"];
+        };
+        /** @description Standard wrapper for listing likes. */
+        ListLikesSuccessResponse: {
+            data: components["schemas"]["Like"][];
+        };
         /** @description Standard wrapper for the successful signup response. */
         SignupSuccessResponse: {
             /** @description Contains the created user object. */
