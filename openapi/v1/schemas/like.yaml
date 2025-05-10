@@ -1,0 +1,61 @@
+# openapi/v1/schemas/like.yaml
+components:
+  schemas:
+    Like:
+      type: object
+      description: Represents a user's like on a post or comment. One of post_id or comment_id should be populated.
+      properties:
+        id:
+          type: integer # Changed from string
+          format: int64  # Added format
+          description: Unique identifier for the like.
+          readOnly: true
+          example: 1001    # Changed example
+        user_id:
+          type: integer # Changed from string
+          format: int64  # Added format
+          description: ID of the user who liked the content.
+          readOnly: true # Set by the backend based on authenticated user.
+          example: 101     # Changed example
+        post_id:
+          type: integer # Changed from string
+          format: int64  # Added format
+          description: ID of the post being liked (mutually exclusive with comment_id).
+          nullable: true
+          example: 201     # Changed example
+        comment_id:
+          type: integer # Changed from string
+          format: int64  # Added format
+          description: ID of the comment being liked (mutually exclusive with post_id).
+          nullable: true
+          example: 301     # Changed example
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the like was created.
+          readOnly: true
+          example: '2024-03-10T10:30:00Z'
+      required:
+        - id
+        - user_id
+        - created_at
+
+    CreateLikeSuccessResponse:
+      type: object
+      description: Standard wrapper for the successful like creation response.
+      properties:
+        data:
+          $ref: '#/components/schemas/Like'
+      required:
+        - data
+
+    ListLikesSuccessResponse:
+      type: object
+      description: Standard wrapper for listing likes.
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Like'
+      required:
+        - data
