@@ -37,6 +37,10 @@ paths:
     $ref: './v1/paths/comment.yaml#/paths/~1v1~1posts~1{postId}~1comments'
   /v1/posts/{postId}/comments/{id}: # Add reference to the single comment path
     $ref: './v1/paths/comment.yaml#/paths/~1v1~1posts~1{postId}~1comments~1{id}'
+  /v1/posts/{postId}/likes: # Add reference to post likes path
+    $ref: './v1/paths/post.yaml#/paths/~1v1~1posts~1{postId}~1likes'
+  /v1/posts/{postId}/comments/{commentId}/likes: # Add reference to comment likes path
+    $ref: './v1/paths/comment.yaml#/paths/~1v1~1posts~1{postId}~1comments~1{commentId}~1likes'
 
 
 components:
@@ -89,6 +93,11 @@ components:
       $ref: './v1/schemas/comment.yaml#/components/schemas/UpdateCommentSuccessResponse'
     ListCommentsSuccessResponse:
       $ref: './v1/schemas/comment.yaml#/components/schemas/ListCommentsSuccessResponse'
+    # Like schemas
+    Like:
+      $ref: './shared/schemas/like.yaml#/components/schemas/Like'
+    ListLikesResponse:
+      $ref: './shared/schemas/like.yaml#/components/schemas/ListLikesResponse'
 
 
   securitySchemes: # Define security schemes if needed (e.g., JWT)

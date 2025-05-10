@@ -77,8 +77,8 @@ paths:
         required: true
         description: The ID of the post to operate on.
         schema:
-          type: integer
-          format: int64
+          type: string # Changed from integer
+          format: uuid  # Changed from int64
     get:
       tags:
         - Posts V1
@@ -195,6 +195,117 @@ paths:
                 $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500': # Internal Server Error
           description: Server error deleting post.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+
+  /v1/posts/{postId}/likes:
+    parameters:
+      - name: postId
+        in: path
+        required: true
+        description: The ID of the post to like or list likes for.
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Posts V1
+      summary: List likes for a post
+      description: Retrieves a list of likes for a specific post.
+      operationId: listPostLikesV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      responses:
+        '200': # OK
+          description: A list of likes for the post.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/like.yaml#/components/schemas/ListLikesResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error retrieving likes.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+    post:
+      tags:
+        - Posts V1
+      summary: Like a post
+      description: Creates a like for the specified post by the authenticated user.
+      operationId: likePostV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      responses:
+        '201': # Created
+          description: Post liked successfully. Returns the created like object.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/like.yaml#/components/schemas/Like'
+        '400': # Bad Request
+          description: Invalid request (e.g., post already liked by the user).
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error liking post.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+    delete:
+      tags:
+        - Posts V1
+      summary: Unlike a post
+      description: Removes the authenticated user's like from the specified post.
+      operationId: unlikePostV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      responses:
+        '204': # No Content
+          description: Post unliked successfully. No content returned.
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post with the specified ID not found, or like by user not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error unliking post.
           content:
             application/json:
               schema:

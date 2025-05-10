@@ -7,8 +7,8 @@ paths:
         required: true
         description: The ID of the post to retrieve comments for or add a comment to.
         schema:
-          type: integer
-          format: int64
+          type: string # Changed from integer
+          format: uuid  # Changed from int64
     get:
       tags:
         - Comments V1
@@ -97,15 +97,15 @@ paths:
         required: true
         description: The ID of the post the comment belongs to.
         schema:
-          type: integer
-          format: int64
-      - name: id
+          type: string # Changed from integer
+          format: uuid  # Changed from int64
+      - name: id # This 'id' refers to commentId
         in: path
         required: true
         description: The ID of the comment to operate on.
         schema:
-          type: integer
-          format: int64
+          type: string # Changed from integer
+          format: uuid  # Changed from int64
     get:
       tags:
         - Comments V1
@@ -226,3 +226,121 @@ paths:
             application/json:
               schema:
                 $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+
+  /v1/posts/{postId}/comments/{commentId}/likes:
+    parameters:
+      - name: postId
+        in: path
+        required: true
+        description: The ID of the post the comment belongs to.
+        schema:
+          type: string
+          format: uuid
+      - name: commentId
+        in: path
+        required: true
+        description: The ID of the comment to like or list likes for.
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Comments V1
+      summary: List likes for a comment
+      description: Retrieves a list of likes for a specific comment.
+      operationId: listCommentLikesV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      responses:
+        '200': # OK
+          description: A list of likes for the comment.
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/like.yaml#/components/schemas/ListLikesResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post or Comment with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error retrieving likes.
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+    post:
+      tags:
+        - Comments V1
+      summary: Like a comment
+      description: Creates a like for the specified comment by the authenticated user.
+      operationId: likeCommentV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      responses:
+        '201': # Created
+          description: Comment liked successfully. Returns the created like object.
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/like.yaml#/components/schemas/Like'
+        '400': # Bad Request
+          description: Invalid request (e.g., comment already liked by the user).
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post or Comment with the specified ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error liking comment.
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+    delete:
+      tags:
+        - Comments V1
+      summary: Unlike a comment
+      description: Removes the authenticated user's like from the specified comment.
+      operationId: unlikeCommentV1
+      security:
+        - bearerAuth: [] # Requires authentication
+      responses:
+        '204': # No Content
+          description: Comment unliked successfully. No content returned.
+        '401': # Unauthorized
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '404': # Not Found
+          description: Post or Comment with the specified ID not found, or like by user not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
+        '500': # Internal Server Error
+          description: Server error unliking comment.
+          content:
+            application/json:
+              schema:
+                $ref: '../../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
