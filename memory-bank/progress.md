@@ -16,7 +16,9 @@
 ## What's Left to Build
 
 - **Immediate Next Task:**
-    - Define OpenAPI specification for "likes" functionality (for posts and/or comments).
+    - Correctly update `openapi/openapi.yaml` to include the "Likes V1" tag and path references.
+    - Run `make generate-types` to regenerate `openapi-bundled.yaml`.
+    - Verify the "likes" endpoints appear correctly in Swagger UI.
 - **Future Features (Post-Spec Definition):**
     - Implement backend logic for "likes".
     - Implement frontend UI and logic for "likes".
@@ -28,12 +30,15 @@
 
 ## Current Status
 
-- The Memory Bank has been initialized and updated to reflect the current project understanding and narrowed scope for the "likes" feature.
-- The next immediate task is to discuss, plan, and define the OpenAPI specification for the "likes" feature. Full implementation is deferred.
+- Partial OpenAPI files for "likes" (`like.yaml` for schemas and paths) have been created.
+- An attempt to update `openapi/openapi.yaml` and generate the bundled spec was made.
+- Currently troubleshooting why the "likes" endpoints are not visible in Swagger UI, suspecting an issue with how `openapi/openapi.yaml` references the new partials.
+- The Memory Bank is being updated to reflect this troubleshooting phase.
 
 ## Known Issues
 
-- No specific issues identified from the provided context, apart from the "missing feature" of OpenAPI bundle snapshotting.
+- "Likes" endpoints not appearing in Swagger UI after initial spec file creation and bundling attempt.
+- The "missing feature" of OpenAPI bundle snapshotting (longer-term).
 
 ## Evolution of Project Decisions
 

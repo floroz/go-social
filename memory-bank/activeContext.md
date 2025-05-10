@@ -2,21 +2,23 @@
 
 ## Current Work Focus
 
-- Refining project scope in Memory Bank and planning the OpenAPI specification for a new 'likes' endpoint.
+- Troubleshooting and correcting the OpenAPI specification for the new "likes" endpoint to ensure it appears in Swagger UI.
 
 ## Recent Changes
 
 - Initialized the Memory Bank with placeholder files.
 - Updated `projectbrief.md`, `productContext.md`, `systemPatterns.md`, and `techContext.md` with information from `README.md` and user input.
+- Created `openapi/v1/schemas/like.yaml` and `openapi/v1/paths/like.yaml`.
+- Attempted to update `openapi/openapi.yaml` and ran `make generate-types`.
+- Identified that "likes" paths are not appearing in Swagger UI, likely due to an issue in `openapi/openapi.yaml`'s references.
+- Updated the proposed OpenAPI spec in this file based on feedback (integer IDs, direct `ApiErrorResponse` refs).
 
 ## Next Steps
 
-1.  Finalize scope adjustments in Memory Bank files (`activeContext.md`, `projectbrief.md`, `progress.md`).
-2.  Discuss and define the requirements and design for the new "likes" endpoint (e.g., what can be liked, data structure for a like).
-3.  Create/update the necessary OpenAPI partial files (e.g., new schemas in `openapi/shared/schemas/` or `openapi/v1/schemas/`, new paths in `openapi/v1/paths/`).
-4.  Update `openapi/openapi.yaml` to reference the new "likes" paths and schemas.
-5.  Run `make generate-types` (or at least the `redocly bundle` part) to create an updated `openapi/openapi-bundled.yaml`.
-6.  Confirm the new "likes" endpoint is correctly represented in the Swagger UI.
+1.  **Update `memory-bank/activeContext.md` and `memory-bank/progress.md` to reflect the current troubleshooting status (this step).**
+2.  Correctly update `openapi/openapi.yaml` to include the "Likes V1" tag and the path references for `/v1/posts/{postId}/likes` and `/v1/comments/{commentId}/likes`.
+3.  Run `make generate-types` again.
+4.  Confirm the new "likes" endpoint is correctly represented in the Swagger UI.
 
 ## Active Decisions and Considerations
 

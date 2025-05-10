@@ -37,6 +37,11 @@ paths:
     $ref: './v1/paths/comment.yaml#/paths/~1v1~1posts~1{postId}~1comments'
   /v1/posts/{postId}/comments/{id}: # Add reference to the single comment path
     $ref: './v1/paths/comment.yaml#/paths/~1v1~1posts~1{postId}~1comments~1{id}'
+  # New Path References for Likes
+  /v1/posts/{postId}/likes:
+    $ref: './v1/paths/like.yaml#/paths/~1v1~1posts~1{postId}~1likes'
+  /v1/comments/{commentId}/likes:
+    $ref: './v1/paths/like.yaml#/paths/~1v1~1comments~1{commentId}~1likes'
 
 
 components:
