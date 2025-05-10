@@ -15,13 +15,9 @@
 
 ## What's Left to Build
 
-- **Immediate Next Task:**
-    - Correctly update `openapi/openapi.yaml` to include the "Likes V1" tag and path references.
-    - Run `make generate-types` to regenerate `openapi-bundled.yaml`.
-    - Verify the "likes" endpoints appear correctly in Swagger UI.
 - **Future Features (Post-Spec Definition):**
-    - Implement backend logic for "likes".
-    - Implement frontend UI and logic for "likes".
+    - Implement backend logic for "likes" (database tables, repositories, services, handlers).
+    - Implement frontend UI and logic for "likes" (components, API calls, state management).
 - **Technical Improvements/Future Considerations:**
     - Strategy for producing and persisting different OpenAPI bundle snapshots over time.
     - Potentially more comprehensive testing.
@@ -30,14 +26,16 @@
 
 ## Current Status
 
-- Partial OpenAPI files for "likes" (`like.yaml` for schemas and paths) have been created.
-- An attempt to update `openapi/openapi.yaml` and generate the bundled spec was made.
-- Currently troubleshooting why the "likes" endpoints are not visible in Swagger UI, suspecting an issue with how `openapi/openapi.yaml` references the new partials.
-- The Memory Bank is being updated to reflect this troubleshooting phase.
+- The OpenAPI specification for the "likes" feature has been successfully defined and verified in Swagger UI.
+    - `openapi/v1/schemas/like.yaml` created.
+    - `openapi/v1/paths/like.yaml` created and corrected.
+    - `openapi/openapi.yaml` updated with new tags and references.
+    - `make generate-types` successfully bundled the spec and generated types.
+- The Memory Bank (`activeContext.md`, `progress.md`) has been updated to reflect the completion of this task.
+- The next steps involve the actual implementation of the "likes" feature in the backend and frontend, which is out of scope for the current task.
 
 ## Known Issues
 
-- "Likes" endpoints not appearing in Swagger UI after initial spec file creation and bundling attempt.
 - The "missing feature" of OpenAPI bundle snapshotting (longer-term).
 
 ## Evolution of Project Decisions

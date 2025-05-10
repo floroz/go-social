@@ -2,23 +2,24 @@
 
 ## Current Work Focus
 
-- Troubleshooting and correcting the OpenAPI specification for the new "likes" endpoint to ensure it appears in Swagger UI.
+- Finalizing Memory Bank updates after successfully defining the OpenAPI specification for the "likes" endpoint.
 
 ## Recent Changes
 
 - Initialized the Memory Bank with placeholder files.
 - Updated `projectbrief.md`, `productContext.md`, `systemPatterns.md`, and `techContext.md` with information from `README.md` and user input.
-- Created `openapi/v1/schemas/like.yaml` and `openapi/v1/paths/like.yaml`.
-- Attempted to update `openapi/openapi.yaml` and ran `make generate-types`.
-- Identified that "likes" paths are not appearing in Swagger UI, likely due to an issue in `openapi/openapi.yaml`'s references.
-- Updated the proposed OpenAPI spec in this file based on feedback (integer IDs, direct `ApiErrorResponse` refs).
+- Iteratively defined and corrected the OpenAPI specification for the "likes" feature:
+    - Created `openapi/v1/schemas/like.yaml` (with integer IDs).
+    - Created `openapi/v1/paths/like.yaml` (with relative path refs for schemas).
+    - Updated `openapi/openapi.yaml` with the "Likes V1" tag and correct path/schema references.
+- Successfully ran `make generate-types`, bundling the spec and generating types.
+- Confirmed (by user) that the new "likes" endpoints are correctly represented in Swagger UI.
+- Updated Memory Bank (`activeContext.md`, `progress.md`) to reflect troubleshooting steps and then successful completion.
 
 ## Next Steps
 
-1.  **Update `memory-bank/activeContext.md` and `memory-bank/progress.md` to reflect the current troubleshooting status (this step).**
-2.  Correctly update `openapi/openapi.yaml` to include the "Likes V1" tag and the path references for `/v1/posts/{postId}/likes` and `/v1/comments/{commentId}/likes`.
-3.  Run `make generate-types` again.
-4.  Confirm the new "likes" endpoint is correctly represented in the Swagger UI.
+1.  **Finalize Memory Bank updates to reflect task completion (this step).**
+2.  (No further technical steps for this task)
 
 ## Active Decisions and Considerations
 
@@ -29,7 +30,7 @@
 - The implementation of backend/frontend logic for "likes" is out of scope for the current task.
 - The need for a strategy to manage and version OpenAPI bundled specifications over time remains a future task.
 
-### Proposed OpenAPI Specification for "Likes" (for discussion)
+### Finalized OpenAPI Specification for "Likes" (as implemented)
 
 **1. New File: `openapi/v1/schemas/like.yaml`**
 ```yaml
@@ -41,37 +42,29 @@ components:
       description: Represents a user's like on a post or comment. One of post_id or comment_id should be populated.
       properties:
         id:
-          type: string
+          type: integer
+          format: int64
           description: Unique identifier for the like.
           readOnly: true
-          example: "lk_clxkz2kv0000008jy1g7g3h7n"
+          example: 1001
         user_id:
-          type: string # Corresponds to User ID. If User.id is int64, this should be int64 too.
+          type: integer
+          format: int64
           description: ID of the user who liked the content.
           readOnly: true # Set by the backend based on authenticated user.
-          example: "usr_clxkyv02o000008jye1g2f3h5" # Example if User ID is string
-          # if User ID is int64:
-          # type: integer
-          # format: int64
-          # example: 101
+          example: 101
         post_id:
-          type: string # Corresponds to Post ID. If Post.id is int64, this should be int64.
+          type: integer
+          format: int64
           description: ID of the post being liked (mutually exclusive with comment_id).
           nullable: true
-          example: "post_clxkz0q9k000008jya1b7g2e3" # Example if Post ID is string
-          # if Post ID is int64:
-          # type: integer
-          # format: int64
-          # example: 201
+          example: 201
         comment_id:
-          type: string # Corresponds to Comment ID. If Comment.id is int64, this should be int64.
+          type: integer
+          format: int64
           description: ID of the comment being liked (mutually exclusive with post_id).
           nullable: true
-          example: "cmt_clxkz1b2a000008jyf4g6h7i8" # Example if Comment ID is string
-          # if Comment ID is int64:
-          # type: integer
-          # format: int64
-          # example: 301
+          example: 301
         created_at:
           type: string
           format: date-time
@@ -115,7 +108,8 @@ paths:
         required: true
         description: The ID of the post.
         schema:
-          type: string # Should match Post.id type (string or integer)
+          type: integer
+          format: int64
     get:
       tags:
         - Likes V1
@@ -130,13 +124,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListLikesSuccessResponse'
+                $ref: '../schemas/like.yaml#/components/schemas/ListLikesSuccessResponse'
         '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
-          $ref: '#/components/responses/NotFoundError'
+          description: Post not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          description: Server error retrieving likes.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
     post:
       tags:
         - Likes V1
@@ -151,15 +157,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateLikeSuccessResponse'
+                $ref: '../schemas/like.yaml#/components/schemas/CreateLikeSuccessResponse'
         '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
-          $ref: '#/components/responses/NotFoundError'
+          description: Post not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '409':
-          $ref: '#/components/responses/ConflictError'
+          description: Post already liked by the user or other conflict.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          description: Server error creating like.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
     delete:
       tags:
         - Likes V1
@@ -172,11 +194,23 @@ paths:
         '204':
           description: Post unliked successfully. No content returned.
         '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
-          $ref: '#/components/responses/NotFoundError'
+          description: Post not found or like not found for the user.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          description: Server error deleting like.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
 
   /v1/comments/{commentId}/likes:
     parameters:
@@ -185,7 +219,8 @@ paths:
         required: true
         description: The ID of the comment.
         schema:
-          type: string # Should match Comment.id type (string or integer)
+          type: integer
+          format: int64
     get:
       tags:
         - Likes V1
@@ -200,13 +235,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListLikesSuccessResponse'
+                $ref: '../schemas/like.yaml#/components/schemas/ListLikesSuccessResponse'
         '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
-          $ref: '#/components/responses/NotFoundError'
+          description: Comment not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          description: Server error retrieving likes.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
     post:
       tags:
         - Likes V1
@@ -221,15 +268,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateLikeSuccessResponse'
+                $ref: '../schemas/like.yaml#/components/schemas/CreateLikeSuccessResponse'
         '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
-          $ref: '#/components/responses/NotFoundError'
+          description: Comment not found.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '409':
-          $ref: '#/components/responses/ConflictError'
+          description: Comment already liked by the user or other conflict.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          description: Server error creating like.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
     delete:
       tags:
         - Likes V1
@@ -242,11 +305,23 @@ paths:
         '204':
           description: Comment unliked successfully. No content returned.
         '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          description: Authentication required or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '404':
-          $ref: '#/components/responses/NotFoundError'
+          description: Comment not found or like not found for the user.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          description: Server error deleting like.
+          content:
+            application/json:
+              schema:
+                $ref: '../../shared/schemas/common.yaml#/components/schemas/ApiErrorResponse'
 ```
 
 **3. Updates to `openapi/openapi.yaml` (relevant parts)**
