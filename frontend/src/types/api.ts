@@ -16,6 +16,8 @@ export type SignupSuccessResponse =
 export type LoginSuccessResponse =
   components["schemas"]["LoginSuccessResponse"];
 export type LoginResponse = components["schemas"]["LoginResponse"];
+export type GetUserProfileSuccessResponse =
+  components["schemas"]["GetUserProfileSuccessResponse"];
 
 // Add other schema exports as needed
 // export type Post = components["schemas"]["Post"];

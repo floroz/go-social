@@ -20,7 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { LoginResponse, LoginRequest } from "@/types/api";
+import type { LoginSuccessResponse, LoginRequest } from "@/types/api"; 
 import { useLogin } from "@/hooks/useLogin";
 
 // Define Zod schema for login
@@ -34,11 +34,10 @@ const LoginPage = () => {
 
   // Use the custom hook for login logic
   const { login, isLoading, error } = useLogin({
-    // Update onSuccess to handle LoginResponse
-    onSuccess: (loginResponse: LoginResponse) => {
+    onSuccess: (loginSuccessResponse: LoginSuccessResponse) => { 
       // Side effect specific to this page: navigate after successful login
-      console.log("Login successful on page", loginResponse);
-      // TODO: Potentially trigger fetching user details here or rely on store update
+      console.log("Login successful on page, response:", loginSuccessResponse);
+      console.log("Token:", loginSuccessResponse.data.token); 
       navigate('/');
       // TODO: Show success toast
     },

@@ -6,6 +6,12 @@
 
 ## Recent Changes
 
+- **Fixed Login Redirection Bug:**
+    - Updated `frontend/src/stores/authStore.ts` to manage JWT token and initialize auth state from `localStorage`.
+    - Implemented request interceptor in `frontend/src/lib/api.ts` to add Bearer token to requests.
+    - Modified `frontend/src/hooks/useLogin.ts` to correctly set token in `authStore`, fetch user details after login, and then set user details in `authStore`.
+    - Ensured `frontend/src/services/authService.ts` `login` method returns the wrapped `LoginSuccessResponse`.
+    - Corrected type annotations in `frontend/src/pages/LoginPage.tsx` for the `onSuccess` callback.
 - **Corrected Phase 1 Fully Complete (Auth & Routing Foundation for Home Page):**
     - Updated `frontend/src/pages/LoginPage.tsx` to include a "Sign up" link.
     - Re-created `frontend/src/pages/HomePage.tsx` as a placeholder.

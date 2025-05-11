@@ -22,6 +22,9 @@
     - `frontend/src/main.tsx` updated to use `ProtectedRoute` for the `/` route, rendering `HomePage`.
     - "Login" link added to `frontend/src/pages/SignupPage.tsx`.
     - "Signup" link added to `frontend/src/pages/LoginPage.tsx`.
+- **Login Redirection Bug Fix:**
+    - Login flow now correctly updates authentication state in `authStore` (including token and user details after fetching profile) and redirects to the Home Page.
+    - Involved updates to `authStore.ts`, `api.ts` (interceptor), `useLogin.ts`, `authService.ts`, and `LoginPage.tsx` (type correction).
 
 ## What's Left to Build (High-Level)
 
@@ -156,6 +159,18 @@ This list is based on the initial `projectbrief.md` and common features for a so
             - Modified `frontend/src/main.tsx` to implement protected route for Home Page (`/`) using `ProtectedRoute` and `HomePage`. (COMPLETED)
             - Added "Login" link to `frontend/src/pages/SignupPage.tsx`. (COMPLETED)
             - Added "Signup" link to `frontend/src/pages/LoginPage.tsx`. (COMPLETED)
+- **2025-11-05 (Evening - Login Redirection Bug Fix):**
+    - **Problem:** Successful login did not redirect to Home Page due to auth state not being updated correctly.
+    - **Solution:**
+        - Updated `authStore.ts` to manage JWT token, persist to `localStorage`, and initialize auth state on load.
+        - Implemented request interceptor in `api.ts` to add Bearer token.
+        - Refactored `useLogin.ts` to:
+            - Call `setToken` from `authStore` upon receiving token.
+            - Fetch user profile (`GET /v1/users`) after token is set.
+            - Call `setUser` from `authStore` with fetched user details.
+        - Ensured `authService.ts` `login` method returns the wrapped `LoginSuccessResponse`.
+        - Corrected type for `onSuccess` callback in `LoginPage.tsx`.
+    - **Outcome:** Login now correctly updates auth state and redirects to Home Page.
         - **Phase 2: Home Page Feed Display - CURRENT**
             - Create `PostService` (`frontend/src/services/postService.ts`) with `listPosts()` and `createPost()` methods. - **NEXT IMMEDIATE STEP**
             - Create `usePosts` Hook (`frontend/src/hooks/usePosts.ts`) for fetching and managing post state.

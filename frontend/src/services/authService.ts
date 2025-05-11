@@ -3,7 +3,6 @@ import type {
   User,
   SignupRequest,
   LoginRequest,
-  LoginResponse,
   SignupSuccessResponse,
   LoginSuccessResponse,
 } from "@/types/api";
@@ -37,16 +36,16 @@ const AuthService = {
   /**
    * Sends a login request to the backend.
    * @param loginData - The user login credentials.
-   * @returns A promise that resolves with the login response containing the token.
+   * @returns A promise that resolves with the login success response.
    */
-  login: async (loginData: LoginRequest): Promise<LoginResponse> => {
+  login: async (loginData: LoginRequest): Promise<LoginSuccessResponse> => {
     // eslint-disable-next-line no-useless-catch
     try {
       const response = await apiClient.post<LoginSuccessResponse>(
         "/v1/auth/login",
         { data: loginData } // Wrap the loginData in a 'data' object
       );
-      return response.data.data;
+      return response.data;
     } catch (error) {
       // TODO: Improve error handling/logging
       // console.error("AuthService login error:", error);

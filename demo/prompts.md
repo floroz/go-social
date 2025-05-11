@@ -389,3 +389,12 @@ Now that we have corrected mistakes and updated the memory, let's resume and tac
 
 We need the same link strategy applied to the Signup form, in the Login form (if someone doesn't have an account, we need a link to send them to signup form)
 ```
+
+### Fix bug in Login form
+
+```
+
+(ACT)
+
+I have a bug in the Login Form. I add my credentials and click "Login" - I can see in the network tab the login request completes successfully with a 200 - and a token is returned - but I am not redirected to the home page after that.
+```
