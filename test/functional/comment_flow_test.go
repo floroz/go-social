@@ -17,7 +17,9 @@ import (
 // Helper function to create a post and return its ID (requires signed-up user cookies)
 func createPostForTest(t *testing.T, client *http.Client, cookies []*http.Cookie, content string) int64 {
 	createPostReq := apitypes.CreatePostRequest{Content: content}
-	body, err := json.Marshal(createPostReq)
+	// Wrap the DTO in a "data" field for the request payload
+	requestPayload := map[string]any{"data": createPostReq}
+	body, err := json.Marshal(requestPayload)
 	assert.NoError(t, err)
 	req, err := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(body))
 	assert.NoError(t, err)
@@ -39,7 +41,8 @@ func createPostForTest(t *testing.T, client *http.Client, cookies []*http.Cookie
 // Helper function to create a comment and return its ID
 func createCommentForTest(t *testing.T, client *http.Client, cookies []*http.Cookie, postId int64, content string) int64 {
 	createCommentReq := apitypes.CreateCommentRequest{Content: content}
-	body, err := json.Marshal(createCommentReq)
+	requestPayload := map[string]any{"data": createCommentReq}
+	body, err := json.Marshal(requestPayload)
 	assert.NoError(t, err)
 	commentUrl := fmt.Sprintf("%s%s/%d/comments", testServerURL, postsEndpoint, postId)
 	req, err := http.NewRequest(http.MethodPost, commentUrl, bytes.NewBuffer(body))
@@ -81,7 +84,8 @@ func TestCreateComment(t *testing.T) {
 	createCommentReq := apitypes.CreateCommentRequest{
 		Content: "My first comment!",
 	}
-	body, err := json.Marshal(createCommentReq) // Request body is just the content
+	requestPayload := map[string]any{"data": createCommentReq}
+	body, err := json.Marshal(requestPayload)
 	assert.NoError(t, err)
 
 	commentUrl := fmt.Sprintf("%s%s/%d/comments", testServerURL, postsEndpoint, postId)
@@ -284,7 +288,8 @@ func TestUpdateComment(t *testing.T) {
 
 	// --- Test Case 1: Successful update ---
 	updateCommentReq := apitypes.UpdateCommentRequest{Content: "Updated comment content!"}
-	updateBody, err := json.Marshal(updateCommentReq)
+	updatePayload := map[string]any{"data": updateCommentReq}
+	updateBody, err := json.Marshal(updatePayload)
 	assert.NoError(t, err)
 	updateUrl := fmt.Sprintf("%s%s/%d/comments/%d", testServerURL, postsEndpoint, postId, createdCommentId)
 	updateReq, err := http.NewRequest(http.MethodPut, updateUrl, bytes.NewBuffer(updateBody))
@@ -316,7 +321,8 @@ func TestUpdateComment(t *testing.T) {
 	// --- Test Case 2: Update non-existent comment ---
 	nonExistentId := int64(999999)
 	updateNonExistentReq := apitypes.UpdateCommentRequest{Content: "Trying to update non-existent"}
-	updateNonExistentBody, _ := json.Marshal(updateNonExistentReq)
+	updateNonExistentPayload := map[string]any{"data": updateNonExistentReq}
+	updateNonExistentBody, _ := json.Marshal(updateNonExistentPayload)
 	updateNonExistentUrl := fmt.Sprintf("%s%s/%d/comments/%d", testServerURL, postsEndpoint, postId, nonExistentId)
 	updateNonExistentHttpReq, _ := http.NewRequest(http.MethodPut, updateNonExistentUrl, bytes.NewBuffer(updateNonExistentBody))
 	updateNonExistentHttpReq.Header.Set("Content-Type", "application/json")
@@ -355,7 +361,8 @@ func TestUpdateComment(t *testing.T) {
 
 	// Act: Try to update the first user's comment with the second user's cookies
 	updateOtherReq := apitypes.UpdateCommentRequest{Content: "Trying to update other's comment"}
-	updateOtherBody, _ := json.Marshal(updateOtherReq)
+	updateOtherPayload := map[string]any{"data": updateOtherReq}
+	updateOtherBody, _ := json.Marshal(updateOtherPayload)
 	updateOtherHttpReq, _ := http.NewRequest(http.MethodPut, updateUrl, bytes.NewBuffer(updateOtherBody)) // Use original comment URL
 	updateOtherHttpReq.Header.Set("Content-Type", "application/json")
 	for _, cookie := range otherCookies {

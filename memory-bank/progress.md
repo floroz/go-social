@@ -10,6 +10,9 @@
     - Functional test `TestUserSignup_ValidationErrors` and related tests for duplicate signups are passing.
 - **Frontend Signup Payload:** The frontend (`authService.ts`) now correctly sends the signup request payload wrapped in a `{"data": ...}` object, aligning with the API specification and backend expectations. User has confirmed this functionality.
 - **Frontend Login Payload:** The frontend (`authService.ts`) now correctly sends the login request payload wrapped in a `{"data": ...}` object for the `/v1/auth/login` endpoint, aligning with API specification and backend. User has confirmed this functionality.
+- **User Profile Update (Backend):** `PUT /v1/users` endpoint expects and handles wrapped `{"data": ...}` request payloads. Functional tests updated and passing.
+- **Post Endpoints (Backend):** `POST /v1/posts` and `PUT /v1/posts/{id}` endpoints expect and handle wrapped `{"data": ...}` request payloads. Functional tests updated and passing.
+- **Comment Endpoints (Backend):** `POST /v1/posts/{postId}/comments` and `PUT /v1/posts/{postId}/comments/{id}` endpoints expect and handle wrapped `{"data": ...}` request payloads. Functional tests updated and passing.
 
 ## What's Left to Build (High-Level)
 
@@ -47,7 +50,7 @@ This list is based on the initial `projectbrief.md` and common features for a so
 ## Current Status
 
 - **Phase:** API Implementation & Testing / Planning.
-- **Current Focus:** Discussing next API endpoint for convention rollout or other tasks with the user.
+- **Current Focus:** Finalizing Memory Bank update after completing backend/functional test rollout of request payload conventions; preparing to discuss next phase.
 - **Blockers:** None.
 
 ## Known Issues
@@ -104,5 +107,13 @@ This list is based on the initial `projectbrief.md` and common features for a so
         4.  Ran `make test`; all backend tests passed.
         5.  Updated `frontend/src/services/authService.ts#login` method to send the wrapped payload.
     - **Outcome:** User confirmed successful login functionality with the wrapped request.
+- **2025-11-05 (Afternoon - Convention Rollout Part B - Backend/Func Tests):**
+    - **Task:** Systematically apply `{"data": ...}` request payload wrapping to all relevant V1 POST/PUT endpoints (backend handlers & functional tests).
+    - **Endpoints Updated & Verified (Backend & Functional Tests):**
+        - `PUT /v1/users`: OpenAPI, handler verified, functional tests updated.
+        - `POST /v1/posts` & `PUT /v1/posts/{id}`: OpenAPI, handlers updated, functional tests updated.
+        - `POST /v1/posts/{postId}/comments` & `PUT /v1/posts/{postId}/comments/{id}`: OpenAPI, handlers updated, functional tests updated.
+    - **Process for each:** Updated OpenAPI, ran `make generate-types`, updated/verified backend handler, updated functional tests, ran `make test` successfully.
+    - **Outcome:** All targeted V1 POST/PUT endpoints now adhere to the request wrapping convention on the backend, and their functional tests are aligned. Frontend updates for these endpoints (user profile, posts, comments) are pending.
 
 *(This file will be updated regularly to reflect the project's journey.)*

@@ -2,27 +2,39 @@
 
 ## Current Work Focus
 
-- **Updating Memory Bank & Planning Next Steps:** Reflecting completion of login endpoint payload wrapping and preparing to discuss next work chunk with the user.
+- **Finalizing Memory Bank Update:** Reflecting completion of the backend/functional test phase for the request payload convention rollout across all relevant V1 POST/PUT endpoints. Preparing to discuss the next phase of work.
 
 ## Recent Changes
 
-- **Completed Memory Bank Update (Previous Task):** Updated all memory bank files to reflect the resolution of `TestUserSignup_ValidationErrors` functional test failures.
+- **Completed Memory Bank Update (Previous Task):** Updated memory bank after fixing `TestUserSignup_ValidationErrors`.
 - **Implemented Frontend Signup Payload Wrapping (Chunk A.3 - Completed):**
-    - **Frontend Types (`frontend/src/generated/api-types.ts`):** Confirmed generated types correctly expect a wrapped request payload (`{ data: SignupRequest }`) for the signup operation.
-    - **Authentication Service (`frontend/src/services/authService.ts`):** Modified the `signup` method to wrap `signupData` in a `data` object.
-    - **Verification:** User confirmed successful signup with wrapped payload.
-- **Applied Request Payload Wrapping to Login Endpoint (Part B - In Progress):**
-    - **OpenAPI (`openapi/v1/paths/auth.yaml`):** Updated the `/v1/auth/login` endpoint's `requestBody` to use an inline `data` wrapper for `LoginRequest`.
-    - **Type Generation:** Ran `make generate-types` successfully.
-    - **Backend Handler (`cmd/api/auth_handlers.go#loginHandler`):** Confirmed existing handler logic was already compatible with the wrapped request structure due to its unmarshaling strategy. No changes were needed.
-    - **Backend Tests:** Ran `make test`; all backend tests passed, confirming no regressions.
-    - **Frontend Service (`frontend/src/services/authService.ts`):** Modified the `login` method to wrap `loginData` in a `data` object before sending the API request.
-    - **Verification:** User confirmed that login functionality works correctly with the updated wrapped request payload.
+    - Ensured frontend sends wrapped `{"data": ...}` for signup; confirmed by user.
+- **Completed Backend/Functional Test Rollout of Request Payload Convention (Part B):**
+    - Systematically reviewed all V1 API endpoints (`auth.yaml`, `user.yaml`, `post.yaml`, `comment.yaml`).
+    - For all POST/PUT endpoints requiring a request body, the following steps were completed:
+        1.  **OpenAPI Specification:** Updated to define request bodies with an inline `{"data": <ActualPayloadSchema>}` wrapper.
+        2.  **Type Generation:** Ran `make generate-types` successfully after each OpenAPI modification.
+        3.  **Backend Handlers:** Updated or verified handlers in `cmd/api/` to correctly unmarshal the wrapped request payloads.
+        4.  **Functional Tests:** Updated relevant tests in `test/functional/` to send wrapped request payloads.
+        5.  **Verification:** Ensured `make test` passed after each set of backend/test modifications.
+    - **Endpoints covered:**
+        - `/v1/auth/login` (request body)
+        - `PUT /v1/users` (request body)
+        - `POST /v1/posts` (request body)
+        - `PUT /v1/posts/{id}` (request body)
+        - `POST /v1/posts/{postId}/comments` (request body)
+        - `PUT /v1/posts/{postId}/comments/{id}` (request body)
+    - **Frontend Service Updates (Partial):**
+        - `frontend/src/services/authService.ts`: Updated `login` method to send wrapped payload; confirmed by user. (Signup was done previously).
+        - Frontend updates for user, post, and comment services are pending.
 
 ## Next Steps
 
-1.  Update `memory-bank/progress.md` to reflect the login endpoint update.
-2.  Discuss the next API endpoint for convention rollout or other tasks with the user using `plan_mode_respond`.
+1.  Update `memory-bank/progress.md` to reflect the completion of the backend/functional test convention rollout.
+2.  Discuss the next phase with the user:
+    *   **Backend Test Enhancement (Signup - Remainder of Chunk A.2):** Detailed review and enhancement of backend tests for the signup endpoint for comprehensive coverage.
+    *   **Frontend Updates for Convention Rollout:** Update frontend services for user, post, and comment operations to send wrapped request payloads.
+    *   Address other items from "What's Left to Build" in `progress.md`.
 
 ## Active Decisions and Considerations
 
