@@ -6,7 +6,9 @@
 
 ## Recent Changes
 
-- **Corrected Phase 1 Complete (Auth & Routing Foundation for Home Page):**
+- **Corrected Phase 1 Fully Complete (Auth & Routing Foundation for Home Page):**
+    - Updated `frontend/src/pages/LoginPage.tsx` to include a "Sign up" link.
+    - Re-created `frontend/src/pages/HomePage.tsx` as a placeholder.
     - Re-created `frontend/src/pages/HomePage.tsx` as a placeholder.
     - Re-created `frontend/src/components/ProtectedRoute.tsx` to handle auth checks and redirection.
     - Modified `frontend/src/main.tsx` to use `ProtectedRoute` for the `/` route, rendering `HomePage`.
@@ -44,11 +46,12 @@
 
 ## Next Steps
 
-**Corrected Phase 1: Authentication and Routing Foundation (Home Page Plan) - COMPLETED**
+**Corrected Phase 1: Authentication and Routing Foundation (Home Page Plan) - RE-OPENED for enhancement**
 1.  **Re-create `frontend/src/pages/HomePage.tsx`** (as a placeholder initially). - COMPLETED
 2.  **Re-create `frontend/src/components/ProtectedRoute.tsx`**. - COMPLETED
 3.  **Modify `frontend/src/main.tsx` for Protected Home Route**. - COMPLETED
 4.  **Update `frontend/src/pages/SignupPage.tsx`:** Add "Already have an account? Login" link. - COMPLETED
+5.  **Update `frontend/src/pages/LoginPage.tsx`:** Add "Don't have an account? Sign up" link. - COMPLETED
 
 **Phase 2: Home Page - Feed Display (Home Page Plan) - CURRENT**
 1.  Create `PostService` (`frontend/src/services/postService.ts`) with `listPosts()` and `createPost()` methods. - **NEXT IMMEDIATE STEP**
@@ -65,7 +68,9 @@
 **Home Page Implementation Plan (Nov 5, 2025):**
 *   **Goal:** Create a Home Page displaying a feed of posts for logged-in users. Enhance signup/login flow.
 *   **Authentication:** Home Page (`/`) will be a protected route, redirecting to `/login` if the user is not authenticated. `authStore.ts` will manage auth state.
-*   **Signup Enhancement:** `SignupPage.tsx` will include a link to `/login`.
+*   **Signup/Login Flow Enhancements:**
+    *   `SignupPage.tsx` will include a link to `/login`. (COMPLETED)
+    *   `LoginPage.tsx` will include a link to `/signup`. (COMPLETED)
 *   **Feed Components:**
     *   `HomePage.tsx`: Main page component.
     *   `postService.ts`: Service for `GET /v1/posts` (and other post actions).

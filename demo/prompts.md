@@ -381,3 +381,11 @@ Revert all changes of your previous iteration, save the relevant additional cont
 
 Now that we have corrected mistakes and updated the memory, let's resume and tackle the next chunk of our plan. 
 ```
+
+### Ehnance feature
+
+```
+(ACT)
+
+We need the same link strategy applied to the Signup form, in the Login form (if someone doesn't have an account, we need a link to send them to signup form)
+```

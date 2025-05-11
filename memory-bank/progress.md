@@ -21,6 +21,7 @@
     - `frontend/src/components/ProtectedRoute.tsx` re-created for auth checks.
     - `frontend/src/main.tsx` updated to use `ProtectedRoute` for the `/` route, rendering `HomePage`.
     - "Login" link added to `frontend/src/pages/SignupPage.tsx`.
+    - "Signup" link added to `frontend/src/pages/LoginPage.tsx`.
 
 ## What's Left to Build (High-Level)
 
@@ -150,10 +151,11 @@ This list is based on the initial `projectbrief.md` and common features for a so
         - Updated `techContext.md` regarding `react-router` behavior.
     - **Corrected Plan Outline for Phase 1:**
         - **Phase 1: Auth & Routing Foundation (via `main.tsx`) - COMPLETED**
-            - Re-created `frontend/src/pages/HomePage.tsx` (placeholder).
-            - Re-created `frontend/src/components/ProtectedRoute.tsx`.
-            - Modified `frontend/src/main.tsx` to implement protected route for Home Page (`/`) using `ProtectedRoute` and `HomePage`.
-            - Added "Login" link to `frontend/src/pages/SignupPage.tsx`.
+            - Re-created `frontend/src/pages/HomePage.tsx` (placeholder). (COMPLETED)
+            - Re-created `frontend/src/components/ProtectedRoute.tsx`. (COMPLETED)
+            - Modified `frontend/src/main.tsx` to implement protected route for Home Page (`/`) using `ProtectedRoute` and `HomePage`. (COMPLETED)
+            - Added "Login" link to `frontend/src/pages/SignupPage.tsx`. (COMPLETED)
+            - Added "Signup" link to `frontend/src/pages/LoginPage.tsx`. (COMPLETED)
         - **Phase 2: Home Page Feed Display - CURRENT**
             - Create `PostService` (`frontend/src/services/postService.ts`) with `listPosts()` and `createPost()` methods. - **NEXT IMMEDIATE STEP**
             - Create `usePosts` Hook (`frontend/src/hooks/usePosts.ts`) for fetching and managing post state.
