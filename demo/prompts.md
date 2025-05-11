@@ -308,3 +308,12 @@ Let's proceed with Chunk A.3
 
 I confirmed the feature now works. I can complete the signup form. Update the memory and let's discuss what are the next chunks.
 ```
+
+
+### Progress onto next chunk
+
+```
+(ACT)
+
+Let's tckle the Backend Test Ehnancement and the Rollout Conventions (Part B). I believe Rollout convention should take precedence as it could impact the outcome of the tests. Let's start with that, then run test to ensure a working state, and then move on to Test Enhancements.
+```

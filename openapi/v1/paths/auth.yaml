@@ -58,7 +58,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '../schemas/auth.yaml#/components/schemas/LoginRequest'
+              type: object # Inline wrapper
+              properties:
+                data: # The 'data' field
+                  $ref: '../schemas/auth.yaml#/components/schemas/LoginRequest' # Reference to the actual flat LoginRequest schema
+              required:
+                - data
       responses:
         '200': # OK
           description: Login successful. Returns a JWT token.

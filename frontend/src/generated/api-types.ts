@@ -600,7 +600,9 @@ export interface operations {
         /** @description User login credentials */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["LoginRequest"];
+                "application/json": {
+                    data: components["schemas"]["LoginRequest"];
+                };
             };
         };
         responses: {

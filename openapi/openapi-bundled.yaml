@@ -73,7 +73,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/LoginRequest'
+              required:
+                - data
       responses:
         '200':
           description: Login successful. Returns a JWT token.

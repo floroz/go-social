@@ -2,26 +2,27 @@
 
 ## Current Work Focus
 
-- **Planning Next Steps:** Discussing the next chunks of work with the user after successfully implementing and verifying the frontend signup payload wrapping.
+- **Updating Memory Bank & Planning Next Steps:** Reflecting completion of login endpoint payload wrapping and preparing to discuss next work chunk with the user.
 
 ## Recent Changes
 
 - **Completed Memory Bank Update (Previous Task):** Updated all memory bank files to reflect the resolution of `TestUserSignup_ValidationErrors` functional test failures.
-- **Implemented Frontend Signup Payload Wrapping (Chunk A.3):**
-    - **Frontend Types (`frontend/src/generated/api-types.ts`):** Confirmed that generated types correctly expect a wrapped request payload (`{ data: SignupRequest }`) for the signup operation, following OpenAPI updates from Chunk A.1.
-    - **Authentication Service (`frontend/src/services/authService.ts`):**
-        - Modified the `signup` method to wrap the `signupData` (which is the flat `SignupRequest` type) within a `data` object before sending it in the `apiClient.post` call. The method signature remains `signup(signupData: SignupRequest)`.
-        - Example change: `apiClient.post("/v1/auth/signup", { data: signupData });`
-    - **Verification:**
-        - User confirmed that the signup form on the frontend now works correctly, and the request payload sent to the backend is appropriately wrapped.
+- **Implemented Frontend Signup Payload Wrapping (Chunk A.3 - Completed):**
+    - **Frontend Types (`frontend/src/generated/api-types.ts`):** Confirmed generated types correctly expect a wrapped request payload (`{ data: SignupRequest }`) for the signup operation.
+    - **Authentication Service (`frontend/src/services/authService.ts`):** Modified the `signup` method to wrap `signupData` in a `data` object.
+    - **Verification:** User confirmed successful signup with wrapped payload.
+- **Applied Request Payload Wrapping to Login Endpoint (Part B - In Progress):**
+    - **OpenAPI (`openapi/v1/paths/auth.yaml`):** Updated the `/v1/auth/login` endpoint's `requestBody` to use an inline `data` wrapper for `LoginRequest`.
+    - **Type Generation:** Ran `make generate-types` successfully.
+    - **Backend Handler (`cmd/api/auth_handlers.go#loginHandler`):** Confirmed existing handler logic was already compatible with the wrapped request structure due to its unmarshaling strategy. No changes were needed.
+    - **Backend Tests:** Ran `make test`; all backend tests passed, confirming no regressions.
+    - **Frontend Service (`frontend/src/services/authService.ts`):** Modified the `login` method to wrap `loginData` in a `data` object before sending the API request.
+    - **Verification:** User confirmed that login functionality works correctly with the updated wrapped request payload.
 
 ## Next Steps
 
-1.  Discuss the next chunks of work with the user, likely focusing on:
-    *   Further backend test coverage improvements (remainder of Chunk A.2).
-    *   Rolling out the payload wrapping convention to other API endpoints (Part B).
-    *   Or, addressing other items from "What's Left to Build" in `progress.md`.
-2.  Update memory bank files based on the decided next steps.
+1.  Update `memory-bank/progress.md` to reflect the login endpoint update.
+2.  Discuss the next API endpoint for convention rollout or other tasks with the user using `plan_mode_respond`.
 
 ## Active Decisions and Considerations
 

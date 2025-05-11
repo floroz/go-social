@@ -44,7 +44,7 @@ const AuthService = {
     try {
       const response = await apiClient.post<LoginSuccessResponse>(
         "/v1/auth/login",
-        loginData
+        { data: loginData } // Wrap the loginData in a 'data' object
       );
       return response.data.data;
     } catch (error) {

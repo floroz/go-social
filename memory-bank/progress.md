@@ -9,6 +9,7 @@
     - User signup attempts with duplicate email/username now correctly return HTTP 409 with API error code `GOSOCIAL-005-CONFLICT`.
     - Functional test `TestUserSignup_ValidationErrors` and related tests for duplicate signups are passing.
 - **Frontend Signup Payload:** The frontend (`authService.ts`) now correctly sends the signup request payload wrapped in a `{"data": ...}` object, aligning with the API specification and backend expectations. User has confirmed this functionality.
+- **Frontend Login Payload:** The frontend (`authService.ts`) now correctly sends the login request payload wrapped in a `{"data": ...}` object for the `/v1/auth/login` endpoint, aligning with API specification and backend. User has confirmed this functionality.
 
 ## What's Left to Build (High-Level)
 
@@ -46,7 +47,7 @@ This list is based on the initial `projectbrief.md` and common features for a so
 ## Current Status
 
 - **Phase:** API Implementation & Testing / Planning.
-- **Current Focus:** Discussing next steps with the user after completing frontend signup payload wrapping (Chunk A.3).
+- **Current Focus:** Discussing next API endpoint for convention rollout or other tasks with the user.
 - **Blockers:** None.
 
 ## Known Issues
@@ -94,5 +95,14 @@ This list is based on the initial `projectbrief.md` and common features for a so
         1.  Confirmed generated frontend types (`frontend/src/generated/api-types.ts`) correctly define the wrapped request structure for the signup operation.
         2.  Modified `frontend/src/services/authService.ts` in the `signup` method to wrap the `signupData` in a `data` object before making the API call.
     - **Outcome:** User confirmed successful signup via UI and verified correct wrapped request payload. Signup endpoint (Part A of plan) is now fully aligned (OpenAPI, backend, frontend).
+- **2025-11-05 (Afternoon - Login Endpoint Request Wrapping - Part B):**
+    - **Task:** Apply `{"data": ...}` request payload wrapping convention to `/v1/auth/login`.
+    - **Changes:**
+        1.  Updated `openapi/v1/paths/auth.yaml` for `/login` requestBody to use inline `data` wrapper.
+        2.  Ran `make generate-types`.
+        3.  Confirmed backend `loginHandler` in `cmd/api/auth_handlers.go` was already compatible.
+        4.  Ran `make test`; all backend tests passed.
+        5.  Updated `frontend/src/services/authService.ts#login` method to send the wrapped payload.
+    - **Outcome:** User confirmed successful login functionality with the wrapped request.
 
 *(This file will be updated regularly to reflect the project's journey.)*
