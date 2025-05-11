@@ -764,7 +764,9 @@ export interface operations {
         /** @description User profile fields to update. */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateUserProfileRequest"];
+                "application/json": {
+                    data: components["schemas"]["UpdateUserProfileRequest"];
+                };
             };
         };
         responses: {

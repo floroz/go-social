@@ -190,7 +190,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateUserProfileRequest'
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/UpdateUserProfileRequest'
+              required:
+                - data
       responses:
         '200':
           description: User profile updated successfully. Returns the updated user object.

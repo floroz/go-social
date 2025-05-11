@@ -650,7 +650,9 @@ func TestUpdateUserProfile(t *testing.T) {
 		Email:     &emailVal,                         // Correct type: *apitypes.Email
 		Username:  stringPtr(createUserDTO.Username), // Keep original Username
 	}
-	body, err := json.Marshal(updateReqDTO) // Request body is the update DTO directly
+	// Wrap the DTO in a "data" field for the request payload
+	requestPayload := map[string]any{"data": updateReqDTO}
+	body, err := json.Marshal(requestPayload)
 	assert.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodPut, testServerURL+updateEndpoint, bytes.NewBuffer(body))

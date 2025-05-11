@@ -317,3 +317,12 @@ I confirmed the feature now works. I can complete the signup form. Update the me
 
 Let's tckle the Backend Test Ehnancement and the Rollout Conventions (Part B). I believe Rollout convention should take precedence as it could impact the outcome of the tests. Let's start with that, then run test to ensure a working state, and then move on to Test Enhancements.
 ```
+
+### Let's have a checkpoint - we want to rollout the pattern we have been working on, to the rest of the codebase
+
+```
+(ACT)
+
+The structured response is progressing well. We now want to review all endpoints implementation, and api spec, to ensure this convention is followed everything. 
+If we find a path that doesn't not adhere to that, we will refactor and ensure we have a test to verify the new response structure.
+```
