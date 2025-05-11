@@ -100,7 +100,7 @@ describe("AuthService", () => {
       server.use(loginSuccessHandler);
       const response = await AuthService.login(loginData);
 
-      expect(response.token).toEqual(mockLoginResponse.token);
+      expect(response.data.token).toEqual(mockLoginResponse.token);
     });
 
     it("should throw an error on login failure (e.g., 401)", async () => {
