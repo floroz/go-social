@@ -18,9 +18,8 @@
 
 ## Next Steps
 
-1. Update `memory-bank/systemPatterns.md` and `memory-bank/progress.md` to reflect the latest chunked, backend-first iterative plan.
-2. Present this latest chunked plan to the user for feedback.
-3. Await user approval before starting implementation of Chunk A.1.
+1. Update `memory-bank/progress.md` to reflect completion of Chunk A.1.
+2. Present completion of Chunk A.1 to the user and await feedback/approval to proceed to Chunk A.2 (Backend Testing & Adjustments).
 
 ## Active Decisions and Considerations
 
@@ -29,11 +28,11 @@
     - Error responses: `{"errors": [...]}` wrapper.
     - OpenAPI request wrappers: Defined *inline* in path definitions.
 - **Chunked, Backend-First Iterative Plan for Signup Endpoint (Part A):**
-    - **Chunk A.1: Update OpenAPI & Verify Backend Handler Structure**
-        1.  Modify `openapi/v1/paths/auth.yaml` for `/v1/auth/signup` `requestBody` to use an inline `data` wrapper referencing `SignupRequest`.
-        2.  Verify existing backend `signupHandler` in `cmd/api/auth_handlers.go` already expects this wrapped request structure for unmarshaling.
-        3.  Confirm `SignupSuccessResponse` in OpenAPI already uses the `data` wrapper.
-    - **Chunk A.2: Backend Testing & Adjustments for Signup Endpoint**
+    - **Chunk A.1: Update OpenAPI & Verify Backend Handler Structure (COMPLETED)**
+        1.  Modified `openapi/v1/paths/auth.yaml` for `/v1/auth/signup` `requestBody` to use an inline `data` wrapper referencing `SignupRequest`. (DONE)
+        2.  Verified existing backend `signupHandler` in `cmd/api/auth_handlers.go` already expects this wrapped request structure for unmarshaling. (DONE - No code change needed in handler for this)
+        3.  Confirmed `SignupSuccessResponse` in OpenAPI already uses the `data` wrapper. (DONE)
+    - **Chunk A.2: Backend Testing & Adjustments for Signup Endpoint (PENDING USER APPROVAL)**
         1.  Run existing backend tests.
         2.  Update/add tests for signup to ensure they send wrapped requests (if applicable) and, critically, validate that success responses are `{"data": <User>}` and error responses are `{"errors": [...]}`.
         3.  Adjust signup handler's response generation if it doesn't already produce correctly wrapped responses. Iterate until tests pass.

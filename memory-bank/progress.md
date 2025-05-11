@@ -41,19 +41,22 @@ This list is based on the initial `projectbrief.md` and common features for a so
 ## Current Status
 
 - **Phase:** API Design Refinement & Debugging.
-- **Current Focus:** Preparing to implement the first chunk (Chunk A.1) of the plan to fix the signup 400 error. This involves updating the OpenAPI spec for the signup request with an inline `data` wrapper and then verifying the backend handler structure.
-- **Blockers:** Awaiting user approval for the chunked plan.
+- **Current Focus:** Completed Chunk A.1 (OpenAPI update for signup request, backend handler verification). Awaiting user feedback to proceed to Chunk A.2 (Backend Testing & Adjustments for signup endpoint).
+- **Blockers:** Awaiting user approval to proceed with Chunk A.2.
 
 ## Known Issues
 
 - **Signup Endpoint 400 Error (json: unknown field "first_name"):**
-    - **Status:** Investigated. Root cause understood. Detailed, chunked, backend-first iterative plan formulated.
+    - **Status:** Chunk A.1 (OpenAPI update & backend handler verification) COMPLETED. Chunk A.2 (Backend Testing & Adjustments) PENDING.
     - **Path Forward (Chunked):**
-        - **Chunk A.1 (OpenAPI & Backend Handler Verification):** Update OpenAPI for signup request (inline `data` wrapper). Verify backend handler's existing request unmarshaling structure. Confirm OpenAPI for success response wrapper.
-        - **Chunk A.2 (Backend Testing & Adjustments):** Run backend tests. Update/add tests for wrapped request handling and, crucially, for `data`/`errors` wrapped response structures. Adjust handler's response generation if needed.
+        - **Chunk A.1 (OpenAPI & Backend Handler Verification):** COMPLETED.
+            - OpenAPI for signup request updated with inline `data` wrapper.
+            - Backend handler's request unmarshaling structure verified as compatible.
+            - OpenAPI for success response wrapper confirmed.
+        - **Chunk A.2 (Backend Testing & Adjustments - NEXT):** Run backend tests. Update/add tests for wrapped request handling and, crucially, for `data`/`errors` wrapped response structures. Adjust handler's response generation if needed.
         - **Chunk A.3 (Frontend - Later):** Regenerate types, update frontend to send wrapped request, test.
     - **Impact:** Users cannot sign up via the frontend until this is resolved.
-- **Potential Lack of Backend Tests for Response Shapes:** A key part of Chunk A.2 is to address this for the signup endpoint. This needs to be a focus during the rollout to other endpoints as well.
+- **Potential Lack of Backend Tests for Response Shapes:** To be addressed in Chunk A.2 for the signup endpoint and subsequently for other endpoints during rollout.
 
 ## Evolution of Project Decisions
 

@@ -237,7 +237,7 @@ I want you to generate a new plan where we aim to achieve the following:
  Your immediate goal is to update the memory bank with a revised or confirmed plan and ask my feedback again before any implementation
 ```
 
-### Implement chunking
+### Technique: Chunking - instruct task breakdown
 
 - Prompt:
 
@@ -248,4 +248,15 @@ Part A seems a good approach but I want to chunk it down to smaller parts we can
 Once we have a successful BE implementation - we'll get feedback and discuss how to progress to next step (implement frontend). 
 
 Update your memory bank to chunk your plan into smaller steps.
+```
+
+### Begin technical implementation
+
+
+```
+(ACT)
+
+Begin implementation of Chunk A.1
+
+Continue updating the memory bank as you make progress or make new discovery. Come back to me for feedback at the completion of A.1.
 ```

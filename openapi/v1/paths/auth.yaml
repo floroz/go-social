@@ -8,12 +8,17 @@ paths:
       description: Creates a new user account.
       operationId: signupUserV1 
       requestBody:
-        description: User signup details 
+        description: User signup details.
         required: true
         content:
           application/json:
             schema:
-              $ref: '../schemas/auth.yaml#/components/schemas/SignupRequest' 
+              type: object # Inline wrapper
+              properties:
+                data: # The 'data' field
+                  $ref: '../schemas/auth.yaml#/components/schemas/SignupRequest' # Reference to the actual flat SignupRequest schema
+              required:
+                - data
       responses:
         '201': # Created
           description: User successfully registered. Returns the created user object.
