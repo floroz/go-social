@@ -25,6 +25,16 @@
 - **Login Redirection Bug Fix:**
     - Login flow now correctly updates authentication state in `authStore` (including token and user details after fetching profile) and redirects to the Home Page.
     - Involved updates to `authStore.ts`, `api.ts` (interceptor), `useLogin.ts`, `authService.ts`, and `LoginPage.tsx` (type correction).
+- **Post Service Created (`frontend/src/services/postService.ts`):**
+    - Implemented `listPosts()` method for fetching posts.
+    - Stubbed out `createPost()` method.
+    - Ensured correct type imports from `types/api.ts`.
+- **Post Hooks Created (`frontend/src/hooks/usePosts.ts`):**
+    - Implemented `usePosts` hook for fetching posts using React Query.
+    - Implemented `useCreatePost` hook for creating posts, with query invalidation.
+- **PostCard Component Created (`frontend/src/components/PostCard.tsx`):**
+    - Basic structure to display post content, author ID, and timestamps.
+    - Includes placeholders for like/comment interactions and view details.
 
 ## What's Left to Build (High-Level)
 
@@ -62,7 +72,7 @@ This list is based on the initial `projectbrief.md` and common features for a so
 ## Current Status
 
 - **Phase:** Frontend Feature Development.
-- **Current Focus:** Implementing Home Page (Phase 2 - Feed Display), starting with `PostService`.
+- **Current Focus:** Implementing Home Page (Phase 2 - Feed Display), focusing on integrating post fetching and display into `HomePage.tsx`.
 - **Blockers:** None.
 
 ## Known Issues
@@ -172,10 +182,10 @@ This list is based on the initial `projectbrief.md` and common features for a so
         - Corrected type for `onSuccess` callback in `LoginPage.tsx`.
     - **Outcome:** Login now correctly updates auth state and redirects to Home Page.
         - **Phase 2: Home Page Feed Display - CURRENT**
-            - Create `PostService` (`frontend/src/services/postService.ts`) with `listPosts()` and `createPost()` methods. - **NEXT IMMEDIATE STEP**
-            - Create `usePosts` Hook (`frontend/src/hooks/usePosts.ts`) for fetching and managing post state.
-            - Create `PostCard` Component (`frontend/src/components/PostCard.tsx`) to display individual posts.
-            - Integrate post fetching and display into `HomePage.tsx`.
+            - Create `PostService` (`frontend/src/services/postService.ts`) with `listPosts()` and `createPost()` methods. (COMPLETED)
+            - Create `usePosts` Hook (`frontend/src/hooks/usePosts.ts`) for fetching and managing post state. (COMPLETED)
+            - Create `PostCard` Component (`frontend/src/components/PostCard.tsx`) to display individual posts. (COMPLETED)
+            - Integrate post fetching and display into `HomePage.tsx`. - **NEXT IMMEDIATE STEP**
         - **Phase 3: Basic Comment Interaction - PENDING**
     - **Key APIs & Components:** Remain as per original plan, but implementation path corrected.
     - **User Experience Goals:** Remain the same.
