@@ -8,6 +8,7 @@
     - User signup validation errors (e.g., password too short, invalid email format) now correctly return HTTP 400 with API error code `GOSOCIAL-006-VALIDATION_ERROR` and include the specific problematic field name (e.g., "password", "email", "first_name") in the response.
     - User signup attempts with duplicate email/username now correctly return HTTP 409 with API error code `GOSOCIAL-005-CONFLICT`.
     - Functional test `TestUserSignup_ValidationErrors` and related tests for duplicate signups are passing.
+- **Frontend Signup Payload:** The frontend (`authService.ts`) now correctly sends the signup request payload wrapped in a `{"data": ...}` object, aligning with the API specification and backend expectations. User has confirmed this functionality.
 
 ## What's Left to Build (High-Level)
 
@@ -44,17 +45,15 @@ This list is based on the initial `projectbrief.md` and common features for a so
 
 ## Current Status
 
-- **Phase:** API Implementation & Testing.
-- **Current Focus:** Finalizing Memory Bank update after successfully fixing `TestUserSignup_ValidationErrors` functional test.
-- **Blockers:** None for the current memory bank update task.
+- **Phase:** API Implementation & Testing / Planning.
+- **Current Focus:** Discussing next steps with the user after completing frontend signup payload wrapping (Chunk A.3).
+- **Blockers:** None.
 
 ## Known Issues
 
 - **Signup Endpoint Payload Wrapping:**
-    - **Status:** Backend expects wrapped (`{"data": ...}`) requests for signup. OpenAPI was updated (Chunk A.1) to reflect this with an inline wrapper. Frontend changes to send wrapped requests are pending (was part of a previous Chunk A.3).
-    - **Impact:** Frontend signup might still fail if it sends a flat payload, until frontend is updated.
-    - **Note:** This is distinct from the recently fixed validation error code/field name issue.
-- **Comprehensive Backend Testing for Response Shapes:** While the signup validation error response shape is now correct, a broader review and addition of tests for other endpoints' request/response shapes (ensuring `data` and `errors` wrappers are consistently tested) is an ongoing effort.
+    - **Status:** RESOLVED. Backend expects wrapped (`{"data": ...}`) requests, OpenAPI defines this, and frontend now sends the wrapped request.
+- **Comprehensive Backend Testing for Response Shapes:** While the signup validation error response shape is now correct, a broader review and addition of tests for other endpoints' request/response shapes (ensuring `data` and `errors` wrappers are consistently tested) is an ongoing effort (related to remainder of Chunk A.2 and Part B rollout).
 
 ## Evolution of Project Decisions
 
@@ -75,7 +74,7 @@ This list is based on the initial `projectbrief.md` and common features for a so
         - **Signup (Part A - Chunked, Backend-First with integrated testing):**
             - A.1: Update OpenAPI (inline request wrapper), run `make generate-types`, verify backend handler, run `make test`. (COMPLETED)
             - A.2: Detailed backend testing (request handling, response shapes), adjust handler response generation if needed, iterating with `make test`. (Partially addressed by validation error fix, ongoing for broader coverage).
-            - A.3 (Later): Frontend changes for payload wrapping.
+            - A.3: Frontend changes for signup payload wrapping. (COMPLETED)
         - **Rollout (Part B - Future):** Apply similar chunked, backend-first, test-driven approach (with `make generate-types` and `make test`) to other endpoints.
 - **2025-11-05 (Afternoon - Signup Validation Error Fix):**
     - **Problem:** `TestUserSignup_ValidationErrors` failing due to incorrect API error code (expected `GOSOCIAL-006-VALIDATION_ERROR`, got `GOSOCIAL-001-BAD_REQUEST`) and missing/incorrect field name in error response.
@@ -89,5 +88,11 @@ This list is based on the initial `projectbrief.md` and common features for a so
             - Populated `apitypes.ApiError.Field` with the converted field name.
         5.  Calls to `writeJSONError` in `api.go` and `auth_handlers.go` updated.
     - **Outcome:** All unit and functional tests (including `TestUserSignup_ValidationErrors`) passed.
+- **2025-11-05 (Afternoon - Frontend Signup Payload Wrapping - Chunk A.3):**
+    - **Task:** Update frontend to send wrapped `{"data": ...}` payload for signup.
+    - **Changes:**
+        1.  Confirmed generated frontend types (`frontend/src/generated/api-types.ts`) correctly define the wrapped request structure for the signup operation.
+        2.  Modified `frontend/src/services/authService.ts` in the `signup` method to wrap the `signupData` in a `data` object before making the API call.
+    - **Outcome:** User confirmed successful signup via UI and verified correct wrapped request payload. Signup endpoint (Part A of plan) is now fully aligned (OpenAPI, backend, frontend).
 
 *(This file will be updated regularly to reflect the project's journey.)*

@@ -300,3 +300,11 @@ Let's update our memory bank with the current state of progress
 
 Let's proceed with Chunk A.3
 ```
+
+### Confirm completion of A.3. and review next chunks
+
+```
+(ACT)
+
+I confirmed the feature now works. I can complete the signup form. Update the memory and let's discuss what are the next chunks.
+```

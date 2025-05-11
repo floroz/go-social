@@ -2,32 +2,26 @@
 
 ## Current Work Focus
 
-- **Finalizing Memory Bank Update:** Updating all memory bank files to reflect the successful resolution of the `TestUserSignup_ValidationErrors` functional test failures.
+- **Planning Next Steps:** Discussing the next chunks of work with the user after successfully implementing and verifying the frontend signup payload wrapping.
 
 ## Recent Changes
 
-- **Fixed `TestUserSignup_ValidationErrors` Functional Test:**
-    - **Service Layer (`internal/services/user_service.go`):**
-        - Modified the `Create` method to return `validator.ValidationErrors` directly when DTO validation fails. This allows the API layer to access detailed, structured validation error information.
-    - **Unit Tests (`internal/services/user_service_test.go`):**
-        - Updated `TestCreateUser_Validation` to assert that the `Create` method returns `validator.ValidationErrors` (using `assert.ErrorAs`) instead of the previously expected `*domain.ValidationError`.
-    - **API Error Handling (`cmd/api/api.go`):**
-        - Modified the `writeJSONError` function signature to include an optional `fieldName string` parameter. This allows the `field` attribute in the `apitypes.ApiError` struct to be populated in the JSON error response.
-        - Updated the `handleErrors` function:
-            - Added a new case to specifically handle `validator.ValidationErrors`.
-            - When `validator.ValidationErrors` are processed, it now extracts the first `validator.FieldError`.
-            - A new helper function `toSnakeCase` was implemented and used to convert the struct field name (e.g., "FirstName") from the `FieldError` into snake_case (e.g., "first_name").
-            - This snake_case field name is then passed to `writeJSONError` to be included in the API error response, aligning with functional test expectations.
-        - Updated all other calls to `writeJSONError` within `cmd/api/api.go` to accommodate the new signature (passing `""` for `fieldName` for non-field-specific errors).
-    - **API Handlers (`cmd/api/auth_handlers.go`):**
-        - Updated all direct calls to `writeJSONError` to include the new `fieldName` argument (passing `""` as these were generally for request parsing issues, not specific DTO field validations).
+- **Completed Memory Bank Update (Previous Task):** Updated all memory bank files to reflect the resolution of `TestUserSignup_ValidationErrors` functional test failures.
+- **Implemented Frontend Signup Payload Wrapping (Chunk A.3):**
+    - **Frontend Types (`frontend/src/generated/api-types.ts`):** Confirmed that generated types correctly expect a wrapped request payload (`{ data: SignupRequest }`) for the signup operation, following OpenAPI updates from Chunk A.1.
+    - **Authentication Service (`frontend/src/services/authService.ts`):**
+        - Modified the `signup` method to wrap the `signupData` (which is the flat `SignupRequest` type) within a `data` object before sending it in the `apiClient.post` call. The method signature remains `signup(signupData: SignupRequest)`.
+        - Example change: `apiClient.post("/v1/auth/signup", { data: signupData });`
     - **Verification:**
-        - Ran `make test` successfully, confirming that all unit tests and functional tests (including all subtests of `TestUserSignup_ValidationErrors`) are now passing.
+        - User confirmed that the signup form on the frontend now works correctly, and the request payload sent to the backend is appropriately wrapped.
 
 ## Next Steps
 
-1.  Finish updating all memory bank files (`progress.md` is next).
-2.  Present the completion of the memory bank update to the user.
+1.  Discuss the next chunks of work with the user, likely focusing on:
+    *   Further backend test coverage improvements (remainder of Chunk A.2).
+    *   Rolling out the payload wrapping convention to other API endpoints (Part B).
+    *   Or, addressing other items from "What's Left to Build" in `progress.md`.
+2.  Update memory bank files based on the decided next steps.
 
 ## Active Decisions and Considerations
 
