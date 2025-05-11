@@ -219,3 +219,33 @@ What if I want to enforce a consistent structure for request and responses? I wa
 
 Your immediate goal is to update the memory bank with a revised or confirmed plan and ask my feedback again before any implementation
 ```
+
+### Review and refine - iterative feedback loop
+
+- prompt:
+  
+```
+(ACT)
+I want to apply consistently this pattern, and I don't want to create intermediate schema like "WrappedCreateResponse" - I prefer you define inline in the spec the "data" field and in there you link to the existing data model.
+
+I want you to generate a new plan where we aim to achieve the following:
+
+1. Update signup endpoint to support structured response for success and error
+2.Update the Go endpoints and any failing tests. If no tests are failing - it means we are missing a test to validate the shaope of the response, and we need to add it.
+1. A revised plan on how to rollout this approach to all other endpoints who are not implementing it yet.
+
+ Your immediate goal is to update the memory bank with a revised or confirmed plan and ask my feedback again before any implementation
+```
+
+### Implement chunking
+
+- Prompt:
+
+```
+(ACT)
+Part A seems a good approach but I want to chunk it down to smaller parts we can iterate together. For example I want to first update the schema, then run the backend tests, verify/correct fixes.
+
+Once we have a successful BE implementation - we'll get feedback and discuss how to progress to next step (implement frontend). 
+
+Update your memory bank to chunk your plan into smaller steps.
+```

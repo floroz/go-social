@@ -18,28 +18,33 @@
 
 ## Next Steps
 
-1. Update `memory-bank/systemPatterns.md` and `memory-bank/progress.md` to reflect the latest revised plan (inline OpenAPI wrappers, testing, rollout strategy).
-2. Present the latest revised technical plan to the user for feedback.
-3. Await user approval before any implementation.
+1. Update `memory-bank/systemPatterns.md` and `memory-bank/progress.md` to reflect the latest chunked, backend-first iterative plan.
+2. Present this latest chunked plan to the user for feedback.
+3. Await user approval before starting implementation of Chunk A.1.
 
 ## Active Decisions and Considerations
 
-- **Payload Convention Enforcement (User Directive):**
-    - All API request bodies and success response bodies must use a `{"data": <payload>}` wrapper.
-    - Error responses must use an `{"errors": [...]}` wrapper.
-    - **OpenAPI Definition Style:** The `data` wrapper for request bodies should be defined *inline* within the OpenAPI path definition's `requestBody.content.application/json.schema`, rather than creating separate named wrapper schemas (e.g., `WrappedSignupRequest`).
-- **Revised Plan for Signup Error & Broader Rollout:**
-    - **Part A (Signup Endpoint):**
-        1.  Modify `openapi/v1/paths/auth.yaml` for `/v1/auth/signup` to use an inline `data` wrapper in the `requestBody` schema, referencing the existing flat `SignupRequest` schema for its `data` property.
-        2.  Confirm `SignupSuccessResponse` already uses the `data` wrapper (it does).
-        3.  Regenerate frontend types.
-        4.  Update frontend `SignupPage.tsx` to send the wrapped request.
-        5.  Verify backend `signupHandler` (which expects wrapped request) now works correctly.
-        6.  Review and add backend tests for signup request unmarshaling (wrapped) and response structure (wrapped).
-    - **Part B (Rollout to Other Endpoints):**
-        1.  Identify other POST/PUT/PATCH endpoints with flat request bodies.
-        2.  Iteratively apply the same process: update OpenAPI with inline `data` wrapper for requests, regenerate types, update frontend, update backend handler (if it currently expects flat requests), and add/update tests for both request and response structures.
-- This strategy ensures consistency and makes the backend's current expectation for a wrapped signup request the correct target, requiring changes primarily in the OpenAPI spec and frontend.
+- **Payload Convention Enforcement (User Directive - Confirmed):**
+    - All API request bodies and success response bodies: `{"data": <payload>}` wrapper.
+    - Error responses: `{"errors": [...]}` wrapper.
+    - OpenAPI request wrappers: Defined *inline* in path definitions.
+- **Chunked, Backend-First Iterative Plan for Signup Endpoint (Part A):**
+    - **Chunk A.1: Update OpenAPI & Verify Backend Handler Structure**
+        1.  Modify `openapi/v1/paths/auth.yaml` for `/v1/auth/signup` `requestBody` to use an inline `data` wrapper referencing `SignupRequest`.
+        2.  Verify existing backend `signupHandler` in `cmd/api/auth_handlers.go` already expects this wrapped request structure for unmarshaling.
+        3.  Confirm `SignupSuccessResponse` in OpenAPI already uses the `data` wrapper.
+    - **Chunk A.2: Backend Testing & Adjustments for Signup Endpoint**
+        1.  Run existing backend tests.
+        2.  Update/add tests for signup to ensure they send wrapped requests (if applicable) and, critically, validate that success responses are `{"data": <User>}` and error responses are `{"errors": [...]}`.
+        3.  Adjust signup handler's response generation if it doesn't already produce correctly wrapped responses. Iterate until tests pass.
+    - **(User Feedback Point after Chunk A.2)**
+    - **Chunk A.3: Frontend Implementation for Signup (Details later)**
+        1.  Regenerate frontend types.
+        2.  Update `SignupPage.tsx` to send wrapped request.
+        3.  Test frontend.
+    - **(User Feedback Point after Chunk A.3)**
+- **Rollout to Other Endpoints (Part B - Future):** Will follow a similar chunked, backend-first, test-driven approach.
+- This iterative strategy allows for focused backend stabilization before frontend changes.
 
 ## Important Patterns and Preferences (from `.clinerules/`)
 
@@ -69,14 +74,13 @@
 - It utilizes OpenAPI for API design and code generation.
 - Docker is used for containerization.
 - A comprehensive set of `.clinerules` dictates coding standards and best practices for TypeScript development.
-- **Latest understanding of signup error fix & project conventions:**
-    - **User Directive:** Enforce `{"data": {...}}` wrapper for all request bodies and success responses. Error responses: `{"errors": [...]}`. Request wrappers in OpenAPI are to be defined inline in path definitions.
-    - **Path to Fix Signup Error:**
-        1.  Modify `openapi/v1/paths/auth.yaml` to define an inline `data` wrapper for the `/v1/auth/signup` request body, which will contain the properties of the original `SignupRequest`.
-        2.  Regenerate frontend types.
-        3.  Update `SignupPage.tsx` to send this wrapped payload.
-        4.  The backend `signupHandler` already expects this wrapped structure for requests, so its unmarshaling logic should then work correctly.
-        5.  Add/verify backend tests for request and response shapes.
-    - **Broader Impact:** This convention will be rolled out to other relevant endpoints.
+- **Latest Plan Summary (Signup Error Fix & Conventions):**
+    - **Convention:** `{"data": ...}` for requests & success responses; `{"errors": ...}` for errors. OpenAPI request wrappers: inline.
+    - **Signup Fix (Backend First):**
+        1.  Update OpenAPI for signup request (inline `data` wrapper).
+        2.  Verify backend handler's request unmarshaling (already expects wrapper).
+        3.  Run backend tests. Update/add tests to ensure wrapped requests are handled and, crucially, that responses (success/error) are correctly structured with `data`/`errors` wrappers. Adjust handler response generation if needed.
+        4.  (Later) Update frontend.
+    - **General Rollout:** Apply this iterative, test-focused, backend-first approach to other endpoints.
 
 *(This file will be updated frequently as work progresses.)*
