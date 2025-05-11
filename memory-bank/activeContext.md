@@ -2,10 +2,16 @@
 
 ## Current Work Focus
 
-- **Finalizing Memory Bank Update:** Reflecting completion of the backend/functional test phase for the request payload convention rollout across all relevant V1 POST/PUT endpoints. Preparing to discuss the next phase of work.
+- **Implementing Home Page (Phase 2 - Feed Display):** Building the core components for displaying the post feed on the Home Page.
 
 ## Recent Changes
 
+- **Home Page - Phase 1 Complete (Auth & Routing Foundation):**
+    - Added a "Login" link to `frontend/src/pages/SignupPage.tsx`.
+    - Set up basic routing in `frontend/src/App.tsx` for `/`, `/login`, and `/signup`.
+    - Created a placeholder `frontend/src/pages/HomePage.tsx`.
+    - Implemented `frontend/src/components/ProtectedRoute.tsx` to guard the `/` route, redirecting unauthenticated users to `/login`.
+    - Updated `techContext.md` with correct information about `react-router` v6.4+ (includes `react-router-dom` functionalities).
 - **Completed Memory Bank Update (Previous Task):** Updated memory bank after fixing `TestUserSignup_ValidationErrors`.
 - **Implemented Frontend Signup Payload Wrapping (Chunk A.3 - Completed):**
     - Ensured frontend sends wrapped `{"data": ...}` for signup; confirmed by user.
@@ -33,11 +39,38 @@
 
 ## Next Steps
 
-1.  Update `memory-bank/progress.md` to reflect the completion of the frontend payload convention rollout for all V1 POST/PUT endpoints (noting which features were unimplemented).
-2.  The "Frontend Updates for Convention Rollout" task is now complete based on the current state of implemented frontend features.
-3.  Address other items from "What's Left to Build" in `progress.md` or await user direction for the next task.
+**Phase 1: Authentication and Routing Foundation (Home Page Plan) - COMPLETED**
+1.  **Protected Route for Home Page (`/`):** Implemented.
+2.  **Update Signup Page (`frontend/src/pages/SignupPage.tsx`):** Implemented.
+
+**Phase 2: Home Page - Feed Display (Home Page Plan) - CURRENT**
+1.  Create `PostService` (`frontend/src/services/postService.ts`) with `listPosts()` and `createPost()` methods.
+2.  Create `usePosts` Hook (`frontend/src/hooks/usePosts.ts`) for fetching and managing post state.
+3.  Create `PostCard` Component (`frontend/src/components/PostCard.tsx`) to display individual posts.
+4.  Integrate post fetching and display into `HomePage.tsx` (currently a placeholder).
+
+**Phase 3: Basic Comment Interaction (Home Page Plan - Future Enhancement Path)**
+*   Consider navigation to a `PostDetailPage` for viewing and adding comments initially.
+
+**General:**
+*   Update `memory-bank/progress.md` to reflect completion of Home Page Plan Phase 1 and current focus on Phase 2.
+*   Proceed with implementing Phase 2 tasks.
 
 ## Active Decisions and Considerations
+
+**Home Page Implementation Plan (Nov 5, 2025):**
+*   **Goal:** Create a Home Page displaying a feed of posts for logged-in users. Enhance signup/login flow.
+*   **Authentication:** Home Page (`/`) will be a protected route, redirecting to `/login` if the user is not authenticated. `authStore.ts` will manage auth state.
+*   **Signup Enhancement:** `SignupPage.tsx` will include a link to `/login`.
+*   **Feed Components:**
+    *   `HomePage.tsx`: Main page component.
+    *   `postService.ts`: Service for `GET /v1/posts` (and other post actions).
+    *   `usePosts.ts`: Custom hook for post data fetching and state.
+    *   `PostCard.tsx`: Component to display individual post details (author, content, timestamp, comment/like counts placeholders, view/add comment links).
+*   **API Usage:** Primarily `GET /v1/posts` (requires auth) for the feed. Comment interactions (`GET /v1/posts/{postId}/comments`, etc.) will also require auth.
+*   **Initial Comment Handling:** Likely navigate to a separate `PostDetailPage` for full comment interaction to simplify the initial Home Page.
+*   **Styling:** Utilize Shadcn/UI components for consistency.
+*   **Future Considerations:** Pagination/infinite scroll for posts, inline "Create Post" form, real-time updates.
 
 - **Critical Quality Steps Added to Workflow:**
     - After any OpenAPI specification change: **Must run `make generate-types`**.

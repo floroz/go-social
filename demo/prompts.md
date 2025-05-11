@@ -326,3 +326,39 @@ Let's tckle the Backend Test Ehnancement and the Rollout Conventions (Part B). I
 The structured response is progressing well. We now want to review all endpoints implementation, and api spec, to ensure this convention is followed everything. 
 If we find a path that doesn't not adhere to that, we will refactor and ensure we have a test to verify the new response structure.
 ```
+
+```
+(ACT)
+
+Continue rolli
+```
+
+
+### Create a new feature - Home feed
+
+```
+(PLAN)
+
+Let's now build the Home Page - I want you to create a plan that consist of the following:
+
+- Design a new Home Page feed using the available APIs.
+- The home feed is only accessible if a user is logged in
+- If a user is not logged in - we should redirect to signup/login
+- In the Signup form - we should add a button link to Login - in case someone has already an account but is not logged in.
+
+- Create a mockup using the markdown of how the layout of the home page would look like.
+- Create a skatch of the user flows in the Home feed, what actions can they perform? What components will be displayed?
+
+The outcome should be a plan that we can review and eventually commit to the memory bank
+```
+
+Because this is a large requirement - I do a few iterations in PLAN mode before committing to memory-bank to avoid wasting time on file editing for things that might be incorrect.
+
+
+```
+Commit this plan into the memory bank - so that we can do review and iteration using those files.
+```
+
+```
+You have a wrong understanding of `react-router` the `react-router-dom` is not required anymore and you will find all exports in `react-router` alredy. Update this information in your memory bank
+```

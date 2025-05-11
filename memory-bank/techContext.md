@@ -14,7 +14,9 @@ Based on the current file structure, the following technologies are likely in us
 
 ### Frontend
 - **Language:** TypeScript
-- **Framework/Library:** React (inferred from `App.tsx`, `main.tsx`, `vite.config.ts`)
+- **Framework/Library:**
+    - React (inferred from `App.tsx`, `main.tsx`, `vite.config.ts`)
+    - React Router (`react-router` package): Used for client-side routing. As of v6.4+, `react-router` includes functionalities previously in `react-router-dom`, so components like `Link`, `BrowserRouter`, `Routes`, `Route`, and hooks like `useNavigate` are typically imported directly from `react-router`.
 - **Build Tool/Bundler:** Vite (inferred from `vite.config.ts`, `index.html` script type module)
 - **UI Components:** Likely custom components, potentially with a library like Shadcn/UI (inferred from `frontend/components/ui/`)
 - **Styling:** CSS (inferred from `index.css`), potentially Tailwind CSS if `tailwind.config.js` exists or is configured in `postcss.config.js`.
