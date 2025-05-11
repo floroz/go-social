@@ -16,7 +16,11 @@
 - **User Profile Update (Frontend - `PUT /v1/users`):** Investigation revealed this feature is not yet implemented in the frontend. No code changes for payload wrapping were required for this endpoint.
 - **Post Creation/Update (Frontend - `POST /v1/posts`, `PUT /v1/posts/{id}`):** Investigation revealed these features are not yet implemented in the frontend. No code changes for payload wrapping were required for these endpoints.
 - **Comment Creation/Update (Frontend - `POST /v1/posts/{postId}/comments`, `PUT /v1/posts/{postId}/comments/{id}`):** Investigation revealed these features are not yet implemented in the frontend. No code changes for payload wrapping were required for these endpoints.
-// Removed incorrect "Home Page - Phase 1" entry from What Works
+- **Home Page - Corrected Phase 1 (Auth & Routing Foundation):**
+    - `frontend/src/pages/HomePage.tsx` re-created as a placeholder.
+    - `frontend/src/components/ProtectedRoute.tsx` re-created for auth checks.
+    - `frontend/src/main.tsx` updated to use `ProtectedRoute` for the `/` route, rendering `HomePage`.
+    - "Login" link added to `frontend/src/pages/SignupPage.tsx`.
 
 ## What's Left to Build (High-Level)
 
@@ -53,8 +57,8 @@ This list is based on the initial `projectbrief.md` and common features for a so
 
 ## Current Status
 
-- **Phase:** Frontend Feature Development / Correction.
-- **Current Focus:** Correcting Home Page Phase 1 implementation. Addressing user feedback regarding premature implementation and incorrect router setup location. Reverting changes and planning correct approach via `main.tsx`.
+- **Phase:** Frontend Feature Development.
+- **Current Focus:** Implementing Home Page (Phase 2 - Feed Display), starting with `PostService`.
 - **Blockers:** None.
 
 ## Known Issues
@@ -145,12 +149,16 @@ This list is based on the initial `projectbrief.md` and common features for a so
         - Deleted `frontend/src/pages/HomePage.tsx` and `frontend/src/components/ProtectedRoute.tsx`.
         - Updated `techContext.md` regarding `react-router` behavior.
     - **Corrected Plan Outline for Phase 1:**
-        - **Phase 1: Auth & Routing Foundation (via `main.tsx`) - PENDING CORRECT IMPLEMENTATION**
-            - Modify `frontend/src/main.tsx` to implement protected route for Home Page (`/`) using `ProtectedRoute` (to be re-created) and `HomePage` (to be re-created).
-            - Re-create `frontend/src/pages/HomePage.tsx` (placeholder).
-            - Re-create `frontend/src/components/ProtectedRoute.tsx`.
-            - Add "Login" link to `frontend/src/pages/SignupPage.tsx`.
-        - **Phase 2: Home Page Feed Display - PENDING**
+        - **Phase 1: Auth & Routing Foundation (via `main.tsx`) - COMPLETED**
+            - Re-created `frontend/src/pages/HomePage.tsx` (placeholder).
+            - Re-created `frontend/src/components/ProtectedRoute.tsx`.
+            - Modified `frontend/src/main.tsx` to implement protected route for Home Page (`/`) using `ProtectedRoute` and `HomePage`.
+            - Added "Login" link to `frontend/src/pages/SignupPage.tsx`.
+        - **Phase 2: Home Page Feed Display - CURRENT**
+            - Create `PostService` (`frontend/src/services/postService.ts`) with `listPosts()` and `createPost()` methods. - **NEXT IMMEDIATE STEP**
+            - Create `usePosts` Hook (`frontend/src/hooks/usePosts.ts`) for fetching and managing post state.
+            - Create `PostCard` Component (`frontend/src/components/PostCard.tsx`) to display individual posts.
+            - Integrate post fetching and display into `HomePage.tsx`.
         - **Phase 3: Basic Comment Interaction - PENDING**
     - **Key APIs & Components:** Remain as per original plan, but implementation path corrected.
     - **User Experience Goals:** Remain the same.

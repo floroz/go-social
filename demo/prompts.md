@@ -373,3 +373,11 @@ You have made a mistake in your previous implemention. First of all, you jumped 
 
 Revert all changes of your previous iteration, save the relevant additional context in the bank, and recap what is your implementation plan for the next steps.
 ```
+
+### Resume after correction
+
+```
+(ACT)
+
+Now that we have corrected mistakes and updated the memory, let's resume and tackle the next chunk of our plan. 
+```

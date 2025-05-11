@@ -2,10 +2,15 @@
 
 ## Current Work Focus
 
-- **Correcting Home Page Phase 1 Implementation:** Addressing user feedback regarding premature implementation and incorrect router setup location. Reverting changes and planning correct approach via `main.tsx`.
+- **Implementing Home Page (Phase 2 - Feed Display):** Building the core components for displaying the post feed on the Home Page, starting with `PostService`.
 
 ## Recent Changes
 
+- **Corrected Phase 1 Complete (Auth & Routing Foundation for Home Page):**
+    - Re-created `frontend/src/pages/HomePage.tsx` as a placeholder.
+    - Re-created `frontend/src/components/ProtectedRoute.tsx` to handle auth checks and redirection.
+    - Modified `frontend/src/main.tsx` to use `ProtectedRoute` for the `/` route, rendering `HomePage`.
+    - Updated `frontend/src/pages/SignupPage.tsx` to include a "Log in" link.
 - **Reverted Incorrect Home Page Phase 1 Implementation:**
     - Restored `frontend/src/App.tsx` to its original state (pre-routing changes).
     - Reverted `frontend/src/pages/SignupPage.tsx` by removing the "Login" link and `Link` import.
@@ -39,21 +44,18 @@
 
 ## Next Steps
 
-**Corrected Phase 1: Authentication and Routing Foundation (Home Page Plan)**
-1.  **Modify `frontend/src/main.tsx` for Protected Home Route:**
-    *   Import `HomePage.tsx` (to be re-created).
-    *   Import `ProtectedRoute.tsx` (to be re-created).
-    *   Update the route for `/` to use `ProtectedRoute` wrapping `HomePage`.
-    *   Ensure `App.tsx` remains the component for the `/` route if no specific `HomePage` is defined or if it's a general wrapper. (Clarification: `App.tsx` will *not* be the direct element for `/` if `HomePage` is used; `main.tsx` will route `/` to `ProtectedRoute -> HomePage`).
-2.  **Re-create `frontend/src/pages/HomePage.tsx`** (as a placeholder initially).
-3.  **Re-create `frontend/src/components/ProtectedRoute.tsx`**.
-4.  **Update `frontend/src/pages/SignupPage.tsx`:**
-    *   Add "Already have an account? Login" link navigating to `/login`.
-5.  Update `memory-bank/progress.md` to reflect the corrected plan and actions.
-6.  Await user confirmation before proceeding with these corrected Phase 1 implementation steps.
+**Corrected Phase 1: Authentication and Routing Foundation (Home Page Plan) - COMPLETED**
+1.  **Re-create `frontend/src/pages/HomePage.tsx`** (as a placeholder initially). - COMPLETED
+2.  **Re-create `frontend/src/components/ProtectedRoute.tsx`**. - COMPLETED
+3.  **Modify `frontend/src/main.tsx` for Protected Home Route**. - COMPLETED
+4.  **Update `frontend/src/pages/SignupPage.tsx`:** Add "Already have an account? Login" link. - COMPLETED
 
-**Phase 2: Home Page - Feed Display (Home Page Plan) - PENDING**
-*   (Tasks remain the same as previously planned, will proceed after corrected Phase 1 is approved and implemented)
+**Phase 2: Home Page - Feed Display (Home Page Plan) - CURRENT**
+1.  Create `PostService` (`frontend/src/services/postService.ts`) with `listPosts()` and `createPost()` methods. - **NEXT IMMEDIATE STEP**
+2.  Create `usePosts` Hook (`frontend/src/hooks/usePosts.ts`) for fetching and managing post state.
+3.  Create `PostCard` Component (`frontend/src/components/PostCard.tsx`) to display individual posts.
+4.  Integrate post fetching and display into `HomePage.tsx`.
+5.  Update `memory-bank/progress.md` as these steps are completed.
 
 **Phase 3: Basic Comment Interaction (Home Page Plan - Future Enhancement Path) - PENDING**
 *   (Tasks remain the same)

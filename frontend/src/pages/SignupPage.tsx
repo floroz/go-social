@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useNavigate } from "react-router"; // Removed Link import
+import { useNavigate, Link } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -151,7 +151,12 @@ const SignupPage = () => {
               </Button>
             </form>
           </Form>
-          {/* Removed the "Already have an account?" paragraph */}
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link to="/login" className="underline underline-offset-4 hover:text-primary">
+              Log in
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>
