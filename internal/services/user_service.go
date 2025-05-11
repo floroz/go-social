@@ -25,22 +25,20 @@ func NewUserService(userRepo interfaces.UserRepository) interfaces.UserService {
 func (s *userService) Create(ctx context.Context, createUser *domain.CreateUserDTO) (*domain.User, error) {
 	err := validation.Validate.Struct(createUser)
 	if err != nil {
-		return nil, domain.NewBadRequestError(err.Error())
+		return nil, err
 	}
 
 	// check existing email
 	if existingUser, err := s.userRepo.GetByEmail(ctx, createUser.Email); existingUser != nil {
-		// obfuscate error message to avoid leaking user information
-		return nil, domain.NewBadRequestError("invalid body request")
-	} else if err != nil && err != domain.ErrNotFound {
+		return nil, domain.ErrDuplicateEmailOrUsername
+	} else if err != nil && !errors.Is(err, domain.ErrNotFound) {
 		log.Error().Err(err).Msg("failed to get user by email")
 		return nil, domain.NewInternalServerError("something went wrong")
 	}
 	// check existing username
 	if existingUser, err := s.userRepo.GetByUsername(ctx, createUser.Username); existingUser != nil {
-		// obfuscate error message to avoid leaking user information
-		return nil, domain.NewBadRequestError("invalid body request")
-	} else if err != nil && err != domain.ErrNotFound {
+		return nil, domain.ErrDuplicateEmailOrUsername
+	} else if err != nil && !errors.Is(err, domain.ErrNotFound) {
 		log.Error().Err(err).Msg("failed to get user by username")
 		return nil, domain.NewInternalServerError("something went wrong")
 	}

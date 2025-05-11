@@ -271,3 +271,16 @@ Your approach is correct but you failed two important quality verification. If y
 
 Make sure you save this context for future reference when performing such tasks.
 ```
+
+### Completion of Chunk A.1 - follow up with A.2
+
+```
+(ACT)
+
+Begin implementation of Chunk A.2
+
+Continue updating the memory bank as you make progress or make new discovery. Come back to me for feedback at the completion of A.2.
+
+```
+
+Note: this started a long agentic session for a context of 1.3m - which required starting a new task with `/newtask` to preserve task context after 1m Gemini 2.5 pro context was completely filled.

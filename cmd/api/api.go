@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/floroz/go-social/cmd/middlewares"
 	"github.com/floroz/go-social/internal/apitypes"
@@ -17,6 +19,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 )
 
@@ -111,7 +114,8 @@ func writeJSONResponse(w http.ResponseWriter, status int, data any) {
 
 	if err != nil {
 		log.Error().Err(err).Msg("failed to write response")
-		writeJSONError(w, http.StatusInternalServerError, "failed to write response", errorcodes.CodeInternalServerError)
+		// Pass "" for fieldName as it's an internal server error writing response
+		writeJSONError(w, http.StatusInternalServerError, "failed to write response", errorcodes.CodeInternalServerError, "")
 	}
 }
 
@@ -123,11 +127,16 @@ func readJSON(source io.Reader, dest any) error {
 	return decoder.Decode(dest)
 }
 
-func writeJSONError(w http.ResponseWriter, status int, message string, code errorcodes.ApiErrorCode) {
+// Modified to include fieldName
+func writeJSONError(w http.ResponseWriter, status int, message string, code errorcodes.ApiErrorCode, fieldName string) {
 	apiErr := apitypes.ApiError{
 		Code:    string(code),
 		Message: message,
 	}
+	if fieldName != "" {
+		apiErr.Field = &fieldName
+	}
+
 	errorResponse := apitypes.ApiErrorResponse{
 		Errors: []apitypes.ApiError{apiErr},
 	}
@@ -144,33 +153,62 @@ func handleErrors(w http.ResponseWriter, err error) {
 
 	// Check for specific sentinel errors first
 	if errors.Is(err, domain.ErrNotFound) {
-		// Directly use StatusNotFound and the error message/code
-		writeJSONError(w, http.StatusNotFound, err.Error(), errorcodes.CodeNotFound)
+		writeJSONError(w, http.StatusNotFound, err.Error(), errorcodes.CodeNotFound, "")
+		return
+	}
+	if errors.Is(err, domain.ErrDuplicateEmailOrUsername) { // New check for conflict
+		writeJSONError(w, http.StatusConflict, err.Error(), errorcodes.CodeConflict, "")
 		return
 	}
 
 	// Then check for custom error types
 	switch e := err.(type) {
-	case *domain.ValidationError:
-		// TODO: Enhance this to return multiple validation errors if needed
-		// For now, return the first error message with a generic code.
-		writeJSONError(w, http.StatusBadRequest, e.Error(), errorcodes.CodeValidationError)
+	case validator.ValidationErrors:
+		if len(e) > 0 {
+			// For now, take the first validation error to populate the single ApiError.
+			// A more robust solution might involve returning multiple ApiError entries.
+			firstErr := e[0]
+			// Convert struct field name (PascalCase) to snake_case for JSON field name
+			fieldName := toSnakeCase(firstErr.Field())
+			// The message from firstErr.Error() is usually quite informative.
+			writeJSONError(w, http.StatusBadRequest, firstErr.Error(), errorcodes.CodeValidationError, fieldName)
+		} else {
+			// Should not happen if validator.ValidationErrors is not empty, but as a fallback:
+			writeJSONError(w, http.StatusBadRequest, "Validation failed", errorcodes.CodeValidationError, "")
+		}
+	case *domain.ValidationError: // This case might become less common if services return validator.ValidationErrors directly
+		// If domain.ValidationError.Field is set meaningfully, pass it. Otherwise, pass ""
+		field := ""
+		if e.Field != "" && e.Field != "validation" { // Avoid passing "validation" as the field name
+			field = e.Field
+		}
+		writeJSONError(w, http.StatusBadRequest, e.Error(), errorcodes.CodeValidationError, field)
 	case *domain.InternalServerError:
-		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeInternalServerError)
+		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeInternalServerError, "")
 	case *domain.BadRequestError:
-		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeBadRequest)
+		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeBadRequest, "")
 	case *domain.NotFoundError:
-		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeNotFound)
+		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeNotFound, "")
 	case *domain.ForbiddenError:
-		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeForbidden)
+		writeJSONError(w, e.StatusCode, e.Error(), errorcodes.CodeForbidden, "")
 	default:
-		writeJSONError(w, http.StatusInternalServerError, "An unexpected internal server error occurred.", errorcodes.CodeInternalServerError)
+		// Fallback for other unknown errors
+		writeJSONError(w, http.StatusInternalServerError, "An unexpected internal server error occurred.", errorcodes.CodeInternalServerError, "")
 	}
 }
 
 func getUserClaimFromContext(ctx context.Context) (*domain.UserClaims, bool) {
 	claims, ok := ctx.Value(middlewares.ContextKeyUser).(*domain.UserClaims)
 	return claims, ok
+}
+
+var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
+var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
+
+func toSnakeCase(str string) string {
+	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
+	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+	return strings.ToLower(snake)
 }
 
 // serveDocsHandler serves the Swagger UI HTML page.
