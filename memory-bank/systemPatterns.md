@@ -72,5 +72,15 @@ graph TD
             4. The backend handler's existing expectation for a wrapped request will then align with the new contract.
             5. Add/update backend tests for request and response shapes.
     - **General Rollout:** This approach (inline `data` wrapper in OpenAPI for requests, frontend updates, backend handler alignment, comprehensive testing) will be applied iteratively to other POST/PUT/PATCH endpoints to ensure project-wide consistency.
+    - **Standardized API Error Responses (Updated Nov 2025):**
+        - Error responses consistently use the `{"errors": [{"code": "...", "field": "...", "message": "..."}]}` structure.
+        - Specific API error codes (e.g., `GOSOCIAL-005-CONFLICT`, `GOSOCIAL-006-VALIDATION_ERROR`) are used to differentiate error types.
+        - For validation errors (`GOSOCIAL-006-VALIDATION_ERROR`), the `field` attribute in the error object is populated with the name of the problematic input field (e.g., "email", "password", "first_name"). This is achieved by:
+            1. Services (e.g., `userService.Create`) returning `validator.ValidationErrors` directly when input DTO validation fails.
+            2. The central API error handler (`cmd/api/api.go#handleErrors`) detecting `validator.ValidationErrors`.
+            3. The handler extracting the struct field name (e.g., "FirstName") from the `validator.FieldError`, converting it to snake_case (e.g., "first_name") using a helper function (`toSnakeCase`), and using this as the `field` in the `apitypes.ApiError`.
+            4. The error message from the validator is used as the `message` in `apitypes.ApiError`.
+        - Conflict errors (e.g., duplicate email/username during signup) result in an HTTP 409 status and the `GOSOCIAL-005-CONFLICT` API error code.
+        - General bad request errors due to malformed JSON in `auth_handlers.go` (e.g., during signup or login) result in an HTTP 400 status and `GOSOCIAL-001-BAD_REQUEST` or `GOSOCIAL-006-VALIDATION_ERROR` (note: `signupHandler` uses `CodeValidationError` for `readJSON` failures, `loginHandler` uses `CodeBadRequest`).
 
 *(This is an initial assessment based on the file structure and common practices. It will be refined by examining the code and configuration files in more detail.)*

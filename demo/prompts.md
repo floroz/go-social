@@ -284,3 +284,11 @@ Continue updating the memory bank as you make progress or make new discovery. Co
 ```
 
 Note: this started a long agentic session for a context of 1.3m - which required starting a new task with `/newtask` to preserve task context after 1m Gemini 2.5 pro context was completely filled.
+
+### A.2. is completed - update context
+
+```
+(ACT)
+
+Let's update our memory bank with the current state of progress
+```

@@ -2,24 +2,32 @@
 
 ## Current Work Focus
 
-- **Investigate and Plan Fix for Signup 400 Error:** Diagnosing a 400 error (`json: unknown field "first_name"`) on the `/v1/auth/signup` endpoint. The current phase involves investigation and proposing a technical plan.
+- **Finalizing Memory Bank Update:** Updating all memory bank files to reflect the successful resolution of the `TestUserSignup_ValidationErrors` functional test failures.
 
 ## Recent Changes
 
-- **Completed Memory Bank Refresh:** Read all core memory bank files.
-- **Investigated Signup Error - Frontend:**
-    - Read `frontend/src/pages/SignupPage.tsx`: Confirmed form uses `firstName` (camelCase) internally but maps to `first_name` (snake_case) for the `SignupRequest` payload.
-    - Read `frontend/src/types/api.ts`: Confirmed `SignupRequest` is an alias for the generated `components["schemas"]["SignupRequest"]`.
-    - Read `frontend/src/generated/api-types.ts`: Confirmed generated `SignupRequest` schema uses `first_name` and `last_name` (snake_case), indicating OpenAPI spec uses snake_case for these fields in the payload.
-- **Investigated Signup Error - Backend & OpenAPI:**
-    - Read `cmd/api/auth_handlers.go`: Found that `signupHandler` expects the request body to be nested under a `data` key (e.g., `{"data": {"first_name": ...}}`), unmarshaling into `*domain.CreateUserDTO`.
-    - Read `internal/domain/user_model.go`: Confirmed `domain.CreateUserDTO` (via embedded `EditableUserField`) correctly uses `json:"first_name"` and `json:"last_name"` (snake_case).
-    - Read `openapi/openapi.yaml` and `openapi/v1/paths/auth.yaml`: Confirmed the OpenAPI specification for `/v1/auth/signup` defines the request body schema directly as `SignupRequest` (i.e., a flat payload, not nested under `data`).
+- **Fixed `TestUserSignup_ValidationErrors` Functional Test:**
+    - **Service Layer (`internal/services/user_service.go`):**
+        - Modified the `Create` method to return `validator.ValidationErrors` directly when DTO validation fails. This allows the API layer to access detailed, structured validation error information.
+    - **Unit Tests (`internal/services/user_service_test.go`):**
+        - Updated `TestCreateUser_Validation` to assert that the `Create` method returns `validator.ValidationErrors` (using `assert.ErrorAs`) instead of the previously expected `*domain.ValidationError`.
+    - **API Error Handling (`cmd/api/api.go`):**
+        - Modified the `writeJSONError` function signature to include an optional `fieldName string` parameter. This allows the `field` attribute in the `apitypes.ApiError` struct to be populated in the JSON error response.
+        - Updated the `handleErrors` function:
+            - Added a new case to specifically handle `validator.ValidationErrors`.
+            - When `validator.ValidationErrors` are processed, it now extracts the first `validator.FieldError`.
+            - A new helper function `toSnakeCase` was implemented and used to convert the struct field name (e.g., "FirstName") from the `FieldError` into snake_case (e.g., "first_name").
+            - This snake_case field name is then passed to `writeJSONError` to be included in the API error response, aligning with functional test expectations.
+        - Updated all other calls to `writeJSONError` within `cmd/api/api.go` to accommodate the new signature (passing `""` for `fieldName` for non-field-specific errors).
+    - **API Handlers (`cmd/api/auth_handlers.go`):**
+        - Updated all direct calls to `writeJSONError` to include the new `fieldName` argument (passing `""` as these were generally for request parsing issues, not specific DTO field validations).
+    - **Verification:**
+        - Ran `make test` successfully, confirming that all unit tests and functional tests (including all subtests of `TestUserSignup_ValidationErrors`) are now passing.
 
 ## Next Steps
 
-1. Update `memory-bank/progress.md` to reflect completion of the revised Chunk A.1.
-2. Present completion of revised Chunk A.1 to the user and await feedback/approval to proceed to Chunk A.2 (Backend Test Analysis & Adjustments for Signup Endpoint).
+1.  Finish updating all memory bank files (`progress.md` is next).
+2.  Present the completion of the memory bank update to the user.
 
 ## Active Decisions and Considerations
 
@@ -28,27 +36,12 @@
     - After any backend code change (including test modifications or handler adjustments, or post-type-generation verification): **Must run `make test`**.
 - **Payload Convention Enforcement (User Directive - Confirmed):**
     - All API request bodies and success response bodies: `{"data": <payload>}` wrapper.
-    - Error responses: `{"errors": [...]}` wrapper.
+    - Error responses: `{"errors": [{"code": "...", "field": "...", "message": "..."}]}` wrapper.
     - OpenAPI request wrappers: Defined *inline* in path definitions.
-- **Revised Chunked, Backend-First Iterative Plan for Signup Endpoint (Part A):**
-    - **Chunk A.1: Update OpenAPI, Regenerate Types, Verify Handler & Run Initial Backend Tests (COMPLETED)**
-        1.  Modified `openapi/v1/paths/auth.yaml` for `/v1/auth/signup` `requestBody` to use an inline `data` wrapper referencing `SignupRequest`. (DONE)
-        2.  Ran `make generate-types` to propagate OpenAPI changes. (DONE)
-        3.  Verified existing backend `signupHandler` in `cmd/api/auth_handlers.go` still correctly expects the wrapped request structure for unmarshaling (post type-generation). (DONE)
-        4.  Confirmed `SignupSuccessResponse` in OpenAPI already uses the `data` wrapper. (DONE)
-        5.  Ran `make test`; all existing tests passed. (DONE)
-    - **Chunk A.2: Backend Test Analysis & Adjustments for Signup Endpoint (PENDING USER APPROVAL)**
-        1.  Analyze results from `make test` in A.1 (tests passed, but need deeper look at coverage for response shapes).
-        2.  Update/add tests for signup to ensure they send wrapped requests (if applicable and not already covered) and, critically, validate that success responses are `{"data": <User>}` and error responses are `{"errors": [...]}`.
-        3.  Adjust signup handler's response generation if it doesn't already produce correctly wrapped responses. Iterate with `make test` until tests pass.
-    - **(User Feedback Point after Chunk A.2)**
-    - **Chunk A.3: Frontend Implementation for Signup (Details later)**
-        1.  Regenerate frontend types (already done in A.1.2, but re-confirm or re-run if any backend types changed that affect frontend).
-        2.  Update `SignupPage.tsx` to send wrapped request.
-        3.  Test frontend.
-    - **(User Feedback Point after Chunk A.3)**
-- **Rollout to Other Endpoints (Part B - Future):** Will follow a similar chunked, backend-first, test-driven approach including the mandatory `make generate-types` and `make test` steps.
-- This iterative strategy with integrated quality checks allows for focused backend stabilization.
+- **API Error Handling Strategy:**
+    - Service layer returns detailed validation errors (e.g., `validator.ValidationErrors`).
+    - API layer (`handleErrors`) processes these, extracts relevant information (like field names, converting to appropriate case for API response), and formats a standardized error response. This keeps service layer errors more Go-idiomatic and centralizes API error formatting.
+- **Iterative Development:** The approach of fixing tests by modifying service, then API handlers, then re-testing, proved effective.
 
 ## Important Patterns and Preferences (from `.clinerules/`)
 
@@ -78,15 +71,14 @@
 - It utilizes OpenAPI for API design and code generation. Key commands: `make generate-types`, `make test`.
 - Docker is used for containerization.
 - A comprehensive set of `.clinerules` dictates coding standards and best practices for TypeScript development.
-- **Latest Plan Summary (Signup Error Fix & Conventions with Quality Steps):**
-    - **Convention:** `{"data": ...}` for requests & success responses; `{"errors": ...}` for errors. OpenAPI request wrappers: inline.
-    - **Signup Fix (Backend First, Iterative with Testing):**
-        1.  Update OpenAPI for signup request (inline `data` wrapper).
-        2.  Run `make generate-types`.
-        3.  Verify backend handler's request unmarshaling.
-        4.  Run `make test` (initial run).
-        5.  Analyze test results; update/add tests for wrapped request handling and structured `data`/`errors` responses. Adjust handler response generation if needed. Iterate with `make test`.
-        6.  (Later) Update frontend.
-    - **General Rollout:** Apply this iterative, test-focused, backend-first approach (including `make generate-types` and `make test` at appropriate points) to other endpoints.
+    - **API Error Handling (Refined Nov 2025):**
+        - Services should return specific error types or `validator.ValidationErrors` to convey detailed error information.
+        - The central `handleErrors` function in `cmd/api/api.go` is responsible for:
+            - Type-asserting errors to known types (e.g., `domain.ErrDuplicateEmailOrUsername`, `validator.ValidationErrors`, custom `*domain.Error` types).
+            - Extracting necessary details (e.g., field names from `validator.FieldError`, specific messages).
+            - Converting field names to the API's desired case (e.g., snake_case using `toSnakeCase` helper).
+            - Constructing the standardized `apitypes.ApiErrorResponse` with appropriate HTTP status codes, API error codes, messages, and field names.
+        - This pattern centralizes the translation of internal Go errors into user-facing API error responses.
+    - **Payload Conventions:** The `{"data": ...}` wrapper for requests/success responses and `{"errors": ...}` for error responses remains a key convention.
 
 *(This file will be updated frequently as work progresses.)*

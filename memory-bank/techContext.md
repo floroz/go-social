@@ -9,6 +9,7 @@ Based on the current file structure, the following technologies are likely in us
 - **Framework/Router:** (To be determined - `cmd/api/api.go` would contain this information. Common choices include Gin, Echo, or net/http)
 - **Database:** PostgreSQL (inferred from `cmd/migrate/migrations` SQL files and `docker-compose.yaml` if it includes a Postgres service)
 - **Migrations:** `golang-migrate/migrate` (inferred from migration file naming convention `00000X_*.up.sql` and `00000X_*.down.sql`)
+- **Validation:** `go-playground/validator/v10` (used for struct validation, e.g., in DTOs within services)
 - **API Specification:** OpenAPI (Swagger) - `openapi/openapi.yaml`
 
 ### Frontend
