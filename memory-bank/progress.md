@@ -40,24 +40,36 @@ This list is based on the initial `projectbrief.md` and common features for a so
 
 ## Current Status
 
-- **Phase:** Debugging / Maintenance.
-- **Current Focus:** Investigating and planning a fix for a 400 error on the signup endpoint (`/v1/auth/signup`). Investigation complete, technical plan pending presentation.
-- **Blockers:** None currently for planning. Awaiting user approval to implement the fix.
+- **Phase:** API Design Refinement & Debugging.
+- **Current Focus:** Revising the plan to fix the signup 400 error by adopting a new project convention: all API request bodies (like success responses) should be wrapped with a `{"data": ...}` structure.
+- **Blockers:** None currently for planning. Awaiting user approval for the revised plan.
 
 ## Known Issues
 
 - **Signup Endpoint 400 Error (json: unknown field "first_name"):**
-    - **Status:** Investigated. Root cause identified.
-    - **Description:** The backend's `signupHandler` in `cmd/api/auth_handlers.go` incorrectly expects the signup request payload to be nested under a `data` key (e.g., `{"data": {"first_name": "..."}}`).
-    - **Conflict:** This contradicts the OpenAPI specification and the frontend implementation, both of which correctly use a flat payload structure (e.g., `{"first_name": "..."}`).
-    - **Impact:** Users cannot sign up via the frontend.
+    - **Status:** Investigated. Root cause understood. Plan revised based on new project convention.
+    - **Original Description:** Backend `signupHandler` expected a `{"data": ...}` wrapped request, but OpenAPI and frontend used a flat request.
+    - **Revised Understanding & Path Forward:** The project will now enforce `{"data": ...}` wrappers for *all* request bodies. The fix involves:
+        1. Modifying the OpenAPI spec for `/v1/auth/signup` (and potentially others) to define wrapped request bodies.
+        2. Regenerating frontend types.
+        3. Updating the frontend to send the wrapped payload.
+        4. The backend `signupHandler`'s current expectation of a wrapped request will then be correct.
+    - **Impact:** Users cannot sign up via the frontend until this is resolved.
 - None identified yet.
 
 ## Evolution of Project Decisions
 
-- **[Date/Timestamp - e.g., 2025-11-05]**: Initialized Memory Bank. Content is based on inferences from file structure and provided `.clinerules`. Further code/configuration file analysis is needed to confirm and elaborate on these initial assessments.
-- **2025-11-05**: Investigated a 400 error (`json: unknown field "first_name"`) on the `/v1/auth/signup` endpoint.
-    - **Finding:** The error is due to the backend handler (`cmd/api/auth_handlers.go`) expecting a JSON payload nested under a `data` key, while the OpenAPI specification (and thus the frontend and its generated types) defines a flat payload.
-    - **Field Name Consistency:** The actual field name `first_name` (snake_case) is consistent between the OpenAPI spec, frontend-generated types, and the backend's `domain.CreateUserDTO` struct tags. The issue is purely the payload structure (nesting).
+- **[Date/Timestamp - e.g., 2025-11-05]**: Initialized Memory Bank.
+- **2025-11-05 (Initial Investigation - Signup Error):**
+    - **Finding:** Backend `signupHandler` expected a `{"data": ...}` wrapped request, while OpenAPI and frontend used a flat request. Field name `first_name` (snake_case) was consistent.
+    - **Initial Plan:** Modify backend handler to accept flat request, aligning with then-current OpenAPI.
+- **2025-11-05 (Revised Strategy - User Directive):**
+    - **New Convention:** Decided to enforce `{"data": ...}` wrappers for all API *request bodies* for consistency with success response wrappers.
+    - **Revised Plan for Signup Error:**
+        - Modify OpenAPI specification for `/v1/auth/signup` request body to be wrapped (e.g., `{"data": {"first_name": ...}}`).
+        - Regenerate frontend types.
+        - Update frontend to send the wrapped payload.
+        - The backend `signupHandler`'s existing expectation for a wrapped request becomes the correct state.
+    - This shifts the "source of truth" for request structure to the new convention, requiring OpenAPI and frontend updates.
 
 *(This file will be updated regularly to reflect the project's journey.)*

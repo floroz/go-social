@@ -208,3 +208,14 @@ I want you to review your findings again - in light of the context I just added 
 
 Your immediate goal is to update the memory bank with a revised or confirmed plan and ask my feedback again before any implementation
 ```
+
+### Refine plan
+
+Cline confirmed its original plan but we believe that is based on an incorrect assumption due to a mistake we have made in the OpenAPI spec.
+
+```
+(ACT)
+What if I want to enforce a consistent structure for request and responses? I want the `{ data: <data> }` and `{ errors: [] }` to apply consistently to all endpoint. It shouldn't directly be part of the data schema, but of the path response.
+
+Your immediate goal is to update the memory bank with a revised or confirmed plan and ask my feedback again before any implementation
+```

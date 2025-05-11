@@ -54,10 +54,13 @@ graph TD
 - **Post Creation and Retrieval:** How posts are created, stored, and displayed.
 - **Comment Creation and Retrieval:** How comments are associated with posts and users.
 - **API Request/Response Cycle:** How data flows from frontend to backend and back, including error handling.
-    - **Payload Structure Conventions (as per OpenAPI Spec - Nov 2025):**
-        - **Request Bodies:** For operations like user signup (`/v1/auth/signup`), post creation (`/v1/posts`), and user profile updates (`/v1/users`), the OpenAPI specification consistently defines **flat** JSON payloads. The `requestBody` in path definitions directly references the core data schema (e.g., `SignupRequest`, `CreatePostRequest`).
-        - **Success Response Bodies:** The OpenAPI specification consistently defines success responses to be wrapped with a `data` key (e.g., `{"data": {"user_details..."}}` or `{"data": [{"post1..."}, {"post2..."}]}`). This is a clear project convention for responses.
-        - **Error Response Bodies:** Error responses are structured with an `errors` key (e.g., `{"errors": [{"code": "...", "message": "..."}]}`).
-    - **Discrepancy Example (Signup - Nov 2025):** An investigation into a signup error revealed that while the OpenAPI spec and frontend used a flat *request* payload for signup, the backend handler (`cmd/api/auth_handlers.go`) at that time incorrectly expected a nested *request* payload (e.g., `{"data": {"first_name": "..."}}`). This mismatch with the OpenAPI contract for requests was the root cause of the `json: unknown field "first_name"` error. The field naming convention itself (snake_case, e.g., `first_name`) was consistent. This highlights the importance of ensuring backend handlers strictly adhere to the OpenAPI contract for both request and response structures.
+    - **Payload Structure Conventions (Revised - Nov 2025):**
+        - **User Directive:** The project aims to enforce a consistent wrapper structure for both request and response bodies.
+        - **Request Bodies:** Should be wrapped with a `data` key (e.g., `{"data": {"actual_payload..."}}`). This is a new directive revising the previous state where OpenAPI defined flat request bodies.
+        - **Success Response Bodies:** Consistently wrapped with a `data` key (e.g., `{"data": {"user_details..."}}` or `{"data": [{"post1..."}, {"post2..."}]}`). This remains a clear project convention.
+        - **Error Response Bodies:** Structured with an `errors` key (e.g., `{"errors": [{"code": "...", "message": "..."}]}`). This remains a clear project convention.
+    - **Impact on Signup Endpoint (Nov 2025):**
+        - **Initial State:** The OpenAPI specification for the signup request defined a flat payload. The frontend adhered to this. The backend handler, however, expected a `{"data": ...}` wrapped request, leading to an unmarshaling error (`json: unknown field "first_name"`).
+        - **Revised Approach:** To align with the new directive for wrapped request bodies, the OpenAPI specification for the signup request (and potentially others) will be modified to define a `{"data": ...}` wrapper. The frontend will be updated to send this wrapped structure. The backend handler's existing expectation of a wrapped request will then be correct. The field naming convention (snake_case, e.g., `first_name`) within the actual payload remains consistent.
 
 *(This is an initial assessment based on the file structure and common practices. It will be refined by examining the code and configuration files in more detail.)*

@@ -18,17 +18,22 @@
 
 ## Next Steps
 
-1. Update `memory-bank/systemPatterns.md` to further clarify request vs. response payload conventions.
-2. Re-present the confirmed technical plan to fix the signup error to the user, incorporating the clarification about payload conventions.
-3. Await user approval before implementing the fix.
+1. Update `memory-bank/systemPatterns.md` and `memory-bank/progress.md` to reflect the revised plan for enforcing wrapped request bodies.
+2. Present the revised technical plan (which involves changing OpenAPI spec and frontend, keeping backend handler as-is for request structure) to the user.
+3. Await user approval before implementing this new plan.
 
 ## Active Decisions and Considerations
 
-- **Confirmed Payload Conventions:** Further investigation (prompted by user feedback) into `openapi/v1/schemas/*.yaml` files (auth, post, user) confirms:
-    - **Request Bodies:** OpenAPI specifications for signup, post creation, and user updates consistently define *flat* request body schemas (e.g., `SignupRequest`, `CreatePostRequest` are flat objects).
-    - **Success Response Bodies:** OpenAPI specifications consistently define success responses with a `{"data": ...}` wrapper.
-- **Validity of Original Plan:** The original plan to modify the backend `signupHandler` to accept a flat request payload remains correct. This aligns the handler with the OpenAPI contract for *request bodies* and fixes the "json: unknown field 'first_name'" error. The backend handler's current expectation of a `{"data": ...}` wrapper for the *request* is the actual deviation.
-- The field name `first_name` itself is consistent (snake_case) between the frontend payload, OpenAPI spec, and the backend's `CreateUserDTO` struct tags.
+- **Revised Payload Convention Strategy (User Directive):** The project aims to enforce a consistent `{"data": <payload>}` structure for **both request bodies and success response bodies**. This is a change from the previous understanding where only responses were wrapped.
+- **Impact on Signup Error Fix:**
+    - The previous plan was to change the backend handler to accept a flat *request* payload, aligning with the *current* OpenAPI spec.
+    - The **new plan** is to:
+        1.  Modify the OpenAPI specification for `/v1/auth/signup` to define a *wrapped* request body (e.g., `{"data": {"first_name": ...}}`).
+        2.  Regenerate frontend types based on the new OpenAPI spec.
+        3.  Update the frontend to send this wrapped request payload.
+        4.  The backend handler (`cmd/api/auth_handlers.go`), which already expects this wrapped structure for requests, would then work correctly without modification to its unmarshaling logic.
+- This new approach makes the backend handler's current expectation for a wrapped request correct, and the OpenAPI spec/frontend the parts that need to change to achieve consistency.
+- The field name `first_name` (snake_case) remains consistent. The issue is purely structural (flat vs. wrapped request).
 
 ## Important Patterns and Preferences (from `.clinerules/`)
 
@@ -55,9 +60,13 @@
 ## Learnings and Project Insights
 
 - The project "Go Social" is a full-stack application with a Go backend and a React/TypeScript frontend.
-- It utilizes OpenAPI for API design and code generation. The frontend types are generated from this spec.
+- It utilizes OpenAPI for API design and code generation.
 - Docker is used for containerization.
 - A comprehensive set of `.clinerules` dictates coding standards and best practices for TypeScript development.
-- **Key finding on signup error (re-confirmed):** The backend `signupHandler` in `cmd/api/auth_handlers.go` incorrectly expects a nested `{"data": ...}` payload for signup. This contradicts the OpenAPI specification, which defines a *flat* payload for signup requests (and other POST/PUT requests like post creation and user update). The project's convention of using a `{"data": ...}` wrapper applies to *success responses*, not request bodies, as per the OpenAPI definitions. The field name `first_name` (snake_case) is consistent. The error arises because the flat payload's `first_name` field is "unknown" to the top-level struct the backend handler initially tries to unmarshal the request into.
+- **Revised understanding of signup error cause & fix:**
+    - **Initial Error:** `json: unknown field "first_name"` when backend `signupHandler` (expecting `{"data": {...}}` for request) received a flat request `{"first_name": ...}` from frontend (which was aligned with the then-current OpenAPI spec for requests).
+    - **New Directive:** Enforce `{"data": {...}}` wrapper for *all request bodies* for consistency with response wrappers.
+    - **Revised Root Cause of Incompatibility:** The *current OpenAPI specification* for signup requests (and other requests) defines them as flat, which is now considered out of sync with the new desired project convention. The backend handler's expectation of a wrapped request is now the *target state*.
+    - **Revised Fix Strategy:** Modify OpenAPI spec for signup request to be wrapped, regenerate frontend types, and update frontend to send wrapped payload. The backend handler's request unmarshaling logic will then be correct.
 
 *(This file will be updated frequently as work progresses.)*
