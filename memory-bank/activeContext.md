@@ -2,16 +2,16 @@
 
 ## Current Work Focus
 
-- **Implementing Home Page (Phase 2 - Feed Display):** Building the core components for displaying the post feed on the Home Page.
+- **Correcting Home Page Phase 1 Implementation:** Addressing user feedback regarding premature implementation and incorrect router setup location. Reverting changes and planning correct approach via `main.tsx`.
 
 ## Recent Changes
 
-- **Home Page - Phase 1 Complete (Auth & Routing Foundation):**
-    - Added a "Login" link to `frontend/src/pages/SignupPage.tsx`.
-    - Set up basic routing in `frontend/src/App.tsx` for `/`, `/login`, and `/signup`.
-    - Created a placeholder `frontend/src/pages/HomePage.tsx`.
-    - Implemented `frontend/src/components/ProtectedRoute.tsx` to guard the `/` route, redirecting unauthenticated users to `/login`.
-    - Updated `techContext.md` with correct information about `react-router` v6.4+ (includes `react-router-dom` functionalities).
+- **Reverted Incorrect Home Page Phase 1 Implementation:**
+    - Restored `frontend/src/App.tsx` to its original state (pre-routing changes).
+    - Reverted `frontend/src/pages/SignupPage.tsx` by removing the "Login" link and `Link` import.
+    - Deleted `frontend/src/pages/HomePage.tsx` and `frontend/src/components/ProtectedRoute.tsx` as they were part of the incorrect iteration.
+    - **Mistake Identified:** Attempted to implement routing in `App.tsx` instead of the existing setup in `frontend/src/main.tsx`. Proceeded with implementation steps without explicit user go-ahead after plan presentation.
+- **Updated `techContext.md`:** Corrected information about `react-router` v6.4+ (includes `react-router-dom` functionalities based on user feedback).
 - **Completed Memory Bank Update (Previous Task):** Updated memory bank after fixing `TestUserSignup_ValidationErrors`.
 - **Implemented Frontend Signup Payload Wrapping (Chunk A.3 - Completed):**
     - Ensured frontend sends wrapped `{"data": ...}` for signup; confirmed by user.
@@ -39,22 +39,24 @@
 
 ## Next Steps
 
-**Phase 1: Authentication and Routing Foundation (Home Page Plan) - COMPLETED**
-1.  **Protected Route for Home Page (`/`):** Implemented.
-2.  **Update Signup Page (`frontend/src/pages/SignupPage.tsx`):** Implemented.
+**Corrected Phase 1: Authentication and Routing Foundation (Home Page Plan)**
+1.  **Modify `frontend/src/main.tsx` for Protected Home Route:**
+    *   Import `HomePage.tsx` (to be re-created).
+    *   Import `ProtectedRoute.tsx` (to be re-created).
+    *   Update the route for `/` to use `ProtectedRoute` wrapping `HomePage`.
+    *   Ensure `App.tsx` remains the component for the `/` route if no specific `HomePage` is defined or if it's a general wrapper. (Clarification: `App.tsx` will *not* be the direct element for `/` if `HomePage` is used; `main.tsx` will route `/` to `ProtectedRoute -> HomePage`).
+2.  **Re-create `frontend/src/pages/HomePage.tsx`** (as a placeholder initially).
+3.  **Re-create `frontend/src/components/ProtectedRoute.tsx`**.
+4.  **Update `frontend/src/pages/SignupPage.tsx`:**
+    *   Add "Already have an account? Login" link navigating to `/login`.
+5.  Update `memory-bank/progress.md` to reflect the corrected plan and actions.
+6.  Await user confirmation before proceeding with these corrected Phase 1 implementation steps.
 
-**Phase 2: Home Page - Feed Display (Home Page Plan) - CURRENT**
-1.  Create `PostService` (`frontend/src/services/postService.ts`) with `listPosts()` and `createPost()` methods.
-2.  Create `usePosts` Hook (`frontend/src/hooks/usePosts.ts`) for fetching and managing post state.
-3.  Create `PostCard` Component (`frontend/src/components/PostCard.tsx`) to display individual posts.
-4.  Integrate post fetching and display into `HomePage.tsx` (currently a placeholder).
+**Phase 2: Home Page - Feed Display (Home Page Plan) - PENDING**
+*   (Tasks remain the same as previously planned, will proceed after corrected Phase 1 is approved and implemented)
 
-**Phase 3: Basic Comment Interaction (Home Page Plan - Future Enhancement Path)**
-*   Consider navigation to a `PostDetailPage` for viewing and adding comments initially.
-
-**General:**
-*   Update `memory-bank/progress.md` to reflect completion of Home Page Plan Phase 1 and current focus on Phase 2.
-*   Proceed with implementing Phase 2 tasks.
+**Phase 3: Basic Comment Interaction (Home Page Plan - Future Enhancement Path) - PENDING**
+*   (Tasks remain the same)
 
 ## Active Decisions and Considerations
 
@@ -121,5 +123,6 @@
             - Constructing the standardized `apitypes.ApiErrorResponse` with appropriate HTTP status codes, API error codes, messages, and field names.
         - This pattern centralizes the translation of internal Go errors into user-facing API error responses.
     - **Payload Conventions:** The `{"data": ...}` wrapper for requests/success responses and `{"errors": ...}` for error responses remains a key convention.
+    - **Router Setup Location:** Always verify `main.tsx` (or the application's entry point) for existing router configurations before attempting to add or modify routing in components like `App.tsx`.
 
 *(This file will be updated frequently as work progresses.)*

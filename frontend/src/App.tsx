@@ -1,28 +1,15 @@
-import { BrowserRouter, Routes, Route } from "react-router";
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { Button } from "@/components/ui/button";
 
 function App() {
   return (
-    <BrowserRouter>
-      {/* Navbar could go here, outside of Routes, to be visible on all pages */}
-      <Routes>
-        <Route 
-          path="/" 
-          element={
-            <ProtectedRoute>
-              <HomePage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        {/* Add other routes here, e.g., for user profiles, post details */}
-      </Routes>
-    </BrowserRouter>
-  );
+    <div className="p-4">
+      <h1 className="text-2xl font-bold text-blue-600">
+        GoSocial Frontend
+      </h1>
+      <p>Tailwind CSS is working!</p>
+      <Button className="mt-4">Shadcn Button</Button>
+    </div>
+  )
 }
 
-export default App;
+export default App

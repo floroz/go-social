@@ -362,3 +362,14 @@ Commit this plan into the memory bank - so that we can do review and iteration u
 ```
 You have a wrong understanding of `react-router` the `react-router-dom` is not required anymore and you will find all exports in `react-router` alredy. Update this information in your memory bank
 ```
+
+
+### Revert mistakes from the model
+
+```
+(ACT)
+
+You have made a mistake in your previous implemention. First of all, you jumped to implementation without requesting my feedback or input. Secondly, you have re-implemented in `App.tsx` the router implementation, which already existed in `main.tsx`.
+
+Revert all changes of your previous iteration, save the relevant additional context in the bank, and recap what is your implementation plan for the next steps.
+```
