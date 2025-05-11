@@ -1,10 +1,161 @@
-# Prompts 
+# Problem Statement
+
+We have some bugs in the UI on the Signup Form and we want to build a new page from scratch once the bugs have been fixed.
+
+## Prompts 
 
 ### 1. init bank
 
-Init cline memory bank with prompt:
-
 ```
+(ACT)
 initialize memory bank
 ```
 
+### 2. triage and troubleshoot
+
+```
+(PLAN)
+Currently, trying to signup as a new user on the Frontend at the /signup page produces a 400 errors from the BE:
+
+```
+{errors: [{code: "GOSOCIAL-001-BAD_REQUEST", message: "json: unknown field "first_name""}]}
+errors
+: 
+[{code: "GOSOCIAL-001-BAD_REQUEST", message: "json: unknown field "first_name""}]
+0
+: 
+{code: "GOSOCIAL-001-BAD_REQUEST", message: "json: unknown field "first_name""}
+code
+: 
+"GOSOCIAL-001-BAD_REQUEST"
+message
+: 
+"json: unknown field \"first_name\""
+```
+
+Could you assess and provides hypothesis as to what might be causing this error? As you progress your research, remember to update the memory bank with your improved understanding of the project and the system.
+
+Provide me your hypothetis and a potential plan to fix the issue with the minimal amount of changes.
+```
+
+
+Cline response:
+
+```
+Okay, I understand the issue. A 400 error with the message json: unknown field "first_name" strongly suggests a mismatch between the JSON payload the frontend is sending for user signup and the structure the Go backend expects. The Go backend's JSON unmarshaler cannot find a corresponding field in its target struct for the first_name key it received in the JSON.
+
+Here's my hypothesis and a plan to investigate and fix this:
+
+Hypothesis:
+
+Frontend Sending Incorrect Field Name: The frontend (SignupPage.tsx and/or authService.ts) is sending a field literally named first_name in the JSON request body.
+Backend Expecting Different Field Name (or no such field):
+The Go struct used in the signup handler (cmd/api/auth_handlers.go) to unmarshal the request body either doesn't have a field intended for "first name", OR
+It has a field for "first name", but its JSON tag is different (e.g., json:"firstName", json:"FirstName", or it's part of a nested struct). The Go JSON unmarshaler is case-sensitive and relies on these tags.
+OpenAPI Specification Mismatch: The openapi.yaml (and its referenced schemas like openapi/v1/schemas/user.yaml or auth.yaml) might define the user creation payload differently than what the frontend is sending or what the backend is expecting. This could lead to discrepancies if code generation was used or if manual implementation diverged from the spec.
+Plan to Investigate and Fix (with Minimal Changes):
+
+My primary goal will be to align the frontend and backend, ideally by adhering to the OpenAPI specification as the source of truth.
+
+Phase 1: Information Gathering & Memory Bank Update (I'll do this first)
+
+Read Memory Bank: I'll start by re-reading all files in the memory-bank/ directory to refresh my context on the project's structure, technologies, and patterns. This is essential for me.
+memory-bank/projectbrief.md
+memory-bank/productContext.md
+memory-bank/techContext.md
+memory-bank/systemPatterns.md
+memory-bank/activeContext.md
+memory-bank/progress.md
+Phase 2: Investigation (I'll describe the steps I'd take in ACT mode)
+
+Examine Frontend Code:
+
+frontend/src/pages/SignupPage.tsx: I'll check the form input field names and how the form data is collected.
+frontend/src/services/authService.ts: I'll inspect the signup function to see exactly how the request payload object is constructed before being sent to the backend. I'll look for the first_name key.
+frontend/src/generated/api-types.ts: I'll look for the TypeScript type definition related to the signup request payload. This type is likely generated from the OpenAPI spec and will tell us what the frontend thinks it should be sending.
+Examine Backend Code:
+
+cmd/api/auth_handlers.go: I'll find the signup handler function. Inside this function, I'll identify the Go struct type into which the JSON request body is unmarshaled.
+internal/domain/user_model.go or internal/generated/types.go (or similar): I'll examine the definition of this Go struct, paying close attention to field names and their json:"..." tags. This will tell us what the backend expects. For example, it might be expecting json:"firstName" or not have a first name field at all in that specific struct.
+Examine OpenAPI Specification (The Source of Truth):
+
+openapi/openapi.yaml: I'll navigate to the path definition for the user signup endpoint (e.g., /users, /auth/signup).
+openapi/v1/schemas/user.yaml or openapi/v1/schemas/auth.yaml: I'll check the request body schema definition for this endpoint. This will show the expected properties, their names (e.g., firstName or first_name), and types.
+Phase 3: Propose Solution (Based on Investigation Findings)
+
+The "minimal change" solution depends on the findings:
+
+Scenario A: Frontend is sending first_name, Backend expects firstName (and OpenAPI agrees with firstName).
+
+Fix: Modify the frontend (authService.ts) to send firstName instead of first_name.
+Reasoning: Align frontend to the established contract (OpenAPI and backend).
+Scenario B: Frontend is sending first_name, Backend doesn't expect a first name field at all for signup (and OpenAPI reflects this).
+
+Fix: Modify the frontend (authService.ts) to remove the first_name field from the payload.
+Reasoning: Frontend is sending superfluous data.
+Scenario C: Frontend is sending first_name, Backend expects first_name but its Go struct tag is missing or incorrect (e.g., no tag, or json:"FirstName"). OpenAPI specifies first_name.
+
+Fix: Modify the Go struct in the backend to correctly include json:"first_name" for the relevant field.
+Reasoning: Backend implementation detail is incorrect according to the contract.
+Scenario D: OpenAPI is ambiguous or incorrect, leading to a mismatch between generated types or manual implementations.
+
+Fix:
+Correct the openapi.yaml to definitively use one convention (e.g., firstName or first_name).
+Re-run code generation scripts for both frontend types and backend types/stubs (if applicable).
+Adjust frontend and/or backend code to align with the newly generated types.
+Reasoning: Fix the contract first, then propagate changes. This might be more than a "minimal" code change but is the most robust solution.
+Phase 4: Update Memory Bank
+
+Throughout and after the investigation and fix, I will update the relevant Memory Bank files (activeContext.md, systemPatterns.md, techContext.md, progress.md) with new learnings about:
+
+The exact structure of the signup payload.
+Confirmed JSON field naming conventions (e.g., camelCase vs. snake_case).
+The reliability of the OpenAPI spec and code generation process.
+Any discrepancies found and the reasons for them.
+Next Steps:
+
+First, I need to perform Phase 1 (Read Memory Bank). Since I'm in PLAN MODE, I can't use tools like read_file directly.
+
+Could you please confirm if you'd like me to proceed with this general plan? If so, once I've mentally processed the Memory Bank (which I'll simulate by stating I've done so), I can then detail the specific files I'd want to examine. After that, you can switch me to ACT MODE to perform the file reading and subsequent steps.
+
+
+The error json: unknown field "first_name" indicates a mismatch between the JSON payload sent by the frontend during signup and what the Go backend expects.
+
+My Hypothesis:
+The frontend is likely sending a first_name field, but the backend Go struct for unmarshaling the signup request either:
+
+Doesn't have a field for a first name.
+Has a field for a first name, but its json tag is different (e.g., json:"firstName").
+The OpenAPI specification, which should be the source of truth, might be inconsistent with either the frontend's payload or the backend's expectation.
+My Plan:
+
+1. Refresh Context (Internal Step for me):
+I will begin by thoroughly reviewing all existing Memory Bank files (projectbrief.md, productContext.md, techContext.md, systemPatterns.md, activeContext.md, progress.md) to ensure I have the latest project understanding.
+
+2. Investigate (What I'll do in ACT mode):
+
+Frontend Check:
+Examine frontend/src/pages/SignupPage.tsx (form data structure).
+Examine frontend/src/services/authService.ts (payload construction in the signup function).
+Examine frontend/src/generated/api-types.ts (the expected frontend request type).
+Backend Check:
+Examine cmd/api/auth_handlers.go (the signup handler and the Go struct used for unmarshaling).
+Examine internal/domain/user_model.go or internal/generated/types.go (the definition of the user/signup Go struct and its JSON tags).
+Contract Check (OpenAPI):
+Examine openapi/openapi.yaml and relevant schema files (e.g., openapi/v1/schemas/user.yaml or auth.yaml) for the signup endpoint's request body definition.
+3. Implement Fix (in ACT mode, based on findings):
+The goal is minimal changes, likely by:
+*   Adjusting the field name in the frontend payload (authService.ts).
+*   Or, adjusting the JSON tag in the backend Go struct.
+*   Or, if the OpenAPI spec is the source of the issue, updating it, regenerating types, and then aligning the code.
+
+4. Update Memory Bank (in ACT mode):
+I will document my findings, the fix applied, and any new insights about the system (e.g., confirmed naming conventions, API structure) in activeContext.md and other relevant memory bank files.
+
+Do you agree with this investigation and resolution plan? If so, please let me know, and then you can switch me to ACT MODE so I can begin reading the Memory Bank files and then the project files.
+```
+
+```
+(ACT)
+Begin with Phase 1 and Phase 2 - You should update the memory bank with any relevant information - and come back to me with a technical plan. You should not begin any implementation of this plan until explicitly told so.
+```
