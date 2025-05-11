@@ -17,7 +17,10 @@ graph TD
 
 ## Key Technical Decisions (Inferred)
 
-- **API-First Approach:** The use of OpenAPI (`openapi.yaml`) suggests that the API contract is defined first, and then code (types, server stubs) is generated from this definition for both backend and frontend. This promotes consistency and clear separation of concerns.
+- **API-First Approach:** The use of OpenAPI (`openapi.yaml`) dictates the API contract. Code/types are generated from this (e.g., via `make generate-types` for frontend and potentially backend). This promotes consistency.
+- **Development Workflow Integration:**
+    - Changes to OpenAPI spec **must** be followed by running `make generate-types`.
+    - Backend code changes (including tests or handler logic) **must** be followed by running `make test`.
 - **Monorepo Structure (Potentially):** While not a strict monorepo in the sense of using tools like Lerna or Turborepo, the backend and frontend code reside in the same top-level repository. This can simplify coordinated changes but requires clear separation of concerns within the directory structure.
 - **Layered Architecture (Backend):** The backend directory structure (`cmd/api`, `internal/services`, `internal/repositories`, `internal/domain`) suggests a layered architecture:
     - `cmd/api` (Handlers): Handles HTTP requests and responses, delegates to services.

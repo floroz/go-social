@@ -543,10 +543,12 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description User signup details */
+        /** @description User signup details. */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SignupRequest"];
+                "application/json": {
+                    data: components["schemas"]["SignupRequest"];
+                };
             };
         };
         responses: {

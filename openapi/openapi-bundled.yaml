@@ -24,12 +24,17 @@ paths:
       description: Creates a new user account.
       operationId: signupUserV1
       requestBody:
-        description: User signup details
+        description: User signup details.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SignupRequest'
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/SignupRequest'
+              required:
+                - data
       responses:
         '201':
           description: User successfully registered. Returns the created user object.

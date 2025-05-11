@@ -252,6 +252,7 @@ Update your memory bank to chunk your plan into smaller steps.
 
 ### Begin technical implementation
 
+- Prompt:
 
 ```
 (ACT)
@@ -259,4 +260,14 @@ Update your memory bank to chunk your plan into smaller steps.
 Begin implementation of Chunk A.1
 
 Continue updating the memory bank as you make progress or make new discovery. Come back to me for feedback at the completion of A.1.
+```
+
+- follow up from implementation - model didn't run test or re-generate types
+
+```
+(ACT)
+
+Your approach is correct but you failed two important quality verification. If you make changes to the Backend, you should run `make test`. If you make changes to the API spec, you should re-generate the types with `make generate-types`.
+
+Make sure you save this context for future reference when performing such tasks.
 ```

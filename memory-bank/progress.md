@@ -41,22 +41,24 @@ This list is based on the initial `projectbrief.md` and common features for a so
 ## Current Status
 
 - **Phase:** API Design Refinement & Debugging.
-- **Current Focus:** Completed Chunk A.1 (OpenAPI update for signup request, backend handler verification). Awaiting user feedback to proceed to Chunk A.2 (Backend Testing & Adjustments for signup endpoint).
+- **Current Focus:** Completed revised Chunk A.1 (OpenAPI update, `make generate-types`, handler verification, initial `make test` run). Awaiting user feedback to proceed to Chunk A.2 (Backend Test Analysis & Adjustments for signup endpoint).
 - **Blockers:** Awaiting user approval to proceed with Chunk A.2.
 
 ## Known Issues
 
 - **Signup Endpoint 400 Error (json: unknown field "first_name"):**
-    - **Status:** Chunk A.1 (OpenAPI update & backend handler verification) COMPLETED. Chunk A.2 (Backend Testing & Adjustments) PENDING.
-    - **Path Forward (Chunked):**
-        - **Chunk A.1 (OpenAPI & Backend Handler Verification):** COMPLETED.
-            - OpenAPI for signup request updated with inline `data` wrapper.
-            - Backend handler's request unmarshaling structure verified as compatible.
-            - OpenAPI for success response wrapper confirmed.
-        - **Chunk A.2 (Backend Testing & Adjustments - NEXT):** Run backend tests. Update/add tests for wrapped request handling and, crucially, for `data`/`errors` wrapped response structures. Adjust handler's response generation if needed.
-        - **Chunk A.3 (Frontend - Later):** Regenerate types, update frontend to send wrapped request, test.
-    - **Impact:** Users cannot sign up via the frontend until this is resolved.
-- **Potential Lack of Backend Tests for Response Shapes:** To be addressed in Chunk A.2 for the signup endpoint and subsequently for other endpoints during rollout.
+    - **Status:** Revised Chunk A.1 COMPLETED. Chunk A.2 (Backend Test Analysis & Adjustments) PENDING.
+    - **Path Forward (Revised Chunked Plan):**
+        - **Chunk A.1 (OpenAPI, Type Gen, Handler Verification, Initial Tests):** COMPLETED.
+            1. OpenAPI for signup request updated with inline `data` wrapper.
+            2. `make generate-types` executed.
+            3. Backend handler's request unmarshaling structure verified as compatible post-type-gen.
+            4. OpenAPI for success response wrapper confirmed.
+            5. Initial `make test` executed; existing tests passed.
+        - **Chunk A.2 (Backend Test Analysis & Adjustments - NEXT):** Analyze `make test` results from A.1 (tests passed, but deeper review of response shape coverage needed). Update/add tests for wrapped request handling and `data`/`errors` wrapped response structures. Adjust handler's response generation if needed. Iterate with `make test`.
+        - **Chunk A.3 (Frontend - Later):** Regenerate types (if needed after any further backend type changes), update frontend, test.
+    - **Impact:** Users cannot sign up via the frontend until this is resolved by completing subsequent chunks (frontend update).
+- **Potential Lack of Backend Tests for Response Shapes:** To be actively addressed starting in Chunk A.2 for the signup endpoint and during rollout to other endpoints.
 
 ## Evolution of Project Decisions
 
@@ -70,12 +72,14 @@ This list is based on the initial `projectbrief.md` and common features for a so
 - **2025-11-05 (User Directive 2 - Inline OpenAPI Wrappers & Testing):**
     - Convention: `{"data": ...}` for requests/success responses; `{"errors": ...}` for errors. Request wrappers in OpenAPI: inline.
     - Plan: Update OpenAPI (inline), then frontend, then backend tests.
-- **2025-11-05 (User Directive 3 - Chunked Backend-First Iteration):**
-    - **Latest Plan for Signup & Rollout:**
-        - **Signup (Part A - Chunked, Backend-First):**
-            - A.1: Update OpenAPI (inline request wrapper), verify backend handler structure.
-            - A.2: Backend testing (request handling, response shapes), adjust handler response generation if needed.
+- **2025-11-05 (User Directive 3 - Chunked Backend-First Iteration):** Initial chunked plan.
+- **2025-11-05 (User Directive 4 - Add Quality Steps):**
+    - **Critical Workflow Addition:** `make generate-types` after OpenAPI changes, `make test` after backend changes.
+    - **Latest Plan for Signup & Rollout (incorporating quality steps):**
+        - **Signup (Part A - Chunked, Backend-First with integrated testing):**
+            - A.1: Update OpenAPI (inline request wrapper), run `make generate-types`, verify backend handler, run `make test`.
+            - A.2: Detailed backend testing (request handling, response shapes), adjust handler response generation if needed, iterating with `make test`.
             - A.3 (Later): Frontend changes.
-        - **Rollout (Part B - Future):** Apply similar chunked, backend-first, test-driven approach to other endpoints.
+        - **Rollout (Part B - Future):** Apply similar chunked, backend-first, test-driven approach (with `make generate-types` and `make test`) to other endpoints.
 
 *(This file will be updated regularly to reflect the project's journey.)*

@@ -18,32 +18,37 @@
 
 ## Next Steps
 
-1. Update `memory-bank/progress.md` to reflect completion of Chunk A.1.
-2. Present completion of Chunk A.1 to the user and await feedback/approval to proceed to Chunk A.2 (Backend Testing & Adjustments).
+1. Update `memory-bank/progress.md` to reflect completion of the revised Chunk A.1.
+2. Present completion of revised Chunk A.1 to the user and await feedback/approval to proceed to Chunk A.2 (Backend Test Analysis & Adjustments for Signup Endpoint).
 
 ## Active Decisions and Considerations
 
+- **Critical Quality Steps Added to Workflow:**
+    - After any OpenAPI specification change: **Must run `make generate-types`**.
+    - After any backend code change (including test modifications or handler adjustments, or post-type-generation verification): **Must run `make test`**.
 - **Payload Convention Enforcement (User Directive - Confirmed):**
     - All API request bodies and success response bodies: `{"data": <payload>}` wrapper.
     - Error responses: `{"errors": [...]}` wrapper.
     - OpenAPI request wrappers: Defined *inline* in path definitions.
-- **Chunked, Backend-First Iterative Plan for Signup Endpoint (Part A):**
-    - **Chunk A.1: Update OpenAPI & Verify Backend Handler Structure (COMPLETED)**
+- **Revised Chunked, Backend-First Iterative Plan for Signup Endpoint (Part A):**
+    - **Chunk A.1: Update OpenAPI, Regenerate Types, Verify Handler & Run Initial Backend Tests (COMPLETED)**
         1.  Modified `openapi/v1/paths/auth.yaml` for `/v1/auth/signup` `requestBody` to use an inline `data` wrapper referencing `SignupRequest`. (DONE)
-        2.  Verified existing backend `signupHandler` in `cmd/api/auth_handlers.go` already expects this wrapped request structure for unmarshaling. (DONE - No code change needed in handler for this)
-        3.  Confirmed `SignupSuccessResponse` in OpenAPI already uses the `data` wrapper. (DONE)
-    - **Chunk A.2: Backend Testing & Adjustments for Signup Endpoint (PENDING USER APPROVAL)**
-        1.  Run existing backend tests.
-        2.  Update/add tests for signup to ensure they send wrapped requests (if applicable) and, critically, validate that success responses are `{"data": <User>}` and error responses are `{"errors": [...]}`.
-        3.  Adjust signup handler's response generation if it doesn't already produce correctly wrapped responses. Iterate until tests pass.
+        2.  Ran `make generate-types` to propagate OpenAPI changes. (DONE)
+        3.  Verified existing backend `signupHandler` in `cmd/api/auth_handlers.go` still correctly expects the wrapped request structure for unmarshaling (post type-generation). (DONE)
+        4.  Confirmed `SignupSuccessResponse` in OpenAPI already uses the `data` wrapper. (DONE)
+        5.  Ran `make test`; all existing tests passed. (DONE)
+    - **Chunk A.2: Backend Test Analysis & Adjustments for Signup Endpoint (PENDING USER APPROVAL)**
+        1.  Analyze results from `make test` in A.1 (tests passed, but need deeper look at coverage for response shapes).
+        2.  Update/add tests for signup to ensure they send wrapped requests (if applicable and not already covered) and, critically, validate that success responses are `{"data": <User>}` and error responses are `{"errors": [...]}`.
+        3.  Adjust signup handler's response generation if it doesn't already produce correctly wrapped responses. Iterate with `make test` until tests pass.
     - **(User Feedback Point after Chunk A.2)**
     - **Chunk A.3: Frontend Implementation for Signup (Details later)**
-        1.  Regenerate frontend types.
+        1.  Regenerate frontend types (already done in A.1.2, but re-confirm or re-run if any backend types changed that affect frontend).
         2.  Update `SignupPage.tsx` to send wrapped request.
         3.  Test frontend.
     - **(User Feedback Point after Chunk A.3)**
-- **Rollout to Other Endpoints (Part B - Future):** Will follow a similar chunked, backend-first, test-driven approach.
-- This iterative strategy allows for focused backend stabilization before frontend changes.
+- **Rollout to Other Endpoints (Part B - Future):** Will follow a similar chunked, backend-first, test-driven approach including the mandatory `make generate-types` and `make test` steps.
+- This iterative strategy with integrated quality checks allows for focused backend stabilization.
 
 ## Important Patterns and Preferences (from `.clinerules/`)
 
@@ -70,16 +75,18 @@
 ## Learnings and Project Insights
 
 - The project "Go Social" is a full-stack application with a Go backend and a React/TypeScript frontend.
-- It utilizes OpenAPI for API design and code generation.
+- It utilizes OpenAPI for API design and code generation. Key commands: `make generate-types`, `make test`.
 - Docker is used for containerization.
 - A comprehensive set of `.clinerules` dictates coding standards and best practices for TypeScript development.
-- **Latest Plan Summary (Signup Error Fix & Conventions):**
+- **Latest Plan Summary (Signup Error Fix & Conventions with Quality Steps):**
     - **Convention:** `{"data": ...}` for requests & success responses; `{"errors": ...}` for errors. OpenAPI request wrappers: inline.
-    - **Signup Fix (Backend First):**
+    - **Signup Fix (Backend First, Iterative with Testing):**
         1.  Update OpenAPI for signup request (inline `data` wrapper).
-        2.  Verify backend handler's request unmarshaling (already expects wrapper).
-        3.  Run backend tests. Update/add tests to ensure wrapped requests are handled and, crucially, that responses (success/error) are correctly structured with `data`/`errors` wrappers. Adjust handler response generation if needed.
-        4.  (Later) Update frontend.
-    - **General Rollout:** Apply this iterative, test-focused, backend-first approach to other endpoints.
+        2.  Run `make generate-types`.
+        3.  Verify backend handler's request unmarshaling.
+        4.  Run `make test` (initial run).
+        5.  Analyze test results; update/add tests for wrapped request handling and structured `data`/`errors` responses. Adjust handler response generation if needed. Iterate with `make test`.
+        6.  (Later) Update frontend.
+    - **General Rollout:** Apply this iterative, test-focused, backend-first approach (including `make generate-types` and `make test` at appropriate points) to other endpoints.
 
 *(This file will be updated frequently as work progresses.)*
