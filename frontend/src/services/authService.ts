@@ -22,7 +22,7 @@ const AuthService = {
       // or adjust if apiClient needs explicit typing like post<SignupSuccessResponse>
       const response = await apiClient.post<SignupSuccessResponse>(
         "/v1/auth/signup",
-        signupData
+        { data: signupData }
       );
       const userData = response.data.data;
       return userData;
