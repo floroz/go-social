@@ -54,5 +54,6 @@ graph TD
 - **Post Creation and Retrieval:** How posts are created, stored, and displayed.
 - **Comment Creation and Retrieval:** How comments are associated with posts and users.
 - **API Request/Response Cycle:** How data flows from frontend to backend and back, including error handling.
+    - **Payload Structure (Signup):** Investigation of a signup error (Nov 2025) revealed that the OpenAPI specification and frontend implementation correctly use a flat JSON payload for signup (e.g., `{"first_name": "..."}`). However, the backend handler (`cmd/api/auth_handlers.go`) at that time incorrectly expected a nested payload (e.g., `{"data": {"first_name": "..."}}`). This discrepancy was the root cause of the `json: unknown field "first_name"` error. The field naming convention itself (snake_case, e.g., `first_name`) was consistent. This highlights the importance of ensuring backend handlers strictly adhere to the OpenAPI contract.
 
 *(This is an initial assessment based on the file structure and common practices. It will be refined by examining the code and configuration files in more detail.)*

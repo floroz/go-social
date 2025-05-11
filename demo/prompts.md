@@ -4,20 +4,21 @@ We have some bugs in the UI on the Signup Form and we want to build a new page f
 
 ## Prompts 
 
-### 1. init bank
-
+### Initialize memory bank
+- prompt:
 ```
 (ACT)
 initialize memory bank
 ```
 
-### 2. triage and troubleshoot
+### Triage and Troubleshooting
 
+- prompt:
 ```
 (PLAN)
 Currently, trying to signup as a new user on the Frontend at the /signup page produces a 400 errors from the BE:
 
-```
+\```
 {errors: [{code: "GOSOCIAL-001-BAD_REQUEST", message: "json: unknown field "first_name""}]}
 errors
 : 
@@ -31,7 +32,7 @@ code
 message
 : 
 "json: unknown field \"first_name\""
-```
+\```
 
 Could you assess and provides hypothesis as to what might be causing this error? As you progress your research, remember to update the memory bank with your improved understanding of the project and the system.
 
@@ -39,7 +40,7 @@ Provide me your hypothetis and a potential plan to fix the issue with the minima
 ```
 
 
-Cline response:
+- Cline response:
 
 ```
 Okay, I understand the issue. A 400 error with the message json: unknown field "first_name" strongly suggests a mismatch between the JSON payload the frontend is sending for user signup and the structure the Go backend expects. The Go backend's JSON unmarshaler cannot find a corresponding field in its target struct for the first_name key it received in the JSON.
@@ -155,7 +156,39 @@ I will document my findings, the fix applied, and any new insights about the sys
 Do you agree with this investigation and resolution plan? If so, please let me know, and then you can switch me to ACT MODE so I can begin reading the Memory Bank files and then the project files.
 ```
 
+- prompt:
+
 ```
 (ACT)
 Begin with Phase 1 and Phase 2 - You should update the memory bank with any relevant information - and come back to me with a technical plan. You should not begin any implementation of this plan until explicitly told so.
+```
+
+### Agentic mode to update memory bank and technical plan
+
+*Cline start Agentic mode updating the memory bank and start iterating over multiple files to perform its investigation*
+
+- Summary of Cline findings:
+
+```markdown
+The investigation into the 400 error (`json: unknown field "first_name"`) on the `/v1/auth/signup` endpoint is complete, and the Memory Bank has been updated with the findings.
+
+__Summary of Findings:__
+
+1. __Frontend (`SignupPage.tsx`, `generated/api-types.ts`):__ Correctly sends a __flat__ JSON payload with snake\_case keys (e.g., `{"first_name": "John", "last_name": "Doe", ...}`). This aligns with the types generated from the OpenAPI specification.
+2. __OpenAPI Specification (`openapi/v1/paths/auth.yaml`):__ Correctly defines the request body for the signup endpoint as a __flat__ schema (`SignupRequest`), which directly contains fields like `first_name`.
+3. __Backend Handler (`cmd/api/auth_handlers.go`):__ Incorrectly expects the signup payload to be __nested__ under a `"data"` key (e.g., `{"data": {"first_name": "...", ...}}`). It attempts to unmarshal the request into a struct like `var requestBody struct { Data *domain.CreateUserDTO `json:"data"` }`.
+4. __Backend DTO (`internal/domain/user_model.go`):__ The `domain.CreateUserDTO` struct (which the handler expects inside the `data` wrapper) correctly uses `json:"first_name"` (snake\_case) for its fields. This part is consistent.
+
+__Root Cause:__ The error occurs because the backend `signupHandler` tries to unmarshal the flat payload (sent by the frontend) into a struct that expects a top-level `data` field. Since `first_name` is at the top level of the incoming flat payload, and the handler's initial target struct only has a `data` field, `first_name` is considered an "unknown field" for that initial target struct.
+
+__Technical Plan to Fix the Issue:__
+
+The most straightforward and correct way to fix this is to align the backend handler with the OpenAPI specification, which serves as the contract.
+
+__Proposed Change:__
+
+Modify the `signupHandler` in `cmd/api/auth_handlers.go` to expect a flat payload, matching the OpenAPI specification and the frontend implementation.
+
+__Specific Change in `cmd/api/auth_handlers.go`:__
+
 ```

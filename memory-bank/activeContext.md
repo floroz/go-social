@@ -2,25 +2,29 @@
 
 ## Current Work Focus
 
-- **Initialization of Memory Bank:** The immediate task is to create the foundational set of Memory Bank documents. This involves `projectbrief.md`, `productContext.md`, `techContext.md`, `systemPatterns.md`, `activeContext.md` (this file), and `progress.md`.
+- **Investigate and Plan Fix for Signup 400 Error:** Diagnosing a 400 error (`json: unknown field "first_name"`) on the `/v1/auth/signup` endpoint. The current phase involves investigation and proposing a technical plan.
 
 ## Recent Changes
 
-- `memory-bank/projectbrief.md` created.
-- `memory-bank/productContext.md` created.
-- `memory-bank/techContext.md` created.
-- `memory-bank/systemPatterns.md` created.
+- **Completed Memory Bank Refresh:** Read all core memory bank files.
+- **Investigated Signup Error - Frontend:**
+    - Read `frontend/src/pages/SignupPage.tsx`: Confirmed form uses `firstName` (camelCase) internally but maps to `first_name` (snake_case) for the `SignupRequest` payload.
+    - Read `frontend/src/types/api.ts`: Confirmed `SignupRequest` is an alias for the generated `components["schemas"]["SignupRequest"]`.
+    - Read `frontend/src/generated/api-types.ts`: Confirmed generated `SignupRequest` schema uses `first_name` and `last_name` (snake_case), indicating OpenAPI spec uses snake_case for these fields in the payload.
+- **Investigated Signup Error - Backend & OpenAPI:**
+    - Read `cmd/api/auth_handlers.go`: Found that `signupHandler` expects the request body to be nested under a `data` key (e.g., `{"data": {"first_name": ...}}`), unmarshaling into `*domain.CreateUserDTO`.
+    - Read `internal/domain/user_model.go`: Confirmed `domain.CreateUserDTO` (via embedded `EditableUserField`) correctly uses `json:"first_name"` and `json:"last_name"` (snake_case).
+    - Read `openapi/openapi.yaml` and `openapi/v1/paths/auth.yaml`: Confirmed the OpenAPI specification for `/v1/auth/signup` defines the request body schema directly as `SignupRequest` (i.e., a flat payload, not nested under `data`).
 
 ## Next Steps
 
-1. Create `memory-bank/progress.md`.
-2. Review all created Memory Bank files for initial completeness and accuracy based on the provided file structure.
-3. Await further instructions or tasks from the user.
+1. Update other relevant Memory Bank files (`systemPatterns.md`, `progress.md`) with findings.
+2. Present the technical plan to fix the signup error to the user.
+3. Await user approval before implementing the fix.
 
 ## Active Decisions and Considerations
 
-- The content of the Memory Bank files is currently based on inferences from the project's file and directory structure. Deeper analysis will require reading specific files (e.g., `go.mod`, `package.json`, `openapi.yaml`, `docker-compose.yaml`, various `.go` and `.ts` files).
-- Placeholder names and "To be determined" sections in the Memory Bank files highlight areas needing further investigation or user input.
+- The primary cause of the "json: unknown field 'first_name'" error is the backend `signupHandler` expecting a `{"data": ...}` wrapper in the JSON payload, while the OpenAPI specification and the frontend implementation correctly use a flat payload structure. The field name `first_name` itself is consistent (snake_case) between the frontend payload, OpenAPI spec, and the backend's `CreateUserDTO` struct tags.
 
 ## Important Patterns and Preferences (from `.clinerules/`)
 
@@ -47,8 +51,9 @@
 ## Learnings and Project Insights
 
 - The project "Go Social" is a full-stack application with a Go backend and a React/TypeScript frontend.
-- It utilizes OpenAPI for API design and code generation.
+- It utilizes OpenAPI for API design and code generation. The frontend types are generated from this spec.
 - Docker is used for containerization.
 - A comprehensive set of `.clinerules` dictates coding standards and best practices for TypeScript development.
+- **Key finding on signup error:** The backend `signupHandler` in `cmd/api/auth_handlers.go` incorrectly expects a nested `{"data": ...}` payload for signup, contradicting the OpenAPI specification and the frontend's (correct) implementation of a flat payload. The field name `first_name` (snake_case) is consistent across the OpenAPI spec, generated frontend types, and the backend `CreateUserDTO`'s JSON tags. The error arises because the flat payload's `first_name` field is "unknown" to the top-level struct the backend handler initially tries to unmarshal into (which expects a `data` field).
 
 *(This file will be updated frequently as work progresses.)*
