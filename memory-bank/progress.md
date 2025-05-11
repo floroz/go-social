@@ -13,6 +13,9 @@
 - **User Profile Update (Backend):** `PUT /v1/users` endpoint expects and handles wrapped `{"data": ...}` request payloads. Functional tests updated and passing.
 - **Post Endpoints (Backend):** `POST /v1/posts` and `PUT /v1/posts/{id}` endpoints expect and handle wrapped `{"data": ...}` request payloads. Functional tests updated and passing.
 - **Comment Endpoints (Backend):** `POST /v1/posts/{postId}/comments` and `PUT /v1/posts/{postId}/comments/{id}` endpoints expect and handle wrapped `{"data": ...}` request payloads. Functional tests updated and passing.
+- **User Profile Update (Frontend - `PUT /v1/users`):** Investigation revealed this feature is not yet implemented in the frontend. No code changes for payload wrapping were required for this endpoint.
+- **Post Creation/Update (Frontend - `POST /v1/posts`, `PUT /v1/posts/{id}`):** Investigation revealed these features are not yet implemented in the frontend. No code changes for payload wrapping were required for these endpoints.
+- **Comment Creation/Update (Frontend - `POST /v1/posts/{postId}/comments`, `PUT /v1/posts/{postId}/comments/{id}`):** Investigation revealed these features are not yet implemented in the frontend. No code changes for payload wrapping were required for these endpoints.
 
 ## What's Left to Build (High-Level)
 
@@ -50,7 +53,7 @@ This list is based on the initial `projectbrief.md` and common features for a so
 ## Current Status
 
 - **Phase:** API Implementation & Testing / Planning.
-- **Current Focus:** Finalizing Memory Bank update after completing backend/functional test rollout of request payload conventions; preparing to discuss next phase.
+- **Current Focus:** Frontend payload convention rollout for V1 POST/PUT endpoints is complete based on existing features. Awaiting user direction for the next task.
 - **Blockers:** None.
 
 ## Known Issues
@@ -114,6 +117,18 @@ This list is based on the initial `projectbrief.md` and common features for a so
         - `POST /v1/posts` & `PUT /v1/posts/{id}`: OpenAPI, handlers updated, functional tests updated.
         - `POST /v1/posts/{postId}/comments` & `PUT /v1/posts/{postId}/comments/{id}`: OpenAPI, handlers updated, functional tests updated.
     - **Process for each:** Updated OpenAPI, ran `make generate-types`, updated/verified backend handler, updated functional tests, ran `make test` successfully.
-    - **Outcome:** All targeted V1 POST/PUT endpoints now adhere to the request wrapping convention on the backend, and their functional tests are aligned. Frontend updates for these endpoints (user profile, posts, comments) are pending.
+    - **Outcome:** All targeted V1 POST/PUT endpoints now adhere to the request wrapping convention on the backend, and their functional tests are aligned.
+- **2025-11-05 (Late Afternoon - Frontend Convention Rollout - User Profile):**
+    - **Task:** Update frontend for `PUT /v1/users` to send wrapped payload.
+    - **Investigation:** Searched `frontend/src` for usage of `/v1/users` (PUT). Found only in generated types.
+    - **Outcome:** Determined "update user profile" feature is not yet implemented in frontend. No code changes required for this endpoint.
+- **2025-11-05 (Late Afternoon - Frontend Convention Rollout - Posts):**
+    - **Task:** Update frontend for `POST /v1/posts` and `PUT /v1/posts/{id}` to send wrapped payloads.
+    - **Investigation:** Searched `frontend/src` for usage of `/v1/posts` (POST/PUT). Found only in generated types.
+    - **Outcome:** Determined "create/update post" features are not yet implemented in frontend. No code changes required for these endpoints.
+- **2025-11-05 (Late Afternoon - Frontend Convention Rollout - Comments):**
+    - **Task:** Update frontend for `POST /v1/posts/{postId}/comments` and `PUT /v1/posts/{postId}/comments/{id}` to send wrapped payloads.
+    - **Investigation:** Searched `frontend/src` for usage of comment-related paths. Found only in generated types.
+    - **Outcome:** Determined "create/update comment" features are not yet implemented in frontend. No code changes required for these endpoints. This concludes the frontend payload convention rollout for existing V1 POST/PUT features.
 
 *(This file will be updated regularly to reflect the project's journey.)*

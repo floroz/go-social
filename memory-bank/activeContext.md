@@ -24,17 +24,18 @@
         - `PUT /v1/posts/{id}` (request body)
         - `POST /v1/posts/{postId}/comments` (request body)
         - `PUT /v1/posts/{postId}/comments/{id}` (request body)
-    - **Frontend Service Updates (Partial):**
+    - **Frontend Service Updates (Ongoing):**
         - `frontend/src/services/authService.ts`: Updated `login` method to send wrapped payload; confirmed by user. (Signup was done previously).
-        - Frontend updates for user, post, and comment services are pending.
+        - **User Profile Update (`PUT /v1/users`):** Searched frontend code (`frontend/src`) for usage of this endpoint. Found it only in generated types (`frontend/src/generated/api-types.ts`). This indicates the "update user profile" feature is not yet implemented in the frontend. No code changes required for this endpoint at this time.
+        - **Post Creation/Update (`POST /v1/posts`, `PUT /v1/posts/{id}`):** Searched frontend code (`frontend/src`) for usage of these endpoints. Found them only in generated types (`frontend/src/generated/api-types.ts`). This indicates the "create/update post" features are not yet implemented in the frontend. No code changes required for these endpoints at this time.
+        - **Comment Creation/Update (`POST /v1/posts/{postId}/comments`, `PUT /v1/posts/{postId}/comments/{id}`):** Searched frontend code (`frontend/src`) for usage of these endpoints. Found them only in generated types (`frontend/src/generated/api-types.ts`). This indicates the "create/update comment" features are not yet implemented in the frontend. No code changes required for these endpoints at this time.
+    - **Conclusion of Frontend Convention Rollout (for existing features):** All relevant V1 POST/PUT endpoints have been checked. Only `authService.ts` (login/signup) required modifications, which were completed. Other features (user profile, posts, comments) appear unimplemented in the frontend.
 
 ## Next Steps
 
-1.  Update `memory-bank/progress.md` to reflect the completion of the backend/functional test convention rollout.
-2.  Discuss the next phase with the user:
-    *   **Backend Test Enhancement (Signup - Remainder of Chunk A.2):** Detailed review and enhancement of backend tests for the signup endpoint for comprehensive coverage.
-    *   **Frontend Updates for Convention Rollout:** Update frontend services for user, post, and comment operations to send wrapped request payloads.
-    *   Address other items from "What's Left to Build" in `progress.md`.
+1.  Update `memory-bank/progress.md` to reflect the completion of the frontend payload convention rollout for all V1 POST/PUT endpoints (noting which features were unimplemented).
+2.  The "Frontend Updates for Convention Rollout" task is now complete based on the current state of implemented frontend features.
+3.  Address other items from "What's Left to Build" in `progress.md` or await user direction for the next task.
 
 ## Active Decisions and Considerations
 
