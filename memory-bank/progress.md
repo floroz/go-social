@@ -41,35 +41,37 @@ This list is based on the initial `projectbrief.md` and common features for a so
 ## Current Status
 
 - **Phase:** API Design Refinement & Debugging.
-- **Current Focus:** Revising the plan to fix the signup 400 error by adopting a new project convention: all API request bodies (like success responses) should be wrapped with a `{"data": ...}` structure.
-- **Blockers:** None currently for planning. Awaiting user approval for the revised plan.
+- **Current Focus:** Finalizing a plan to fix the signup 400 error. This involves adopting a project-wide convention for `{"data": ...}` wrapped API request bodies (defined inline in OpenAPI), ensuring backend tests cover response shapes, and outlining a rollout strategy for other endpoints.
+- **Blockers:** None currently for planning. Awaiting user approval for the latest revised plan.
 
 ## Known Issues
 
 - **Signup Endpoint 400 Error (json: unknown field "first_name"):**
-    - **Status:** Investigated. Root cause understood. Plan revised based on new project convention.
-    - **Original Description:** Backend `signupHandler` expected a `{"data": ...}` wrapped request, but OpenAPI and frontend used a flat request.
-    - **Revised Understanding & Path Forward:** The project will now enforce `{"data": ...}` wrappers for *all* request bodies. The fix involves:
-        1. Modifying the OpenAPI spec for `/v1/auth/signup` (and potentially others) to define wrapped request bodies.
-        2. Regenerating frontend types.
-        3. Updating the frontend to send the wrapped payload.
-        4. The backend `signupHandler`'s current expectation of a wrapped request will then be correct.
+    - **Status:** Investigated. Root cause understood. Detailed plan formulated based on new project conventions.
+    - **Path Forward:**
+        1. Modify OpenAPI spec for `/v1/auth/signup` to define an *inline* `{"data": ...}` wrapper for the request body.
+        2. Regenerate frontend types.
+        3. Update frontend to send the wrapped payload.
+        4. Verify backend `signupHandler` (which expects wrapped request) functions correctly.
+        5. Add/update backend tests for request unmarshaling and response structure (ensuring `{"data":...}` for success, `{"errors":...}` for errors).
     - **Impact:** Users cannot sign up via the frontend until this is resolved.
-- None identified yet.
+- **Potential Lack of Backend Tests for Response Shapes:** As part of the signup fix, it's necessary to verify/add tests that explicitly check the JSON structure of API responses (e.g., presence of `data` or `errors` wrappers). This might be a gap across other endpoints too.
 
 ## Evolution of Project Decisions
 
 - **[Date/Timestamp - e.g., 2025-11-05]**: Initialized Memory Bank.
 - **2025-11-05 (Initial Investigation - Signup Error):**
-    - **Finding:** Backend `signupHandler` expected a `{"data": ...}` wrapped request, while OpenAPI and frontend used a flat request. Field name `first_name` (snake_case) was consistent.
-    - **Initial Plan:** Modify backend handler to accept flat request, aligning with then-current OpenAPI.
-- **2025-11-05 (Revised Strategy - User Directive):**
-    - **New Convention:** Decided to enforce `{"data": ...}` wrappers for all API *request bodies* for consistency with success response wrappers.
-    - **Revised Plan for Signup Error:**
-        - Modify OpenAPI specification for `/v1/auth/signup` request body to be wrapped (e.g., `{"data": {"first_name": ...}}`).
-        - Regenerate frontend types.
-        - Update frontend to send the wrapped payload.
-        - The backend `signupHandler`'s existing expectation for a wrapped request becomes the correct state.
-    - This shifts the "source of truth" for request structure to the new convention, requiring OpenAPI and frontend updates.
+    - Backend `signupHandler` expected wrapped request; OpenAPI & frontend used flat.
+    - Initial plan: Align backend to flat request (matching then-current OpenAPI).
+- **2025-11-05 (User Directive 1 - Wrapped Requests):**
+    - Decision: Enforce `{"data": ...}` wrapper for all API request bodies.
+    - Revised plan: Modify OpenAPI & frontend to send wrapped request; backend handler's expectation becomes correct. Proposed using named wrapper schemas in OpenAPI.
+- **2025-11-05 (User Directive 2 - Inline OpenAPI Wrappers & Testing):**
+    - **New Convention Details:**
+        - `{"data": ...}` wrappers for requests and success responses; `{"errors": ...}` for error responses.
+        - Request body wrappers in OpenAPI to be defined *inline* in path definitions, not as separate named schemas.
+    - **Latest Plan for Signup & Rollout:**
+        - **Signup:** Implement inline `data` wrapper in OpenAPI for signup request, update frontend, verify backend, add comprehensive backend tests for request/response shapes.
+        - **Rollout:** Iteratively apply this pattern (inline OpenAPI request wrappers, frontend changes, backend handler updates if needed, testing) to other POST/PUT/PATCH endpoints.
 
 *(This file will be updated regularly to reflect the project's journey.)*
