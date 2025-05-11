@@ -192,3 +192,19 @@ Modify the `signupHandler` in `cmd/api/auth_handlers.go` to expect a flat payloa
 __Specific Change in `cmd/api/auth_handlers.go`:__
 
 ```
+
+
+### Investigate hypothesis further
+
+- prompt:
+
+```
+(ACT)
+Our Go Backend should have structured response when it comes to API contracts. This means we should always provide success responses in the shape of `{ data: {} }` and errors as `{ errors: [] }`.
+
+I see this pattern is reflect in @/openapi/v1/paths/post.yaml  and @/openapi/v1/paths/user.yaml  - but your proposed plam seems to go directly against this project convention.
+
+I want you to review your findings again - in light of the context I just added - and verify whether you think your plan remains the same - or should be changed to a different approach that doesn't violate the conventions of this project.
+
+Your immediate goal is to update the memory bank with a revised or confirmed plan and ask my feedback again before any implementation
+```

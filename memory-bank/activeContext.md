@@ -18,13 +18,17 @@
 
 ## Next Steps
 
-1. Update other relevant Memory Bank files (`systemPatterns.md`, `progress.md`) with findings.
-2. Present the technical plan to fix the signup error to the user.
+1. Update `memory-bank/systemPatterns.md` to further clarify request vs. response payload conventions.
+2. Re-present the confirmed technical plan to fix the signup error to the user, incorporating the clarification about payload conventions.
 3. Await user approval before implementing the fix.
 
 ## Active Decisions and Considerations
 
-- The primary cause of the "json: unknown field 'first_name'" error is the backend `signupHandler` expecting a `{"data": ...}` wrapper in the JSON payload, while the OpenAPI specification and the frontend implementation correctly use a flat payload structure. The field name `first_name` itself is consistent (snake_case) between the frontend payload, OpenAPI spec, and the backend's `CreateUserDTO` struct tags.
+- **Confirmed Payload Conventions:** Further investigation (prompted by user feedback) into `openapi/v1/schemas/*.yaml` files (auth, post, user) confirms:
+    - **Request Bodies:** OpenAPI specifications for signup, post creation, and user updates consistently define *flat* request body schemas (e.g., `SignupRequest`, `CreatePostRequest` are flat objects).
+    - **Success Response Bodies:** OpenAPI specifications consistently define success responses with a `{"data": ...}` wrapper.
+- **Validity of Original Plan:** The original plan to modify the backend `signupHandler` to accept a flat request payload remains correct. This aligns the handler with the OpenAPI contract for *request bodies* and fixes the "json: unknown field 'first_name'" error. The backend handler's current expectation of a `{"data": ...}` wrapper for the *request* is the actual deviation.
+- The field name `first_name` itself is consistent (snake_case) between the frontend payload, OpenAPI spec, and the backend's `CreateUserDTO` struct tags.
 
 ## Important Patterns and Preferences (from `.clinerules/`)
 
@@ -54,6 +58,6 @@
 - It utilizes OpenAPI for API design and code generation. The frontend types are generated from this spec.
 - Docker is used for containerization.
 - A comprehensive set of `.clinerules` dictates coding standards and best practices for TypeScript development.
-- **Key finding on signup error:** The backend `signupHandler` in `cmd/api/auth_handlers.go` incorrectly expects a nested `{"data": ...}` payload for signup, contradicting the OpenAPI specification and the frontend's (correct) implementation of a flat payload. The field name `first_name` (snake_case) is consistent across the OpenAPI spec, generated frontend types, and the backend `CreateUserDTO`'s JSON tags. The error arises because the flat payload's `first_name` field is "unknown" to the top-level struct the backend handler initially tries to unmarshal into (which expects a `data` field).
+- **Key finding on signup error (re-confirmed):** The backend `signupHandler` in `cmd/api/auth_handlers.go` incorrectly expects a nested `{"data": ...}` payload for signup. This contradicts the OpenAPI specification, which defines a *flat* payload for signup requests (and other POST/PUT requests like post creation and user update). The project's convention of using a `{"data": ...}` wrapper applies to *success responses*, not request bodies, as per the OpenAPI definitions. The field name `first_name` (snake_case) is consistent. The error arises because the flat payload's `first_name` field is "unknown" to the top-level struct the backend handler initially tries to unmarshal the request into.
 
 *(This file will be updated frequently as work progresses.)*
