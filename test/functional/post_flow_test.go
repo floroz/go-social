@@ -39,8 +39,8 @@ func TestCreatePost(t *testing.T) {
 	createPostReq := apitypes.CreatePostRequest{
 		Content: "My first post content!",
 	}
-	// Marshal the request struct directly, as per the OpenAPI spec
-	body, err := json.Marshal(createPostReq)
+	requestPayload := map[string]any{"data": createPostReq}
+	body, err := json.Marshal(requestPayload)
 	assert.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(body))
@@ -101,7 +101,8 @@ func TestGetPost(t *testing.T) {
 	assert.NotEmpty(t, cookies)
 
 	createPostReq := apitypes.CreatePostRequest{Content: "Content for GetPost test"}
-	createBody, _ := json.Marshal(createPostReq)
+	createPayload := map[string]any{"data": createPostReq}
+	createBody, _ := json.Marshal(createPayload)
 	createReq, _ := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(createBody))
 	createReq.Header.Set("Content-Type", "application/json")
 	for _, cookie := range cookies {
@@ -191,7 +192,8 @@ func TestListPosts(t *testing.T) {
 
 	// Create Post 1
 	createPostReq1 := apitypes.CreatePostRequest{Content: "List Post 1"}
-	body1, _ := json.Marshal(createPostReq1)
+	payload1 := map[string]any{"data": createPostReq1}
+	body1, _ := json.Marshal(payload1)
 	req1, _ := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(body1))
 	req1.Header.Set("Content-Type", "application/json")
 	for _, cookie := range cookies {
@@ -203,7 +205,8 @@ func TestListPosts(t *testing.T) {
 
 	// Create Post 2
 	createPostReq2 := apitypes.CreatePostRequest{Content: "List Post 2"}
-	body2, _ := json.Marshal(createPostReq2)
+	payload2 := map[string]any{"data": createPostReq2}
+	body2, _ := json.Marshal(payload2)
 	req2, _ := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(body2))
 	req2.Header.Set("Content-Type", "application/json")
 	for _, cookie := range cookies {
@@ -274,7 +277,8 @@ func TestUpdatePost(t *testing.T) {
 
 	// Create the initial post
 	createPostReq := apitypes.CreatePostRequest{Content: "Initial content for update"}
-	createBody, _ := json.Marshal(createPostReq)
+	createPayload := map[string]any{"data": createPostReq}
+	createBody, _ := json.Marshal(createPayload)
 	createReq, _ := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(createBody))
 	createReq.Header.Set("Content-Type", "application/json")
 	for _, cookie := range cookies {
@@ -289,7 +293,8 @@ func TestUpdatePost(t *testing.T) {
 
 	// --- Test Case 1: Successful update ---
 	updatePostReq := apitypes.UpdatePostRequest{Content: "Updated post content!"}
-	updateBody, err := json.Marshal(updatePostReq) // Update request body doesn't need 'data' wrapper
+	updatePayload := map[string]any{"data": updatePostReq}
+	updateBody, err := json.Marshal(updatePayload)
 	assert.NoError(t, err)
 	updateUrl := fmt.Sprintf("%s%s/%d", testServerURL, postsEndpoint, createdPostId)
 	updateReq, err := http.NewRequest(http.MethodPut, updateUrl, bytes.NewBuffer(updateBody))
@@ -322,7 +327,8 @@ func TestUpdatePost(t *testing.T) {
 	// --- Test Case 2: Update non-existent post ---
 	nonExistentId := int64(999999)
 	updateNonExistentReq := apitypes.UpdatePostRequest{Content: "Trying to update non-existent"}
-	updateNonExistentBody, _ := json.Marshal(updateNonExistentReq)
+	updateNonExistentPayload := map[string]any{"data": updateNonExistentReq}
+	updateNonExistentBody, _ := json.Marshal(updateNonExistentPayload)
 	updateNonExistentUrl := fmt.Sprintf("%s%s/%d", testServerURL, postsEndpoint, nonExistentId)
 	updateNonExistentHttpReq, _ := http.NewRequest(http.MethodPut, updateNonExistentUrl, bytes.NewBuffer(updateNonExistentBody))
 	updateNonExistentHttpReq.Header.Set("Content-Type", "application/json")
@@ -357,7 +363,8 @@ func TestUpdatePost(t *testing.T) {
 
 	// Act: Try to update the first user's post with the second user's cookies
 	updateOtherReq := apitypes.UpdatePostRequest{Content: "Trying to update other's post"}
-	updateOtherBody, _ := json.Marshal(updateOtherReq)
+	updateOtherPayload := map[string]any{"data": updateOtherReq}
+	updateOtherBody, _ := json.Marshal(updateOtherPayload)
 	updateOtherHttpReq, _ := http.NewRequest(http.MethodPut, updateUrl, bytes.NewBuffer(updateOtherBody)) // Use original post URL
 	updateOtherHttpReq.Header.Set("Content-Type", "application/json")
 	for _, cookie := range otherCookies {
@@ -398,7 +405,8 @@ func TestDeletePost(t *testing.T) {
 
 	// Create the post to be deleted
 	createPostReq := apitypes.CreatePostRequest{Content: "Post to be deleted"}
-	createBody, _ := json.Marshal(createPostReq)
+	createPayload := map[string]any{"data": createPostReq}
+	createBody, _ := json.Marshal(createPayload)
 	createReq, _ := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(createBody))
 	createReq.Header.Set("Content-Type", "application/json")
 	for _, cookie := range cookies {
@@ -459,7 +467,8 @@ func TestDeletePost(t *testing.T) {
 	// --- Test Case 3: Delete another user's post (Forbidden) ---
 	// Arrange: Create another post by the first user
 	createPostReq2 := apitypes.CreatePostRequest{Content: "Another post"}
-	createBody2, _ := json.Marshal(createPostReq2)
+	createPayload2 := map[string]any{"data": createPostReq2}
+	createBody2, _ := json.Marshal(createPayload2)
 	createReq2, _ := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(createBody2))
 	createReq2.Header.Set("Content-Type", "application/json")
 	for _, cookie := range cookies {
@@ -520,7 +529,8 @@ func TestCreatePost_ValidationErrors(t *testing.T) {
 	createPostReqEmpty := apitypes.CreatePostRequest{
 		Content: "", // Invalid: Empty content
 	}
-	bodyEmpty, err := json.Marshal(createPostReqEmpty)
+	payloadEmpty := map[string]any{"data": createPostReqEmpty}
+	bodyEmpty, err := json.Marshal(payloadEmpty)
 	assert.NoError(t, err)
 
 	reqEmpty, err := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(bodyEmpty))
@@ -568,7 +578,8 @@ func TestCreatePost_ValidationErrors(t *testing.T) {
 	createPostReqLong := apitypes.CreatePostRequest{
 		Content: longContent, // Invalid: Too long
 	}
-	bodyLong, err := json.Marshal(createPostReqLong)
+	payloadLong := map[string]any{"data": createPostReqLong}
+	bodyLong, err := json.Marshal(payloadLong)
 	assert.NoError(t, err)
 
 	reqLong, err := http.NewRequest(http.MethodPost, testServerURL+postsEndpoint, bytes.NewBuffer(bodyLong))

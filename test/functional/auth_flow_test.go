@@ -15,6 +15,7 @@ import (
 
 	"github.com/floroz/go-social/internal/apitypes"
 	"github.com/floroz/go-social/internal/domain"
+	"github.com/floroz/go-social/internal/errorcodes"
 	_ "github.com/lib/pq"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
@@ -122,38 +123,272 @@ func TestHealthCheck(t *testing.T) {
 func TestUserSignup(t *testing.T) {
 	// Arrange: Prepare the signup request
 	// Generate unique suffix for email and username
-	uniqueSuffix := fmt.Sprintf("ts%d", time.Now().UnixNano())
+	uniqueSuffix := fmt.Sprintf("ts%d", time.Now().UnixMilli()) // Use Milli for shorter suffix
 	createUserDTO := &domain.CreateUserDTO{
 		EditableUserField: domain.EditableUserField{
 			FirstName: "John",
 			LastName:  "Doe",
-			Email:     fmt.Sprintf("john.doe%s@example.com", uniqueSuffix),
-			Username:  fmt.Sprintf("johndoets%d", time.Now().UnixNano()),
+			Email:     fmt.Sprintf("john.doe.%s@example.com", uniqueSuffix), // Adjusted format
+			Username:  fmt.Sprintf("johndoe%s", uniqueSuffix),               // Adjusted format
 		},
 		Password: "password123",
 	}
 	_, err := json.Marshal(createUserDTO)
 	assert.NoError(t, err)
 
-	// Act: Perform signup request
-	user, _ := signupAndGetCookies(t, testServer.Client(), testServerURL, createUserDTO)
+	// Act: Perform signup request directly
+	requestPayload := map[string]any{"data": createUserDTO}
+	bodyBytes, err := json.Marshal(requestPayload)
+	assert.NoError(t, err)
 
-	// Assert using the apitypes.User structure
-	assert.Equal(t, createUserDTO.Email, string(user.Email)) // Cast apitypes.Email to string for comparison
-	assert.Equal(t, createUserDTO.Username, user.Username)
-	assert.NotNil(t, user.Id, "User ID should not be nil") // Check pointer is not nil
-	if user.Id != nil {
-		assert.NotZero(t, *user.Id, "User ID should not be zero") // Dereference pointer for zero check
+	req, err := http.NewRequest(http.MethodPost, testServerURL+signupEndpoint, bytes.NewBuffer(bodyBytes))
+	assert.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := testServer.Client()
+	resp, err := client.Do(req)
+	assert.NoError(t, err)
+	defer resp.Body.Close()
+
+	// Assert status code
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
+
+	// Assert response body structure {"data": User}
+	var signupSuccessResponse struct {
+		Data apitypes.User `json:"data"`
 	}
-	assert.NotNil(t, user.CreatedAt, "CreatedAt should not be nil")
-	if user.CreatedAt != nil {
-		assert.False(t, (*user.CreatedAt).IsZero(), "CreatedAt should not be zero time") // Dereference and check time is not zero
+	err = json.NewDecoder(resp.Body).Decode(&signupSuccessResponse)
+	assert.NoError(t, err, "Failed to decode signup success response")
+	assert.NotNil(t, signupSuccessResponse.Data, "Response 'data' field should not be nil")
+
+	// Assert fields of the user within the data wrapper
+	userFromResponse := signupSuccessResponse.Data
+	assert.Equal(t, createUserDTO.Email, string(userFromResponse.Email))
+	assert.Equal(t, createUserDTO.Username, userFromResponse.Username)
+	assert.NotNil(t, userFromResponse.Id, "User ID should not be nil")
+	if userFromResponse.Id != nil {
+		assert.NotZero(t, *userFromResponse.Id, "User ID should not be zero")
 	}
-	assert.NotNil(t, user.UpdatedAt, "UpdatedAt should not be nil")
-	if user.UpdatedAt != nil {
-		assert.False(t, (*user.UpdatedAt).IsZero(), "UpdatedAt should not be zero time") // Dereference and check time is not zero
+	assert.NotNil(t, userFromResponse.CreatedAt, "CreatedAt should not be nil")
+	if userFromResponse.CreatedAt != nil {
+		assert.False(t, (*userFromResponse.CreatedAt).IsZero(), "CreatedAt should not be zero time")
 	}
-	// Password field is not expected in the response, so no assertion needed for it.
+	assert.NotNil(t, userFromResponse.UpdatedAt, "UpdatedAt should not be nil")
+	if userFromResponse.UpdatedAt != nil {
+		assert.False(t, (*userFromResponse.UpdatedAt).IsZero(), "UpdatedAt should not be zero time")
+	}
+	// Password field is not expected in the response.
+
+	// We can still use signupAndGetCookies for setting up other tests if needed,
+	// but TestUserSignup itself now does direct validation.
+	// For example, to get cookies for TestUserLogin:
+	// _, cookiesForLogin := signupAndGetCookies(t, testServer.Client(), testServerURL, createUserDTO) // This would be a separate user for isolation
+	// Note: The actual signupAndGetCookies is assumed to be in setup.go or similar.
+}
+
+func TestUserSignup_DuplicateEmail(t *testing.T) {
+	// Arrange: Sign up an initial user
+	// Use the existing signupAndGetCookies from setup (assuming it's available and works with wrapped requests)
+	uniqueSuffix1 := fmt.Sprintf("ts%d", time.Now().UnixMilli()) // Use Milli
+	initialUserDTO := &domain.CreateUserDTO{
+		EditableUserField: domain.EditableUserField{
+			FirstName: "Initial", LastName: "User",
+			Email:    fmt.Sprintf("dup.email.%s@example.com", uniqueSuffix1), // Adjusted
+			Username: fmt.Sprintf("inituser%s", uniqueSuffix1),               // Adjusted
+		},
+		Password: "password123",
+	}
+	_, _ = signupAndGetCookies(t, testServer.Client(), testServerURL, initialUserDTO) // Sign up the first user
+
+	// Attempt to sign up another user with the same email
+	uniqueSuffix2 := fmt.Sprintf("ts%d", time.Now().UnixMilli()) // Use Milli for potentially different parts
+	duplicateEmailUserDTO := &domain.CreateUserDTO{
+		EditableUserField: domain.EditableUserField{
+			FirstName: "Duplicate", LastName: "Email",
+			Email:    initialUserDTO.Email,                     // Same email
+			Username: fmt.Sprintf("dupemail%s", uniqueSuffix2), // Different username
+		},
+		Password: "password456",
+	}
+	requestPayload := map[string]any{"data": duplicateEmailUserDTO}
+	bodyBytes, err := json.Marshal(requestPayload)
+	assert.NoError(t, err)
+
+	req, err := http.NewRequest(http.MethodPost, testServerURL+signupEndpoint, bytes.NewBuffer(bodyBytes))
+	assert.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := testServer.Client()
+	resp, err := client.Do(req)
+	assert.NoError(t, err)
+	defer resp.Body.Close()
+
+	// Assert: Check status code and error response structure
+	assert.Equal(t, http.StatusConflict, resp.StatusCode)
+
+	var errorResponse apitypes.ApiErrorResponse
+	err = json.NewDecoder(resp.Body).Decode(&errorResponse)
+	assert.NoError(t, err, "Failed to decode error response for duplicate email")
+	assert.NotEmpty(t, errorResponse.Errors, "Errors array should not be empty")
+	if len(errorResponse.Errors) > 0 {
+		assert.Equal(t, string(errorcodes.CodeConflict), errorResponse.Errors[0].Code) // Cast to string for comparison
+	}
+}
+
+func TestUserSignup_DuplicateUsername(t *testing.T) {
+	// Arrange: Sign up an initial user
+	uniqueSuffix1 := fmt.Sprintf("ts%d", time.Now().UnixMilli()) // Use Milli
+	initialUserDTO := &domain.CreateUserDTO{
+		EditableUserField: domain.EditableUserField{
+			FirstName: "Initial", LastName: "User",
+			Email:    fmt.Sprintf("init.user.%s@example.com", uniqueSuffix1), // Adjusted
+			Username: fmt.Sprintf("dupuser%s", uniqueSuffix1),                // Adjusted
+		},
+		Password: "password123",
+	}
+	_, _ = signupAndGetCookies(t, testServer.Client(), testServerURL, initialUserDTO)
+
+	// Attempt to sign up another user with the same username
+	uniqueSuffix2 := fmt.Sprintf("ts%d", time.Now().UnixMilli()) // Use Milli
+	duplicateUsernameUserDTO := &domain.CreateUserDTO{
+		EditableUserField: domain.EditableUserField{
+			FirstName: "Duplicate", LastName: "Username",
+			Email:    fmt.Sprintf("another%s@example.com", uniqueSuffix2), // Different email
+			Username: initialUserDTO.Username,                             // Same username
+		},
+		Password: "password456",
+	}
+	requestPayload := map[string]any{"data": duplicateUsernameUserDTO}
+	bodyBytes, err := json.Marshal(requestPayload)
+	assert.NoError(t, err)
+
+	req, err := http.NewRequest(http.MethodPost, testServerURL+signupEndpoint, bytes.NewBuffer(bodyBytes))
+	assert.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := testServer.Client()
+	resp, err := client.Do(req)
+	assert.NoError(t, err)
+	defer resp.Body.Close()
+
+	// Assert: Check status code and error response structure
+	assert.Equal(t, http.StatusConflict, resp.StatusCode)
+
+	var errorResponse apitypes.ApiErrorResponse
+	err = json.NewDecoder(resp.Body).Decode(&errorResponse)
+	assert.NoError(t, err, "Failed to decode error response for duplicate username")
+	assert.NotEmpty(t, errorResponse.Errors, "Errors array should not be empty")
+	if len(errorResponse.Errors) > 0 {
+		assert.Equal(t, string(errorcodes.CodeConflict), errorResponse.Errors[0].Code) // Cast to string for comparison
+	}
+}
+
+func TestUserSignup_ValidationErrors(t *testing.T) {
+	testCases := []struct {
+		name          string
+		dto           *domain.CreateUserDTO
+		expectedField string // Optional: for field-specific validation errors
+		expectedCode  string // Ensure this is string type
+	}{
+		{
+			name: "Password too short",
+			dto: &domain.CreateUserDTO{
+				EditableUserField: domain.EditableUserField{
+					FirstName: "Valid", LastName: "User", Email: "valid@example.com", Username: "validuser1",
+				},
+				Password: "short",
+			},
+			expectedField: "password",
+			expectedCode:  string(errorcodes.CodeValidationError), // Cast to string
+		},
+		{
+			name: "Invalid email format",
+			dto: &domain.CreateUserDTO{
+				EditableUserField: domain.EditableUserField{
+					FirstName: "Valid", LastName: "User", Email: "invalid-email", Username: "validuser2",
+				},
+				Password: "password123",
+			},
+			expectedField: "email",
+			expectedCode:  string(errorcodes.CodeValidationError), // Cast to string
+		},
+		{
+			name: "Missing first name",
+			dto: &domain.CreateUserDTO{
+				EditableUserField: domain.EditableUserField{
+					LastName: "User", Email: "valid3@example.com", Username: "validuser3",
+				},
+				Password: "password123",
+			},
+			expectedField: "first_name",
+			expectedCode:  string(errorcodes.CodeValidationError), // Cast to string
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Ensure unique email/username for fields not being tested for validation errors, to avoid unintended 409s
+			// Use a simpler, shorter unique part for these test cases to avoid DB length issues for valid fields.
+			// Also ensure username is alphanumeric.
+			ts := fmt.Sprintf("%d", time.Now().UnixMilli()%10000) // Shorter unique part
+			if tc.dto.Email == "valid@example.com" {
+				tc.dto.Email = fmt.Sprintf("val%s@example.com", ts)
+			}
+			if tc.dto.Username == "validuser1" {
+				tc.dto.Username = fmt.Sprintf("valusr%s", ts)
+			}
+			if tc.dto.Email == "invalid-email" && (tc.name == "Invalid email format") {
+				// Keep it invalid for this specific test, but ensure other fields are unique if needed
+				tc.dto.Username = fmt.Sprintf("valusr%s", ts)
+			} else if tc.dto.Email == "valid3@example.com" { // For missing first name test
+				tc.dto.Email = fmt.Sprintf("valfn%s@example.com", ts)
+			}
+
+			if tc.dto.Username == "validuser2" && (tc.name == "Invalid email format") {
+				// Username is fine here, email is being tested
+			} else if tc.dto.Username == "validuser3" && (tc.name == "Missing first name") {
+				tc.dto.Username = fmt.Sprintf("valfnusr%s", ts)
+			}
+
+			requestPayload := map[string]any{"data": tc.dto}
+			bodyBytes, err := json.Marshal(requestPayload)
+			assert.NoError(t, err)
+
+			req, err := http.NewRequest(http.MethodPost, testServerURL+signupEndpoint, bytes.NewBuffer(bodyBytes))
+			assert.NoError(t, err)
+			req.Header.Set("Content-Type", "application/json")
+
+			client := testServer.Client()
+			resp, err := client.Do(req)
+			assert.NoError(t, err)
+			defer resp.Body.Close()
+
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+			var errorResponse apitypes.ApiErrorResponse
+			err = json.NewDecoder(resp.Body).Decode(&errorResponse)
+			assert.NoError(t, err, "Failed to decode validation error response")
+			assert.NotEmpty(t, errorResponse.Errors, "Errors array should not be empty for validation error")
+
+			if len(errorResponse.Errors) > 0 {
+				foundExpectedError := false
+				for _, apiErr := range errorResponse.Errors {
+					if tc.expectedCode != "" {
+						assert.Equal(t, tc.expectedCode, apiErr.Code)
+					}
+					if tc.expectedField != "" && apiErr.Field != nil && *apiErr.Field == tc.expectedField {
+						foundExpectedError = true
+						// Optionally check message if it's stable
+					} else if tc.expectedField == "" { // If no specific field, any validation error is fine
+						foundExpectedError = true
+					}
+				}
+				if tc.expectedField != "" { // Only assert found if a specific field was expected
+					assert.True(t, foundExpectedError, "Expected error for field '%s' not found in errors: %+v", tc.expectedField, errorResponse.Errors)
+				}
+			}
+		})
+	}
 }
 
 func TestUserLogin(t *testing.T) {
@@ -415,7 +650,9 @@ func TestUpdateUserProfile(t *testing.T) {
 		Email:     &emailVal,                         // Correct type: *apitypes.Email
 		Username:  stringPtr(createUserDTO.Username), // Keep original Username
 	}
-	body, err := json.Marshal(updateReqDTO) // Request body is the update DTO directly
+	// Wrap the DTO in a "data" field for the request payload
+	requestPayload := map[string]any{"data": updateReqDTO}
+	body, err := json.Marshal(requestPayload)
 	assert.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodPut, testServerURL+updateEndpoint, bytes.NewBuffer(body))

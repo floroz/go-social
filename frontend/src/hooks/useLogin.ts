@@ -1,6 +1,13 @@
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import AuthService from "@/services/authService";
-import type { LoginResponse, LoginRequest } from "@/types/api";
+import useAuthStore from "@/stores/authStore";
+import apiClient from "@/lib/api";
+import type {
+  LoginRequest,
+  User,
+  LoginSuccessResponse as LoginMutationResponse,
+  GetUserProfileSuccessResponse as UserProfileResponse,
+} from "@/types/api";
 
 /**
  * Custom hook for handling user login.
@@ -12,29 +19,64 @@ import type { LoginResponse, LoginRequest } from "@/types/api";
  */
 export function useLogin(
   options?: Pick<
-    UseMutationOptions<LoginResponse, Error, LoginRequest>,
+    UseMutationOptions<LoginMutationResponse, Error, LoginRequest>,
     "onSuccess" | "onError"
   >
 ) {
-  // const { setUser } = useAuthStore(); // setUser is not used here anymore
+  const { setToken, setUser } = useAuthStore();
 
   const { mutate, isPending, error, data } = useMutation<
-    LoginResponse,
+    LoginMutationResponse,
     Error,
     LoginRequest
   >({
     mutationFn: AuthService.login,
-    onSuccess: (loginResponse, variables, context) => {
-      // Core side effect: Update global auth state
-      // setUser(user); // This is incorrect here as loginResponse is not a User object.
-      // Token handling and user fetching should be managed by the component or another service.
-      console.log("Login successful, token received:", loginResponse);
-      options?.onSuccess?.(loginResponse, variables, context);
+    onSuccess: async (loginMutationResponse, variables, context) => {
+      console.log(
+        "Login mutation successful, token received:",
+        loginMutationResponse.data.token
+      );
+      setToken(loginMutationResponse.data.token);
+
+      try {
+        // After token is set, interceptor will use it for this call
+        const userProfileApiResponse = await apiClient.get<UserProfileResponse>(
+          "/v1/users"
+        );
+        const userDetails: User = userProfileApiResponse.data.data;
+        setUser(userDetails);
+        console.log(
+          "User profile fetched and auth state updated:",
+          userDetails
+        );
+
+        // Call the original onSuccess from the component if it exists
+        // Pass the original loginMutationResponse as it might be expected by the component
+        options?.onSuccess?.(loginMutationResponse, variables, context);
+      } catch (fetchUserError) {
+        console.error(
+          "Failed to fetch user profile after login:",
+          fetchUserError
+        );
+        // If fetching user fails, it's a partial success/failure.
+        // We have a token, but no user details.
+        // For now, clear the token and treat as login failure for simplicity.
+        // Alternatively, could leave token and try fetching user later, or show a specific error.
+        setToken(null); // This also clears user and isAuthenticated
+
+        // Call the original onError from the component if it exists
+        // It's tricky what to pass as 'error' here.
+        // For now, creating a new Error object.
+        const effectiveError =
+          fetchUserError instanceof Error
+            ? fetchUserError
+            : new Error("Failed to fetch user profile after login.");
+        options?.onError?.(effectiveError, variables, context);
+      }
     },
-    // Pass through the onError callback directly
     onError: (error, variables, context) => {
-      console.error("Login failed:", error.message);
-      // Call the optional callback provided by the component
+      console.error("Login mutation failed:", error.message);
+      setToken(null); // Ensure token is cleared on login mutation failure
       options?.onError?.(error, variables, context);
     },
   });

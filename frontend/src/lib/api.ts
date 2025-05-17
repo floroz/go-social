@@ -1,5 +1,6 @@
 import axios from "axios";
 import config from "@/config"; // Import the centralized config
+import useAuthStore from "@/stores/authStore";
 
 const apiClient = axios.create({
   baseURL: config.apiBaseUrl,
@@ -12,15 +13,24 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
-// Example interceptor (can be uncommented and expanded later)
-/*
-apiClient.interceptors.request.use(config => {
-  // Maybe add auth token here if not using HttpOnly cookies
-  return config;
-}, error => {
-  return Promise.reject(error);
-});
+// Request interceptor to add JWT token to headers
+apiClient.interceptors.request.use(
+  (config) => {
+    // Import useAuthStore here to avoid circular dependencies if api.ts is imported by store.ts
+    // This is a common pattern for accessing Zustand store outside React components.
+    const token = useAuthStore.getState().token;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
+// Example response interceptor (can be uncommented and expanded later)
+/*
 apiClient.interceptors.response.use(response => {
   return response;
 }, error => {

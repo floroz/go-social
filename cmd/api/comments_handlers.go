@@ -6,7 +6,7 @@ import (
 
 	"github.com/floroz/go-social/internal/apitypes"
 	"github.com/floroz/go-social/internal/domain"
-	// Error codes used via handleErrors in api.go
+	"github.com/floroz/go-social/internal/errorcodes" // Added for CodeBadRequest
 )
 
 func (app *Application) createCommentHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,16 +24,18 @@ func (app *Application) createCommentHandler(w http.ResponseWriter, r *http.Requ
 	userId := userClaim.ID // Get user ID after checking claim
 
 	// Read request body into API type
-	apiRequest := &apitypes.CreateCommentRequest{}
-	if err := readJSON(r.Body, apiRequest); err != nil {
-		handleErrors(w, domain.NewBadRequestError("failed to read request body: "+err.Error()))
+	var requestBody struct {
+		Data *apitypes.CreateCommentRequest `json:"data"`
+	}
+	if err := readJSON(r.Body, &requestBody); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid request payload: "+err.Error(), errorcodes.CodeBadRequest, "")
 		return
 	}
 
 	// Correctly map API request to domain DTO using embedded struct initialization
 	domainDTO := &domain.CreateCommentDTO{
 		EditableCommentFields: domain.EditableCommentFields{
-			Content: apiRequest.Content,
+			Content: requestBody.Data.Content,
 		},
 	}
 
@@ -99,9 +101,11 @@ func (app *Application) updateCommentHandler(w http.ResponseWriter, r *http.Requ
 	userId := userClaim.ID // Get user ID after check
 
 	// Read request body into API type
-	apiRequest := &apitypes.UpdateCommentRequest{}
-	if err := readJSON(r.Body, apiRequest); err != nil {
-		handleErrors(w, domain.NewBadRequestError("failed to read request body: "+err.Error()))
+	var requestBody struct {
+		Data *apitypes.UpdateCommentRequest `json:"data"`
+	}
+	if err := readJSON(r.Body, &requestBody); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid request payload: "+err.Error(), errorcodes.CodeBadRequest, "")
 		return
 	}
 
@@ -109,7 +113,7 @@ func (app *Application) updateCommentHandler(w http.ResponseWriter, r *http.Requ
 	domainDTO := &domain.UpdateCommentDTO{
 		ID: int64(commentId), // ID comes from path param, not body
 		EditableCommentFields: domain.EditableCommentFields{
-			Content: apiRequest.Content,
+			Content: requestBody.Data.Content,
 		},
 	}
 

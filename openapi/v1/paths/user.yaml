@@ -49,8 +49,12 @@ paths:
         content:
           application/json:
             schema:
-              # Reference the update request schema (to be defined)
-              $ref: '../schemas/user.yaml#/components/schemas/UpdateUserProfileRequest'
+              type: object # Inline wrapper
+              properties:
+                data: # The 'data' field
+                  $ref: '../schemas/user.yaml#/components/schemas/UpdateUserProfileRequest' # Reference to the actual flat UpdateUserProfileRequest schema
+              required:
+                - data
       responses:
         '200': # OK
           description: User profile updated successfully. Returns the updated user object.

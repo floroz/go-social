@@ -43,7 +43,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '../schemas/post.yaml#/components/schemas/CreatePostRequest'
+              type: object # Inline wrapper
+              properties:
+                data: # The 'data' field
+                  $ref: '../schemas/post.yaml#/components/schemas/CreatePostRequest'
+              required:
+                - data
       responses:
         '201': # Created
           description: Post created successfully. Returns the created post object.
@@ -126,7 +131,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '../schemas/post.yaml#/components/schemas/UpdatePostRequest'
+              type: object # Inline wrapper
+              properties:
+                data: # The 'data' field
+                  $ref: '../schemas/post.yaml#/components/schemas/UpdatePostRequest'
+              required:
+                - data
       responses:
         '200': # OK
           description: Post updated successfully. Returns the updated post object.

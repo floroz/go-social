@@ -16,9 +16,21 @@ export type SignupSuccessResponse =
 export type LoginSuccessResponse =
   components["schemas"]["LoginSuccessResponse"];
 export type LoginResponse = components["schemas"]["LoginResponse"];
+export type GetUserProfileSuccessResponse =
+  components["schemas"]["GetUserProfileSuccessResponse"];
 
-// Add other schema exports as needed
-// export type Post = components["schemas"]["Post"];
+// Post related types
+export type Post = components["schemas"]["Post"];
+export type CreatePostRequest = components["schemas"]["CreatePostRequest"];
+export type CreatePostSuccessResponse =
+  components["schemas"]["CreatePostSuccessResponse"];
+export type ListPostsSuccessResponse =
+  components["schemas"]["ListPostsSuccessResponse"];
+// export type UpdatePostRequest = components["schemas"]["UpdatePostRequest"];
+// export type UpdatePostSuccessResponse = components["schemas"]["UpdatePostSuccessResponse"];
+// export type GetPostSuccessResponse = components["schemas"]["GetPostSuccessResponse"];
+
+// Comment related types (add as needed)
 // export type Comment = components["schemas"]["Comment"];
 
 // --- Operations ---

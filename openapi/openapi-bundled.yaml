@@ -24,12 +24,17 @@ paths:
       description: Creates a new user account.
       operationId: signupUserV1
       requestBody:
-        description: User signup details
+        description: User signup details.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SignupRequest'
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/SignupRequest'
+              required:
+                - data
       responses:
         '201':
           description: User successfully registered. Returns the created user object.
@@ -68,7 +73,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/LoginRequest'
+              required:
+                - data
       responses:
         '200':
           description: Login successful. Returns a JWT token.
@@ -180,7 +190,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateUserProfileRequest'
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/UpdateUserProfileRequest'
+              required:
+                - data
       responses:
         '200':
           description: User profile updated successfully. Returns the updated user object.
@@ -248,7 +263,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatePostRequest'
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreatePostRequest'
+              required:
+                - data
       responses:
         '201':
           description: Post created successfully. Returns the created post object.
@@ -330,7 +350,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdatePostRequest'
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/UpdatePostRequest'
+              required:
+                - data
       responses:
         '200':
           description: Post updated successfully. Returns the updated post object.
@@ -459,7 +484,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCommentRequest'
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/CreateCommentRequest'
+              required:
+                - data
       responses:
         '201':
           description: Comment created successfully. Returns the created comment object.
@@ -554,7 +584,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateCommentRequest'
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/UpdateCommentRequest'
+              required:
+                - data
       responses:
         '200':
           description: Comment updated successfully. Returns the updated comment object.

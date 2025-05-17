@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("not found")
+	ErrNotFound                 = errors.New("not found")
+	ErrDuplicateEmailOrUsername = errors.New("email or username already exists")
 )
 
 type ErrorDetail struct {

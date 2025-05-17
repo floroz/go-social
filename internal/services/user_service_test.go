@@ -9,6 +9,7 @@ import (
 	"github.com/floroz/go-social/internal/domain"
 	"github.com/floroz/go-social/internal/mocks"
 	"github.com/floroz/go-social/internal/services"
+	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -37,8 +38,7 @@ func TestCreateUser_ExistingEmail(t *testing.T) {
 	mockUserRepo.AssertNotCalled(t, "GetByUsername")
 	mockUserRepo.AssertNotCalled(t, "Create")
 	mockUserRepo.AssertExpectations(t)
-	assert.IsType(t, &domain.BadRequestError{}, err)
-	assert.ErrorContains(t, err, "invalid body request")
+	assert.True(t, errors.Is(err, domain.ErrDuplicateEmailOrUsername), "Expected ErrDuplicateEmailOrUsername")
 }
 
 func TestCreateUser_ExistingUsername(t *testing.T) {
@@ -68,8 +68,7 @@ func TestCreateUser_ExistingUsername(t *testing.T) {
 	mockUserRepo.AssertCalled(t, "GetByUsername", mock.Anything, createUserDTO.Username)
 	mockUserRepo.AssertNotCalled(t, "Create")
 	mockUserRepo.AssertExpectations(t)
-	assert.IsType(t, &domain.BadRequestError{}, err)
-	assert.ErrorContains(t, err, "invalid body request")
+	assert.True(t, errors.Is(err, domain.ErrDuplicateEmailOrUsername), "Expected ErrDuplicateEmailOrUsername")
 }
 
 func TestCreateUser_ErrorCreating(t *testing.T) {
@@ -427,33 +426,19 @@ func TestCreateUser_Validation(t *testing.T) {
 			mockUserRepo := new(mocks.MockedUserRepository)
 			userService := services.NewUserService(mockUserRepo)
 
-			// Corrected Mock Setup: Expect GetByEmail/GetByUsername BEFORE validation
-			var nullptr *domain.User
-			// Only mock GetByEmail if the DTO actually has an email to check
-			// Use specific email value from DTO for the mock expectation
-			if tt.createUserDTO.Email != "" {
-				mockUserRepo.On("GetByEmail", mock.Anything, tt.createUserDTO.Email).Return(nullptr, domain.ErrNotFound).Maybe()
-			} else {
-				// If email is missing, expect GetByEmail("")
-				mockUserRepo.On("GetByEmail", mock.Anything, "").Return(nullptr, domain.ErrNotFound).Maybe()
-			}
-			// Only mock GetByUsername if the DTO actually has a username to check
-			if tt.createUserDTO.Username != "" {
-				mockUserRepo.On("GetByUsername", mock.Anything, tt.createUserDTO.Username).Return(nullptr, domain.ErrNotFound).Maybe()
-			} else {
-				// If username is missing, expect GetByUsername("")
-				mockUserRepo.On("GetByUsername", mock.Anything, "").Return(nullptr, domain.ErrNotFound).Maybe()
-			}
-
+			// Validation happens before DB calls, so GetByEmail/GetByUsername should not be called.
 			_, err := userService.Create(context.Background(), tt.createUserDTO)
 
 			assert.NotNil(t, err)
-			assert.IsType(t, &domain.BadRequestError{}, err)
+			// Expect validator.ValidationErrors directly from the service
+			var validationErrs validator.ValidationErrors
+			assert.ErrorAs(t, err, &validationErrs, "Error should be validator.ValidationErrors")
+			mockUserRepo.AssertNotCalled(t, "GetByEmail")
+			mockUserRepo.AssertNotCalled(t, "GetByUsername")
 			mockUserRepo.AssertNotCalled(t, "Create")
 			if tt.expectedError != "" {
 				assert.ErrorContains(t, err, tt.expectedError)
 			}
-			// Verify mocks were called as expected (or not called if skipped)
 			mockUserRepo.AssertExpectations(t)
 		})
 	}

@@ -543,10 +543,12 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description User signup details */
+        /** @description User signup details. */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SignupRequest"];
+                "application/json": {
+                    data: components["schemas"]["SignupRequest"];
+                };
             };
         };
         responses: {
@@ -598,7 +600,9 @@ export interface operations {
         /** @description User login credentials */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["LoginRequest"];
+                "application/json": {
+                    data: components["schemas"]["LoginRequest"];
+                };
             };
         };
         responses: {
@@ -760,7 +764,9 @@ export interface operations {
         /** @description User profile fields to update. */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateUserProfileRequest"];
+                "application/json": {
+                    data: components["schemas"]["UpdateUserProfileRequest"];
+                };
             };
         };
         responses: {
@@ -850,7 +856,9 @@ export interface operations {
         /** @description Post content. */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreatePostRequest"];
+                "application/json": {
+                    data: components["schemas"]["CreatePostRequest"];
+                };
             };
         };
         responses: {
@@ -955,7 +963,9 @@ export interface operations {
         /** @description Updated post content. */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdatePostRequest"];
+                "application/json": {
+                    data: components["schemas"]["UpdatePostRequest"];
+                };
             };
         };
         responses: {
@@ -1135,7 +1145,9 @@ export interface operations {
         /** @description Comment content. */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateCommentRequest"];
+                "application/json": {
+                    data: components["schemas"]["CreateCommentRequest"];
+                };
             };
         };
         responses: {
@@ -1253,7 +1265,9 @@ export interface operations {
         /** @description Updated comment content. */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateCommentRequest"];
+                "application/json": {
+                    data: components["schemas"]["UpdateCommentRequest"];
+                };
             };
         };
         responses: {

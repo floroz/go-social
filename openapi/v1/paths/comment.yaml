@@ -57,7 +57,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '../schemas/comment.yaml#/components/schemas/CreateCommentRequest'
+              type: object # Inline wrapper
+              properties:
+                data: # The 'data' field
+                  $ref: '../schemas/comment.yaml#/components/schemas/CreateCommentRequest'
+              required:
+                - data
       responses:
         '201': # Created
           description: Comment created successfully. Returns the created comment object.
@@ -153,7 +158,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '../schemas/comment.yaml#/components/schemas/UpdateCommentRequest'
+              type: object # Inline wrapper
+              properties:
+                data: # The 'data' field
+                  $ref: '../schemas/comment.yaml#/components/schemas/UpdateCommentRequest'
+              required:
+                - data
       responses:
         '200': # OK
           description: Comment updated successfully. Returns the updated comment object.

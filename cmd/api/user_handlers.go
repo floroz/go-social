@@ -5,6 +5,7 @@ import (
 
 	"github.com/floroz/go-social/internal/apitypes"
 	"github.com/floroz/go-social/internal/domain"
+	"github.com/floroz/go-social/internal/errorcodes"
 )
 
 func (app *Application) getUserProfileHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,17 +50,21 @@ func (app *Application) updateUserHandler(w http.ResponseWriter, r *http.Request
 	}
 	userId := claims.ID // Use ID from claims
 
-	updateUserDto := &domain.UpdateUserDTO{}
+	var requestBody struct {
+		Data *domain.UpdateUserDTO `json:"data"`
+	}
 
-	var err error
-	err = readJSON(r.Body, updateUserDto)
+	err := readJSON(r.Body, &requestBody)
 	if err != nil {
-		handleErrors(w, domain.NewBadRequestError("failed to read request body: "+err.Error()))
+		// Use a more specific error code if readJSON fails due to malformed JSON or validation issues
+		// For now, assuming CodeBadRequest is acceptable for general parsing/unmarshaling issues.
+		// If readJSON itself could return validator.ValidationErrors, that would be handled by handleErrors.
+		writeJSONError(w, http.StatusBadRequest, "Invalid request payload: "+err.Error(), errorcodes.CodeBadRequest, "")
 		return
 	}
 
-	// Call service using the correct userId type (int64)
-	user, err := app.UserService.Update(r.Context(), userId, updateUserDto)
+	// Call service using the correct userId type (int64) and the unwrapped DTO
+	user, err := app.UserService.Update(r.Context(), userId, requestBody.Data)
 	if err != nil {
 		handleErrors(w, err)
 		return

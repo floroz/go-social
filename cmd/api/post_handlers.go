@@ -6,29 +6,29 @@ import (
 
 	"github.com/floroz/go-social/internal/apitypes"
 	"github.com/floroz/go-social/internal/domain"
+	"github.com/floroz/go-social/internal/errorcodes" // Added for CodeBadRequest
 	"github.com/rs/zerolog/log"
 )
 
 func (app *Application) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	claims, ok := getUserClaimFromContext(r.Context())
 	if !ok {
-		// Use standard error handling
 		handleErrors(w, domain.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
-	// Read request body into API type
-	apiRequest := &apitypes.CreatePostRequest{}
-	if err := readJSON(r.Body, apiRequest); err != nil {
-		// Use standard error handling
-		handleErrors(w, domain.NewBadRequestError("failed to read request body: "+err.Error()))
+	var requestBody struct {
+		Data *apitypes.CreatePostRequest `json:"data"`
+	}
+	if err := readJSON(r.Body, &requestBody); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid request payload: "+err.Error(), errorcodes.CodeBadRequest, "")
 		return
 	}
 
 	// Correctly map API request to domain DTO using embedded struct initialization
 	domainDTO := &domain.CreatePostDTO{
 		EditablePostFields: domain.EditablePostFields{
-			Content: apiRequest.Content,
+			Content: requestBody.Data.Content,
 		},
 	}
 
@@ -132,18 +132,18 @@ func (app *Application) updatePostHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Read request body into API type
-	apiRequest := &apitypes.UpdatePostRequest{}
-	if err := readJSON(r.Body, apiRequest); err != nil {
-		// Use standard error handling
-		handleErrors(w, domain.NewBadRequestError("failed to read request body: "+err.Error()))
+	var requestBody struct {
+		Data *apitypes.UpdatePostRequest `json:"data"`
+	}
+	if err := readJSON(r.Body, &requestBody); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid request payload: "+err.Error(), errorcodes.CodeBadRequest, "")
 		return
 	}
 
 	// Map API request to domain DTO
 	domainDTO := &domain.UpdatePostDTO{
 		EditablePostFields: domain.EditablePostFields{
-			Content: apiRequest.Content,
+			Content: requestBody.Data.Content,
 		},
 	}
 
